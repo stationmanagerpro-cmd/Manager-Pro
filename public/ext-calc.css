@@ -1,0 +1,63 @@
+/* Calculatrice flottante : palette autonome à contraste élevé, indépendante du thème global. */
+#smp-calc-btn {
+  position: fixed; right: 18px; bottom: calc(18px + var(--safe-bottom, 0px)); z-index: 1000;
+  width: 52px; height: 52px; border-radius: 50%; border: 0; padding: 0; cursor: pointer;
+  background: #087f6e; color: #fff; display: none; align-items: center; justify-content: center;
+  box-shadow: 0 10px 25px rgba(15, 23, 42, .24); transition: transform .15s ease, background .15s ease;
+}
+#smp-calc-btn.on { display: flex; }
+#smp-calc-btn:hover { background: #066354; transform: scale(1.06); }
+#smp-calc-btn:focus-visible, #smp-calc button:focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; }
+#smp-calc-btn svg { width: 26px; height: 26px; }
+#smp-calc {
+  --calc-bg: #ffffff; --calc-text: #172033; --calc-muted: #526078; --calc-border: #cbd5e1;
+  --calc-key-bg: #f8fafc; --calc-key-hover: #d1fae5; --calc-op-bg: #d1fae5;
+  --calc-op-text: #065f46; --calc-primary: #087f6e; --calc-primary-hover: #066354;
+  position: fixed; right: 18px; bottom: calc(82px + var(--safe-bottom, 0px)); z-index: 1000;
+  width: min(320px, calc(100vw - 24px)); display: none; flex-direction: column; gap: 8px; padding: 12px;
+  border-radius: 14px; background: var(--calc-bg); color: var(--calc-text); border: 1px solid var(--calc-border);
+  box-shadow: 0 10px 25px rgba(15, 23, 42, .25); outline: none; user-select: none; color-scheme: light;
+}
+#smp-calc.open { display: flex; }
+#smp-calc .cc-head { display: flex; justify-content: space-between; align-items: center; font-weight: 700; font-size: 14px; color: var(--calc-text); }
+#smp-calc .cc-head button { background: transparent; border: 0; color: var(--calc-muted); font-size: 20px; line-height: 1; cursor: pointer; padding: 2px 6px; }
+#smp-calc .cc-screen { background: #eef2f7; color: #172033; border: 1px solid #d8e0eb; border-radius: 10px; padding: 8px 12px; text-align: right; min-height: 68px; overflow: hidden; }
+#smp-calc .cc-expr { font-size: 15px; color: #526078; min-height: 20px; word-break: break-all; }
+#smp-calc .cc-res { font-size: 28px; color: #172033; font-weight: 700; min-height: 36px; word-break: break-all; }
+#smp-calc .cc-res.err { font-size: 16px; color: #b42318; }
+#smp-calc .cc-keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+#smp-calc .cc-keys button { height: 46px; font-size: 18px; border-radius: 6px; border: 1px solid var(--calc-border); background: var(--calc-key-bg); color: var(--calc-text); cursor: pointer; font-weight: 600; }
+#smp-calc .cc-keys button:hover { background: var(--calc-key-hover); }
+#smp-calc .cc-keys .op { background: var(--calc-op-bg); color: var(--calc-op-text); border-color: #6ee7b7; font-weight: 700; }
+#smp-calc .cc-keys .eq { grid-column: span 4; background: var(--calc-primary); color: #fff; border-color: var(--calc-primary); font-weight: 700; }
+#smp-calc .cc-keys .eq:hover { background: var(--calc-primary-hover); }
+#smp-calc .cc-act { display: flex; gap: 6px; }
+#smp-calc .cc-act button { flex: 1; min-height: 36px; padding: 6px 8px; font-size: 13px; border-radius: 6px; border: 1px solid var(--calc-border); background: #fff; color: var(--calc-text); cursor: pointer; }
+#smp-calc .cc-act button:hover { background: #eef2f7; }
+#smp-calc .cc-act button:disabled { opacity: .45; cursor: not-allowed; }
+#smp-calc .cc-hist { max-height: 96px; overflow-y: auto; font-size: 12px; color: var(--calc-muted); display: flex; flex-direction: column; gap: 2px; }
+#smp-calc .cc-hist button { background: transparent; border: 0; text-align: right; color: var(--calc-muted); cursor: pointer; padding: 2px 4px; font-size: 12px; }
+#smp-calc .cc-hist button:hover { color: var(--calc-primary-hover); text-decoration: underline; }
+/* Cause du défaut de couleurs : design-v2.css impose « button:not(.b2)… { color: var(--on-p) !important } » (texte clair des boutons de l'application),
+   ce qui écrasait le texte foncé des touches de la calculatrice (fond clair). On répond avec !important + sélecteur à identifiant, qui l'emporte. */
+#smp-calc .cc-keys button, #smp-calc .cc-act button { color: var(--calc-text) !important; box-shadow: none; text-shadow: none; padding: 0 4px; transform: none; }
+#smp-calc .cc-act button { padding: 6px 8px; }
+#smp-calc .cc-keys .op { color: var(--calc-op-text) !important; }
+#smp-calc .cc-keys .eq { color: #ffffff !important; }
+#smp-calc .cc-keys button:hover:not(:disabled) { background: var(--calc-key-hover); color: var(--calc-text) !important; }
+#smp-calc .cc-keys .op:hover:not(:disabled) { background: #a7f3d0; color: var(--calc-op-text) !important; }
+#smp-calc .cc-keys .eq:hover:not(:disabled) { background: var(--calc-primary-hover); color: #ffffff !important; }
+#smp-calc .cc-act button:hover:not(:disabled) { background: #eef2f7; color: var(--calc-text) !important; }
+#smp-calc .cc-head button, #smp-calc .cc-hist button { background: transparent; box-shadow: none; padding: 2px 6px; color: var(--calc-muted) !important; }
+#smp-calc .cc-hist button:hover:not(:disabled) { background: transparent; color: var(--calc-primary-hover) !important; }
+#smp-calc-btn { color: #ffffff !important; box-shadow: 0 10px 25px rgba(15, 23, 42, .24); }
+#smp-calc-btn:hover:not(:disabled) { background: #066354; }
+@media (prefers-reduced-motion: reduce) { #smp-calc-btn { transition: none; } #smp-calc-btn:hover { transform: none; } }
+@media print { #smp-calc-btn, #smp-calc { display: none !important; } }
+
+/* Mobile : la calculatrice remonte au-dessus de la barre du bas pour ne pas masquer « Employés » */
+@media (max-width: 860px) {
+  #smp-calc-btn { bottom: calc(86px + var(--safe-bottom, 0px)) !important; right: 14px; width: 48px; height: 48px; }
+  #smp-calc-btn svg { width: 22px; height: 22px; }
+  #smp-calc { bottom: calc(144px + var(--safe-bottom, 0px)) !important; right: 14px; max-height: calc(100dvh - 170px); overflow-y: auto; }
+}

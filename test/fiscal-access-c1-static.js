@@ -1,0 +1,23 @@
+'use strict';
+const fs = require('fs');
+const path = require('path');
+const root = path.join(__dirname, '..');
+const shell = fs.readFileSync(path.join(root, 'public/ext-shell.js'), 'utf8');
+const app = fs.readFileSync(path.join(root, 'public/app.js'), 'utf8');
+const frontend = fs.readFileSync(path.join(root, 'public/ext-fiscal.js'), 'utf8');
+const server = fs.readFileSync(path.join(root, 'src/fiscal.js'), 'utf8');
+const migration = fs.readFileSync(path.join(root, 'migrations/057_fiscal_access_permission.sql'), 'utf8');
+const roleFix = fs.readFileSync(path.join(root, 'migrations/058_fiscalite_admin_platform_only.sql'), 'utf8');
+function ok(condition, message) { if (!condition) throw new Error(message); }
+ok(shell.includes("{ label: 'La Fiscalité', icon: '⚖️'"), 'La Fiscalité doit avoir son propre groupe de menu');
+const finance = shell.match(/\{ label: 'Finance & rapports',[^\n]+/);
+ok(finance && !finance[0].includes('fiscalhub') && !finance[0].includes('fiscal2'), 'Les vues fiscales ne doivent plus être dans Finance & rapports');
+ok(app.includes("ME.permissions.includes('fiscal.access')") && app.includes('contractAllowed'), 'Le menu doit exiger permission de rôle et contrat');
+ok(frontend.includes("me.permissions.includes('fiscal.access')") && frontend.includes('contractAllowed'), 'Le parcours fiscal doit appliquer la même règle');
+ok(server.includes("req.user.perms.has('fiscal.access')") && server.includes('FISCAL_PERMISSION_DENIED'), 'Le serveur doit refuser les accès API sans permission');
+ok(server.indexOf("req.user.perms.has('fiscal.access')") < server.indexOf('loadContractForUser(req.user.id, false)'), 'Le contrôle de rôle doit précéder la lecture du contrat fiscal');
+ok(migration.includes("'fiscal.access'") && !migration.includes("r.code = 'ADMIN'"), 'La migration crée le droit sans l’attribuer à ADMIN');
+ok(roleFix.includes("r.code = 'ADMIN'") && roleFix.includes("p.code = 'fiscal.access'") && roleFix.includes('DELETE FROM role_permissions'), 'La migration corrective retire le droit fiscal au rôle ADMIN');
+ok(server.includes('req.user.is_global') && server.includes('FISCAL_SUPERADMIN_NO_OPS'), 'Le Superadmin est explicitement exclu des opérations fiscales');
+ok(roleFix.includes('DELETE FROM role_permissions'), 'La migration corrective peut être rejouée sans réattribuer le droit');
+console.log('OK fiscal-access-c1-static (11 assertions)');

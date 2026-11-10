@@ -1,0 +1,14 @@
+'use strict';
+const fs = require('fs');
+const assert = require('assert');
+const service = fs.readFileSync('services/emailService.js', 'utf8');
+const migration = fs.readFileSync('migrations/061_email_alert_dedupe_24h.sql', 'utf8');
+assert(/email_alert_dedupe/.test(service), 'persistent dedupe table used');
+assert(/interval '24 hours'/.test(service), '24-hour suppression window enforced in SQL');
+assert(/ON CONFLICT \(fingerprint\) DO UPDATE/.test(service), 'concurrent duplicate claims are atomic');
+assert(/duplicate_within_24h/.test(service), 'duplicate result is explicit');
+assert(/releaseAlert\(key\)/.test(service), 'failed SMTP attempt releases the claim for retry');
+assert(/quart\|\$\{label\}/.test(service), 'quart event key is stable');
+assert(/anomalie\|\$\{stationName/.test(service), 'anomaly key is stable');
+assert(/CREATE TABLE IF NOT EXISTS email_alert_dedupe/.test(migration), 'migration creates persistent table');
+console.log('OK — 8 contrôles statiques anti-doublons e-mail sur 24 h');

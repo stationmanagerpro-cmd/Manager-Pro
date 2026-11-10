@@ -1,0 +1,13 @@
+'use strict';
+const fs = require('fs');
+const assert = require('assert');
+const contracts = fs.readFileSync('src/contracts.js', 'utf8');
+const server = fs.readFileSync('src/server.js', 'utf8');
+const messaging = fs.readFileSync('src/messaging.js', 'utf8');
+assert(contracts.includes("FROM app_settings WHERE key = 'subscription_payment_info'"), 'QR lus depuis app_settings global');
+assert(contracts.includes("INSERT INTO app_settings (key, value, updated_by) VALUES ('subscription_payment_info'"), 'QR enregistrés dans app_settings');
+assert(server.includes("path === '/messaging/support/to-admin' && req.user.role === 'ADMIN'"), 'exception support réservée à admin client');
+assert(server.includes('!expiredSupportRequest && !featureOn(contract, \'can_use_messaging\')'), 'exception support exclue du contrôle de module');
+assert(messaging.includes('!req._subscription_renewal_support'), 'route support respecte l’exception de renouvellement');
+assert(messaging.includes("req.user.role !== 'ADMIN'"), 'les employés ne peuvent pas initier ce contact');
+console.log('OK — 6 contrôles statiques QR et demande de renouvellement sans module Messagerie');

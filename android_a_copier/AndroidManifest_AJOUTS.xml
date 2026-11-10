@@ -1,0 +1,25 @@
+<!-- À AJOUTER dans app/src/main/AndroidManifest.xml (ne remplacez pas le fichier entier). -->
+
+<!-- 1) Au niveau de <manifest>, avant <application> : -->
+<uses-permission android:name="android.permission.INTERNET" />
+<queries>
+    <package android:name="com.whatsapp" />
+    <package android:name="com.whatsapp.w4b" />
+    <intent><action android:name="android.intent.action.VIEW" /><data android:scheme="https" /></intent>
+    <intent><action android:name="android.intent.action.VIEW" /><data android:scheme="whatsapp" /></intent>
+    <intent><action android:name="android.intent.action.VIEW" /><data android:scheme="mailto" /></intent>
+    <intent><action android:name="android.intent.action.VIEW" /><data android:scheme="tel" /></intent>
+    <intent><action android:name="android.intent.action.VIEW" /><data android:mimeType="application/pdf" /></intent>
+    <intent><action android:name="android.intent.action.VIEW" /><data android:mimeType="*/*" /></intent>
+</queries>
+
+<!-- 2) À l'intérieur de <application> ... </application> : -->
+<provider
+    android:name="androidx.core.content.FileProvider"
+    android:authorities="${applicationId}.fileprovider"
+    android:exported="false"
+    android:grantUriPermissions="true">
+    <meta-data
+        android:name="android.support.FILE_PROVIDER_PATHS"
+        android:resource="@xml/file_paths" />
+</provider>

@@ -1,0 +1,44 @@
+/* Manager PRO — effets visuels légers et personnalisables. Aucun compteur animé, shimmer ou boucle JS. */
+:root { --smp-motion-duration: 180ms; }
+html[data-motion="off"] *, html[data-motion="off"] *::before, html[data-motion="off"] *::after {
+  animation: none !important; transition: none !important; scroll-behavior: auto !important;
+}
+/* Mode subtil (défaut) : transitions uniquement sur propriétés peu coûteuses. */
+html:not([data-motion="off"]) button,
+html:not([data-motion="off"]) [role="button"],
+html:not([data-motion="off"]) a,
+html:not([data-motion="off"]) .card,
+html:not([data-motion="off"]) .smp-kpi,
+html:not([data-motion="off"]) .kpi {
+  transition: transform var(--smp-motion-duration) ease, box-shadow var(--smp-motion-duration) ease, background-color var(--smp-motion-duration) ease, color var(--smp-motion-duration) ease;
+}
+html[data-motion="subtle"] button:hover,
+html[data-motion="subtle"] [role="button"]:hover,
+html[data-motion="subtle"] .card:hover,
+html[data-motion="subtle"] .smp-kpi:hover,
+html[data-motion="subtle"] .kpi:hover { transform: translateY(-2px); }
+html[data-motion="subtle"] button:hover,
+html[data-motion="subtle"] .card:hover,
+html[data-motion="subtle"] .smp-kpi:hover,
+html[data-motion="subtle"] .kpi:hover { box-shadow: 0 5px 14px rgba(15, 23, 42, .10); }
+/* Mode complet reste volontairement sobre : zoom léger au survol, transition de 220 ms, pas de compteurs ni cascades. */
+html[data-motion="full"] { --smp-motion-duration: 220ms; scroll-behavior: smooth; }
+html[data-motion="full"] a:hover { text-decoration-thickness: 2px; }
+html[data-motion="full"] button:hover,
+html[data-motion="full"] [role="button"]:hover,
+html[data-motion="full"] .card:hover,
+html[data-motion="full"] .smp-kpi:hover,
+html[data-motion="full"] .kpi:hover { transform: translateY(-3px) scale(1.01); }
+html[data-motion="full"] a:hover { text-decoration-thickness: 2px; }
+html[data-motion="full"] button:hover,
+html[data-motion="full"] .card:hover,
+html[data-motion="full"] .smp-kpi:hover,
+html[data-motion="full"] .kpi:hover { box-shadow: 0 7px 18px rgba(15, 23, 42, .13); }
+/* Le réglage système prime sur le choix enregistré. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  button:hover, [role="button"]:hover, .card:hover, .smp-kpi:hover, .kpi:hover { transform: none !important; }
+}
+
+/* Les indicateurs de chargement ne tournent pas en continu : le chargement reste statique. */
+.skeleton, .shimmer, .sk, [class*="skeleton-"] { animation: none !important; }

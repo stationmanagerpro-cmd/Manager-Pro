@@ -1,0 +1,19 @@
+/* Fournisseurs / Clients : cartes de synthèse et montants */
+.pt-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; margin: 4px 0 16px; }
+.pt-kpi { background: var(--c); border: 1px solid var(--bd); border-radius: 16px; padding: 14px 16px; box-shadow: var(--shadow); }
+.pt-kl { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--m); }
+.pt-kv { font-size: 1.55rem; font-weight: 800; margin-top: 8px; letter-spacing: -.01em; }
+.pt-kn { font-size: 12px; margin-top: 2px; color: var(--m); }
+.pt-hot { background: linear-gradient(135deg, #f59e0b, #ea7c0c); border-color: transparent; color: #fff; box-shadow: 0 8px 22px rgba(234,124,12,.28); }
+.pt-hot .pt-kl, .pt-hot .pt-kn { color: rgba(255,255,255,.92); }
+.pt-sub { color: var(--m); font-size: 12px; display: block; }
+.pt-red { color: var(--r); font-weight: 700; }
+.pt-green { color: var(--g); font-weight: 700; }
+.pt-zero { color: var(--m); }
+.pc-act { white-space: nowrap; text-align: right; }
+@media (max-width: 640px) {
+  .pt-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .pt-kpi { padding: 10px 12px; }
+  .pt-kv { font-size: 1.15rem; }
+  .pt-kl { font-size: 10px; }
+}

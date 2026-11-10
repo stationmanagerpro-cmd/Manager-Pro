@@ -1,0 +1,72 @@
+/* Fiche produit complète — onglets horizontaux auto-adaptés, prix, dotation, stocks. Complète ext-sa-dash.css. */
+.pp-page { max-width: 1500px; margin: 0 auto; }
+.pp-av { flex: 0 0 auto; background: var(--pl); color: var(--p); font-weight: 700; }
+.pp-id .pid-fields { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.pp-id .pid-fields a { color: var(--p); font-weight: 600; text-decoration: none; }
+.pp-row { cursor: pointer; }
+.pp-row:hover td { background: color-mix(in srgb, var(--p) 6%, transparent); }
+
+/* Barre d'onglets : une seule ligne, les boutons se partagent la largeur, défilement horizontal si l'écran est étroit */
+.pp-tabs { display: flex; flex-direction: row; flex-wrap: nowrap; width: 100%; gap: clamp(4px, 1vw, 8px); overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; scrollbar-width: none; scroll-snap-type: x proximity; border-bottom: 1px solid var(--bd); padding: 8px 0 12px; margin: 4px 0 14px; }
+.pp-tabs::-webkit-scrollbar { display: none; }
+.pp-tabs button { flex: 1 1 0; min-width: max-content; width: auto; margin: 0; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; scroll-snap-align: center; font-size: clamp(11px, 1.5vw, 14px); padding: clamp(7px, 1.2vw, 10px) clamp(8px, 1.6vw, 16px); }
+.pp-tabs button.on { background: var(--p); color: #fff; }
+.pp-tabs button:focus-visible { outline: 2px solid var(--p); outline-offset: 2px; }
+.pp-ti { font-size: 1.05em; line-height: 1; }
+@media (max-width: 420px) { .pp-ti { display: none; } }
+.pp-pane[hidden] { display: none !important; }
+.pp-loading { color: var(--m); padding: 18px 4px; }
+
+.pp-pricebox { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 12px; }
+.pp-pricebox small { display: block; color: var(--m); font-size: 12px; }
+.pp-pricebox b { font-size: 1.1rem; }
+.pp-k3 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@media (max-width: 1100px) { .pp-k3 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+.pp-insights { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px 18px; }
+.pp-insights li { display: flex; gap: 12px; align-items: flex-start; padding: 8px 0; border-bottom: 1px dashed var(--bd); }
+.pp-insights b { display: block; font-size: 14px; }
+.pp-insights small { display: block; color: var(--m); font-size: 12.5px; margin-top: 2px; }
+.pp-ii { flex: 0 0 auto; width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; background: var(--pl); font-size: 17px; }
+
+.pp-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-bottom: 10px; }
+.pp-form label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--m); }
+.pp-form input { width: 100%; }
+.pp-form .pp-note { grid-column: 1 / -1; }
+.pp-chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 4px 0 8px; font-size: 13px; color: var(--m); }
+.pp-chips .b2 { padding: 5px 10px; min-height: 0; }
+.pp-prev { margin: 6px 0 12px; font-size: 13px; color: var(--m); min-height: 1.3em; }
+.pp-prev.bad, .pp-alert { color: var(--r); }
+.pp-alert { background: color-mix(in srgb, var(--r) 10%, transparent); border: 1px solid color-mix(in srgb, var(--r) 30%, transparent); border-radius: 12px; padding: 10px 14px; margin: 0 0 14px; font-size: 13.5px; }
+
+/* Sous-boutons de l'onglet Historique dotation */
+.pp-sub { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 14px; }
+.pp-sub .b2.on { background: var(--p); color: #fff; }
+.pp-sub .pp-right, .pp-filters .pp-right { margin-left: auto; }
+.pp-badge { display: inline-block; min-width: 20px; padding: 1px 7px; border-radius: 999px; background: color-mix(in srgb, var(--m) 20%, transparent); font-size: 12px; font-weight: 700; text-align: center; }
+.pp-sub .b2.on .pp-badge { background: rgba(255,255,255,.28); }
+.pp-badge.hot { background: var(--o); color: #fff; }
+.pp-empty-ok p { margin: 6px 0; }
+.pp-filters { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin: 0 0 12px; }
+.pp-filters label { display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--m); }
+.sad-card h3 span { font-size: 12px; font-weight: 500; color: var(--m); }
+.sad-card h3 select { font-size: 13px; }
+
+/* Photo du produit (fiche) + barre d'export PDF */
+.pp-avwrap { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 0 0 auto; }
+.pp-avwrap .av.big { width: 84px; height: 84px; border-radius: 14px; object-fit: cover; }
+.pp-photo-btn { font-size: 11px; padding: 3px 8px; }
+.pp-pdfbar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin: -4px 0 12px; }
+.pp-pdfbar button { font-size: 12px; padding: 5px 12px; }
+@media print { .pp-pdfbar, .pp-photo-btn { display: none; } }
+
+/* Profils client / fournisseur / employé : même barre d'onglets que la fiche produit */
+.detail-tabs.pp-tabs button, .emp-tabs button { flex: 1 1 0; min-width: max-content; }
+.emp-body { min-width: 0; }
+.ps-read { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 13px; }
+.pp-row, .tbl tr[onclick] { cursor: pointer; }
+
+/* Fiche employé / fiches détail : tous les onglets restent visibles (retour à la ligne) au lieu d'être coupés
+   à droite avec une barre de défilement masquée. */
+.emp-tabs, .detail-tabs.pp-tabs { flex-wrap: wrap; overflow: visible; scroll-snap-type: none; row-gap: 8px; }
+.emp-tabs button, .detail-tabs.pp-tabs button { flex: 1 1 auto; min-width: 0; scroll-snap-align: none; }

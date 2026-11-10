@@ -1,0 +1,12 @@
+const fs = require('fs');
+const assert = require('assert');
+const maintenance = fs.readFileSync('src/maintenance.js', 'utf8');
+const restore = fs.readFileSync('src/restore.js', 'utf8');
+const backup = fs.readFileSync('src/backup.js', 'utf8');
+assert(backup.includes('function psqlConnectionOptions('), 'options psql dédiées');
+assert(backup.includes('env.PGPASSWORD = decodeURIComponent(u.password)'), 'mot de passe dans environnement du processus enfant');
+assert(maintenance.includes('backup.psqlConnectionOptions()'), 'restauration interface utilise les options sécurisées');
+assert(restore.includes('backup.psqlConnectionOptions()'), 'restauration CLI utilise les options sécurisées');
+assert(!/spawn\([^\n]*\['--dbname='\s*\+\s*process\.env\.DATABASE_URL/.test(maintenance), 'pas de DATABASE_URL complète en argument psql dans maintenance');
+assert(!/spawn\([^\n]*\['--dbname='\s*\+\s*process\.env\.DATABASE_URL/.test(restore), 'pas de DATABASE_URL complète en argument psql dans CLI');
+console.log('Sécurité restauration : 6/6 contrôles statiques réussis.');

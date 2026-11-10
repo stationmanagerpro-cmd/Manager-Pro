@@ -1,0 +1,16 @@
+const fs = require('fs');
+const assert = require('assert');
+const ux = fs.readFileSync('public/ext-ux-v2.js', 'utf8');
+const msg = fs.readFileSync('public/ext-messaging.js', 'utf8');
+const p12 = fs.readFileSync('public/ext-p12.js', 'utf8');
+const platform = fs.readFileSync('public/ext-platform.js', 'utf8');
+let n = 0; const ok = (v, m) => { assert.ok(v, m); n++; };
+ok(ux.includes('window.editFour = function') && ux.includes('window.editSup(Number(id))'), 'Modifier fournisseur appelle l’éditeur réel');
+ok(ux.includes('window.payFour = safe') && ux.includes("G('/suppliers/' + Number(id) + '/history')"), 'Régler fournisseur liste les factures impayées et ouvre le paiement');
+ok(ux.includes("can('supplier.edit') ? '<button class=\"b2\" onclick=\"editFour"), 'action modifier masquée sans permission');
+ok(msg.includes('window.msgSupportOpen = safe') && msg.includes("Po('/messaging/support/open'"), 'Support Super Admin ouvre une conversation réelle');
+ok(msg.includes('window.msgSupportToAdmin = safe') && msg.includes("Po('/messaging/support/to-admin'"), 'Contacter Super Admin crée ou reprend une conversation');
+ok(p12.includes('window.submitBackupRestore') && p12.includes("'Content-Type': 'application/gzip'"), 'restauration envoie le fichier binaire sans base64');
+ok(p12.includes('window.resetGlobalData') && p12.includes('SUPPRIMER TOUTES LES DONNEES'), 'réinitialisation exige une confirmation textuelle exacte');
+ok(platform.includes('window.pfPdf') && platform.includes('window.pfXlsx') && !platform.includes('window.pfCsv'), 'export Super Admin propose PDF/Excel et ne propose plus CSV');
+console.log(`Audit statique des actions UI : ${n}/${n} contrôles réussis.`);

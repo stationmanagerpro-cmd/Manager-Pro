@@ -1,0 +1,62 @@
+/* Trésorerie et Créances & dettes */
+.tr-top { margin-bottom: 14px; }
+.tr-tabs { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--bd); margin: 4px 0 16px; -webkit-overflow-scrolling: touch; }
+.tr-tabs button { background: transparent; border: 0; border-bottom: 3px solid transparent; border-radius: 0; color: var(--m); font-weight: 600; padding: 10px 14px; white-space: nowrap; cursor: pointer; box-shadow: none; }
+.tr-tabs button.on { color: var(--p); border-bottom-color: var(--p); }
+.tr-badge { display: inline-block; min-width: 18px; padding: 1px 6px; margin-left: 4px; border-radius: 999px; background: var(--pl); color: var(--p); font-size: 11px; font-weight: 700; text-align: center; }
+.tr-sec { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 20px 0 10px; font-size: 12px; font-weight: 800; letter-spacing: .07em; color: var(--t); }
+.tr-sech { margin-left: auto; font-weight: 500; letter-spacing: 0; color: var(--m); font-size: 12px; }
+
+/* cartes colorées */
+.tr-cards { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.tr-k4 { margin: 4px 0 16px; }
+.tr-mini { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); margin: 4px 0 16px; }
+.tr-card { color: #fff; border-radius: 16px; padding: 16px 18px; box-shadow: 0 8px 20px rgba(15, 23, 42, .16); }
+.tr-card[role="button"] { cursor: pointer; transition: transform .15s; }
+.tr-card[role="button"]:hover { transform: translateY(-2px); }
+.tr-cl { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; opacity: .95; }
+.tr-cv { font-size: 1.6rem; font-weight: 800; margin-top: 10px; letter-spacing: -.01em; line-height: 1.1; }
+.tr-cn { font-size: 12px; margin-top: 6px; opacity: .9; }
+.c-blue { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+.c-green { background: linear-gradient(135deg, #16a34a, #0f8a4a); }
+.c-red { background: linear-gradient(135deg, #ef4444, #c81e1e); }
+.c-teal { background: linear-gradient(135deg, #0e9aa7, #0a7f8c); }
+.c-purple { background: linear-gradient(135deg, #8b5cf6, #6d28d9); }
+.c-pink { background: linear-gradient(135deg, #e11d74, #be185d); }
+.c-indigo { background: linear-gradient(135deg, #4f46e5, #3730a3); }
+.c-slate { background: linear-gradient(135deg, #475569, #1e293b); }
+.c-orange { background: linear-gradient(135deg, #f59e0b, #ea7c0c); }
+
+/* cartes de comptes */
+.tr-accs { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 14px; }
+.tr-acc { position: relative; display: flex; gap: 14px; align-items: flex-start; background: var(--c); border: 1px solid var(--bd); border-left: 4px solid var(--g); border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow); cursor: pointer; transition: transform .15s; }
+.tr-acc:hover { transform: translateY(-2px); }
+.tr-acc.a-bank { border-left-color: #2563eb; }
+.tr-acc.a-mm { border-left-color: #8b5cf6; }
+.tr-ai { width: 44px; height: 44px; flex: none; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; background: rgba(22, 163, 74, .12); }
+.a-bank .tr-ai { background: rgba(37, 99, 235, .12); }
+.a-mm .tr-ai { background: rgba(139, 92, 246, .14); }
+.tr-ab small { display: block; font-size: 10px; font-weight: 800; letter-spacing: .08em; color: var(--m); }
+.tr-ab b { display: block; margin-top: 2px; }
+.tr-av { font-size: 1.35rem; font-weight: 800; margin: 6px 0; }
+.tr-am { font-size: 12px; color: var(--m); display: flex; gap: 8px; flex-wrap: wrap; }
+.tr-edit { position: absolute; right: 10px; top: 10px; width: 30px; height: 30px; padding: 0; border-radius: 8px; border: 1px solid var(--bd); background: var(--c); color: var(--m); cursor: pointer; }
+
+/* divers */
+.tr-lbl { display: inline-flex; align-items: center; gap: 6px; color: var(--m); font-size: 13px; }
+.tr-late { display: inline-block; padding: 2px 9px; border-radius: 999px; background: rgba(220, 53, 69, .14); color: var(--r); font-size: 12px; font-weight: 700; white-space: nowrap; }
+.tr-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.tr-chip { background: var(--pl); border-radius: 999px; padding: 4px 12px; font-size: 12px; }
+.tr-note { color: var(--m); font-size: 12px; margin-top: 10px; }
+.pt-sub { display: block; }
+
+@media (max-width: 900px) { .tr-cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+  .tr-cards { gap: 10px; }
+  .tr-card { padding: 12px 13px; }
+  .tr-cv { font-size: 1.1rem; }
+  .tr-cl { font-size: 10px; }
+  .tr-accs { grid-template-columns: 1fr; }
+  .tr-tabs button { padding: 9px 10px; font-size: 13px; }
+  .tr-sech { margin-left: 0; width: 100%; }
+}

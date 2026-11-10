@@ -1,0 +1,20 @@
+const fs = require('fs');
+const assert = require('assert');
+const docs = fs.readFileSync('src/docs.js', 'utf8');
+const admin = fs.readFileSync('src/admin.js', 'utf8');
+const platform = fs.readFileSync('src/platform.js', 'utf8');
+const clientMigration = fs.readFileSync('migrations/038_client_report_export_preferences.sql', 'utf8');
+const platformMigration = fs.readFileSync('migrations/040_platform_report_export_preferences.sql', 'utf8');
+let count = 0;
+function check(condition, message) { assert.ok(condition, message); count++; console.log('✔ ' + message); }
+check(docs.includes("SELECT features, status FROM client_contracts"), 'le moteur des documents lit le statut du contrat client');
+check(docs.includes("contract?.status !== 'suspendu'"), 'la palette client personnalisée est ignorée si le contrat est suspendu');
+check(docs.includes('f.can_customize_report_exports === true || f.modules?.report_colors === true'), 'la palette client dépend toujours de l’autorisation contractuelle');
+check(docs.includes("SELECT colors FROM client_report_preferences WHERE client_id=$1"), 'les préférences restent isolées par client');
+check(admin.includes("ct?.status === 'suspendu'"), 'l’API empêche aussi la modification quand le contrat est suspendu');
+check(admin.includes("req.user.is_global) throw new HttpError(403"), 'le Super Admin ne modifie pas les préférences couleurs via l’API client');
+check(platform.includes("r.put('/admin/platform/report-colors', needPrincipal"), 'les couleurs plateforme restent réservées au Super Admin');
+check(platform.includes("SELECT colors FROM platform_report_preferences WHERE singleton = TRUE"), 'la palette plateforme lit uniquement sa table dédiée');
+check(clientMigration.includes('client_report_preferences') && platformMigration.includes('platform_report_preferences'), 'les migrations client et plateforme restent séparées');
+check(docs.includes('argb(secondary)') && docs.includes('argb(/^#[0-9a-f]{6}$/i.test(b.report_colors?.text || \'\') ? b.report_colors.text : \'#111827\')'), 'les couleurs client sont validées et appliquées aux en-têtes Excel');
+console.log(`\n${count}/${count} contrôles statiques réussis.`);

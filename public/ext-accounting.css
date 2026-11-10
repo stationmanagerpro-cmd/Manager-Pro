@@ -1,0 +1,68 @@
+/* ext-accounting.css — page Comptabilité (réutilise tr-tabs / tr-card / pc-tbl de la Trésorerie) */
+.ac-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.ac-primary{background:#1d4ed8;color:#fff;border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer}
+.ac-tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid rgba(128,128,128,.25);margin-bottom:12px;scrollbar-width:thin}
+.ac-tabs button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 12px;font-weight:600;white-space:nowrap;cursor:pointer;color:inherit;opacity:.75}
+.ac-tabs button.on{border-bottom-color:#1d4ed8;color:#1d4ed8;opacity:1}
+.ac-chips{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.ac-chip{border:1px solid rgba(128,128,128,.35);background:transparent;color:inherit;border-radius:999px;padding:7px 14px;font-weight:600;cursor:pointer}
+.ac-chip.on{background:#0f172a;color:#fff;border-color:#0f172a}
+.ac-badge{background:#e0e9ff;color:#1e3a8a;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700}
+.ac-okb{background:#dcfce7;color:#166534;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700}
+.ac-warn{background:#fee2e2;color:#991b1b;border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700}
+.ac-custom{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:12px}
+.ac-custom label{display:flex;flex-direction:column;font-size:12px;gap:3px}
+.ac-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px;justify-content:space-between}
+.ac-search{flex:1;min-width:180px;padding:9px 12px;border-radius:10px;border:1px solid rgba(128,128,128,.35);background:transparent;color:inherit}
+.ac-h{margin:18px 0 8px;font-size:15px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ac-note{font-size:12.5px;opacity:.8;margin:10px 0;line-height:1.5}
+.ac-hint{font-size:11.5px;opacity:.7;margin-top:2px}
+.ac-jc{display:flex;gap:6px;flex-wrap:wrap}
+.ac-jchip{border:1px solid rgba(128,128,128,.35);border-radius:999px;padding:5px 11px;font-size:12.5px;cursor:pointer}
+.ac-jchip.on{background:#1d4ed8;color:#fff;border-color:#1d4ed8}
+.ac-entry{border:1px solid rgba(128,128,128,.25);border-radius:10px;margin-bottom:8px;padding:2px 10px}
+.ac-entry summary{display:flex;gap:10px;align-items:center;padding:9px 0;cursor:pointer;list-style:none}
+.ac-entry summary::-webkit-details-marker{display:none}
+.ac-d{min-width:92px;font-size:12.5px}.ac-ref{min-width:90px;font-size:12px;opacity:.7}.ac-lab{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ac-amt{font-weight:700}
+.ac-j{border-radius:6px;padding:2px 7px;font-size:11px;font-weight:800;background:#e5e7eb;color:#111}
+.ac-ea{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:8px 0}
+.ac-more{text-align:center;margin:12px 0}
+.ac-click{cursor:pointer}.ac-click:hover{background:rgba(29,78,216,.07)}
+.ac-tot td{font-weight:800;border-top:2px solid rgba(128,128,128,.5)}
+.ac-sec td{font-weight:700;background:rgba(128,128,128,.12)}
+.ac-rep td{font-style:italic;opacity:.8}
+.ac-off{opacity:.45}
+.ac-bilan{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:760px){.ac-bilan{grid-template-columns:1fr}}
+.ac-bc{background:rgba(128,128,128,.08);border-radius:16px;padding:6px 18px 12px}
+.ac-bt{font-weight:800;padding:14px 0;letter-spacing:.03em}
+.ac-br{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid rgba(128,128,128,.22);font-size:14px}
+.ac-btot{font-weight:800;border-top:2px solid rgba(128,128,128,.55)}
+.ac-form{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.ac-form label{display:flex;flex-direction:column;font-size:12px;gap:3px}.ac-form .ac-w{grid-column:1/-1}
+.ac-lines input{width:100%;box-sizing:border-box}.ac-lines input.n{text-align:right;min-width:90px}
+
+/* ---- Lisibilité (clair + sombre) --------------------------------------------------------------
+   design-v2.css impose « button:not(.b2):not(.bd):not(.bg) { color: var(--on-p) !important } » (texte blanc) à tous les boutons :
+   onglets et pastilles de période devenaient illisibles. On redéfinit donc ici fond ET texte à partir des variables du thème
+   (--t, --m, --c, --bd, --p, --on-p), avec la même spécificité + !important. */
+.ac-tabs button:not(.b2):not(.bd):not(.bg){background:transparent;box-shadow:none;border-radius:0;color:var(--m)!important;opacity:1}
+.ac-tabs button:not(.b2):not(.bd):not(.bg):hover:not(:disabled){background:var(--pl);color:var(--t)!important}
+.ac-tabs button.on:not(.b2):not(.bd):not(.bg){background:transparent;color:var(--p-text,#1d4ed8)!important;border-bottom-color:var(--p)}
+.ac-chip:not(.b2):not(.bd):not(.bg){background:var(--c);color:var(--t)!important;border:1px solid var(--bd);box-shadow:none}
+.ac-chip:not(.b2):not(.bd):not(.bg):hover:not(:disabled){background:var(--pl);color:var(--t)!important}
+.ac-chip.on:not(.b2):not(.bd):not(.bg){background:var(--p);color:var(--on-p)!important;border-color:var(--p)}
+.ac-primary:not(.b2):not(.bd):not(.bg){background:var(--p);color:var(--on-p)!important}
+.ac-badge{background:var(--pl);color:var(--pl-text,#1e3a8a)}
+.ac-j{background:var(--pl);color:var(--t)}
+.ac-jchip{color:var(--t);border-color:var(--bd)}
+.ac-jchip.on{background:var(--p);color:var(--on-p);border-color:var(--p)}
+.ac-note,.ac-hint,.ac-ref{color:var(--m);opacity:1}
+
+/* ---- Cartes de synthèse : fond garanti (correctif lisibilité mode jour) ------------------------------------------
+   .tr-card impose un texte blanc ; sans classe de couleur (c-*) la carte n'avait AUCUN fond et le texte blanc devenait
+   illisible sur le fond clair du thème jour. Filet de sécurité si une carte est créée sans couleur. */
+.tr-card:not([class*=" c-"]){background:linear-gradient(135deg,#2563eb,#1d4ed8)}
+.tr-card.ok:not([class*=" c-"]){background:linear-gradient(135deg,#16a34a,#0f8a4a)}
+.tr-card.bad:not([class*=" c-"]){background:linear-gradient(135deg,#ef4444,#c81e1e)}
+.tr-card .tr-cl,.tr-card .tr-cv,.tr-card .tr-cn{color:#fff}

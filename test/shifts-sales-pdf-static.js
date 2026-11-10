@@ -1,0 +1,10 @@
+const assert = require('assert'), fs = require('fs'), path = require('path');
+const r = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+let n = 0; const ok = (t, f) => { f(); n++; console.log('OK  ' + t); };
+const app = r('public/app.js'), js = r('public/ext-shifts-sales-pdf.js');
+ok('barre RT sur Quarts et Ventes', () => { assert(/RT\.bar\('quart'\)/.test(app) && /RT\.bar\('ventes'\)/.test(app)); });
+ok('période transmise à l\'API', () => { assert(/'\/shifts' \+ \(rq\('quart'\)/.test(app) && /'\/sales' \+ \(rqv/.test(app)); });
+ok('PDF enregistrés (quart, ventes) avec totaux', () => { assert(/RT\.register\('quart'/.test(js) && /RT\.register\('ventes'/.test(js) && /totals:/.test(js)); });
+ok('serveur : filtre période validé (début ≤ fin)', () => { for (const f of ['src/shifts.js', 'src/operations.js']) { const s = r(f); assert(/BETWEEN \$(\d|\$\{n\}|\$\{n \+ 1\})::date AND/.test(s) && /postérieure à la date de fin/.test(s), f); } });
+ok('chargé et mis en cache', () => { assert(r('public/index.html').includes('ext-shifts-sales-pdf.js?v=1') && r('public/sw.js').includes('ext-shifts-sales-pdf.js?v=1')); });
+console.log(n + ' tests OK');

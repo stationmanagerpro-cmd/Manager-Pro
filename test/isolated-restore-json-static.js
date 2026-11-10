@@ -1,0 +1,14 @@
+'use strict';
+const fs = require('fs');
+const assert = require('assert');
+const src = fs.readFileSync('src/tenant-backups.js', 'utf8');
+const ui = fs.readFileSync('public/ext-detail-pages.js', 'utf8');
+assert(src.includes('function parsePackageBuffer(buf, expectedScope'), 'Le parseur doit détecter le format à partir du contenu');
+assert(src.includes('buf[0] === 0x1f && buf[1] === 0x8b'), 'La détection gzip doit se baser sur la signature réelle');
+assert(src.includes("'application/json','text/json','text/plain'"), 'Le point de terminaison doit accepter les fichiers JSON non compressés');
+assert(src.includes("parsePackageBuffer(buf,'client')"), 'La restauration client doit accepter les deux formats');
+assert(src.includes('pkg.scope !== expectedScope'), 'Le type de sauvegarde doit être contrôlé');
+assert(src.includes('Number(pkg.client?.id)!==id'), 'Une archive appartenant à un autre client doit être refusée');
+assert(ui.includes('accept=".json,.json.gz,.gz,application/json,application/gzip"'), 'Le sélecteur doit proposer JSON et JSON gzip');
+assert(ui.includes("test(file.name)&&!(/\\.json\\.gz$/i.test(file.name))?'application/json':'application/gzip'"), 'L’interface doit envoyer le type de contenu adapté');
+console.log('OK isolated-restore-json-static');

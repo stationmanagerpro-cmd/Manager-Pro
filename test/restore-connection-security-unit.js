@@ -1,0 +1,18 @@
+const assert = require('assert');
+const backup = require('../src/backup');
+const connectionString = 'postgresql://restore_user:p%40ss%3Aword@127.0.0.1:5433/station_manager_restore?sslmode=prefer&connect_timeout=9&application_name=smp-restore';
+const options = backup.psqlConnectionOptions(connectionString);
+assert.ok(options.args.includes('--host=127.0.0.1'));
+assert.ok(options.args.includes('--port=5433'));
+assert.ok(options.args.includes('--username=restore_user'));
+assert.ok(options.args.includes('--dbname=station_manager_restore'));
+assert.ok(!options.args.join(' ').includes('p@ss:word'));
+assert.ok(!options.args.join(' ').includes(connectionString));
+assert.strictEqual(options.env.PGPASSWORD, 'p@ss:word');
+assert.strictEqual(options.env.PGSSLMODE, 'prefer');
+assert.strictEqual(options.env.PGCONNECT_TIMEOUT, '9');
+assert.strictEqual(options.env.PGAPPNAME, 'smp-restore');
+assert.throws(() => backup.psqlConnectionOptions('not-a-url'), /DATABASE_URL invalide/);
+assert.throws(() => backup.psqlConnectionOptions('https://example.com/db'), /protocole PostgreSQL attendu/);
+assert.throws(() => backup.psqlConnectionOptions('postgresql://user:pass@localhost'), /nom de base absent/);
+console.log('Sécurité connexion psql restore : 12 assertions réussies.');

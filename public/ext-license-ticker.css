@@ -1,0 +1,26 @@
+/* ext-license-ticker.css — bandeau défilant d'expiration de licence (≤ 15 jours), tout en haut de la page. */
+:root { --lic-h: 0px; }
+#lic-ticker {
+  position: fixed; top: 0; left: 0; right: 0; height: 36px; z-index: 3000;
+  display: flex; align-items: center; overflow: hidden; white-space: nowrap;
+  background: #b45309; color: #fff; font: 600 14px/36px system-ui, -apple-system, 'Segoe UI', sans-serif;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .25);
+}
+#lic-ticker.lic-urgent { background: #b91c1c; }
+#lic-ticker .lic-ico { flex: none; padding: 0 12px; background: rgba(0, 0, 0, .22); height: 100%; font-size: 15px; position: relative; z-index: 1; }
+#lic-ticker .lic-view { flex: 1; min-width: 0; overflow: hidden; position: relative; height: 100%; }
+#lic-ticker .lic-track {
+  position: absolute; left: 0; top: 0; display: inline-block; white-space: nowrap; will-change: transform;
+  transform: translateX(100%);                     /* part du bord droit … */
+  animation: lic-scroll var(--lic-dur, 20s) linear infinite;   /* … et quitte vers la gauche */
+}
+#lic-ticker:hover .lic-track { animation-play-state: paused; }
+@keyframes lic-scroll { from { transform: translateX(var(--lic-from, 100%)); } to { transform: translateX(-100%); } }
+@media (prefers-reduced-motion: reduce) {
+  #lic-ticker .lic-track { position: static; transform: none; animation: none; white-space: normal; display: block; padding: 0 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+/* Décalage du site sous le bandeau (même principe que le mode démo) */
+body.lic-ticker-on { padding-top: var(--lic-h); }
+body.lic-ticker-on #nav.nav2 { top: var(--lic-h); height: calc(100dvh - var(--lic-h)); }
+body.lic-ticker-on #app-header { top: var(--lic-h); }
+body.lic-ticker-on.demo-on #lic-ticker { z-index: 2998; }

@@ -1,0 +1,21 @@
+'use strict';
+const fs = require('fs');
+const assert = require('assert');
+const shell = fs.readFileSync('public/ext-shell.js', 'utf8');
+const api = fs.readFileSync('src/messaging.js', 'utf8');
+let passed = 0;
+function check(name, fn) { fn(); passed++; console.log('✓ ' + name); }
+const start = shell.indexOf('window.bellClick = async function ()');
+const end = shell.indexOf('\n  };', start) + 5;
+const handler = shell.slice(start, end);
+check('bell handler exists', () => assert(start >= 0 && end > start));
+const itemsStart = shell.indexOf('async function bellItems()');
+const itemsSrc = shell.slice(itemsStart, shell.indexOf('async function refreshBell()'));
+check('bell (count and list) share one source requesting unread messages for every authorized role', () => { assert(itemsStart >= 0); assert.match(itemsSrc, /G\('\/messaging\/unread'\)/); assert.match(handler, /await bellItems\(\)/); });
+check('bell renders unread messages list', () => assert.match(handler, /Messages non lus/));
+check('bell includes sender and conversation label', () => { assert.match(handler, /sender_name/); assert.match(handler, /conversation_title/); });
+check('message preview and sender are HTML escaped', () => { assert.match(handler, /esc\(item\.sender_name/); assert.match(handler, /esc\(String\(item\.body/); });
+check('opening a notification navigates to messaging and opens conversation', () => { assert.match(handler, /go\('msg'\)/); assert.match(handler, /window\.openConv/); });
+check('global platform renewal notifications remain separate', () => { assert.match(itemsSrc, /if \(ME && ME\.is_global\) platform = await platformNotifs/); assert.match(handler, /Demandes de renouvellement/); });
+check('server limits unread messages to membership and tenant', () => { assert.match(api, /JOIN conversation_members cm ON cm\.conversation_id = c\.id AND cm\.user_id = \$1/); assert.match(api, /AND c\.client_id = \$2/); });
+console.log(`\n${passed}/8 contrôles statiques réussis.`);

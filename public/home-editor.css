@@ -1,0 +1,192 @@
+/* home-editor.css — éditeur visuel de l'accueil (3 colonnes : ajouter/calques/images · page en direct · propriétés) */
+.hbe{position:fixed;inset:0;z-index:9000;display:grid;grid-template-columns:272px minmax(0,1fr) 304px;grid-template-rows:52px minmax(0,1fr);background:#ececf1;color:#1c2333;font:13px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:light}
+.hbe *{box-sizing:border-box}
+.hbe button,.hbe input,.hbe select,.hbe textarea{font:inherit;color:#1c2333}
+.hbe-top{grid-column:1/4;display:flex;align-items:center;gap:8px;padding:0 12px;background:#fff;border-bottom:1px solid #e2e4ec}
+.hbe-title{display:flex;flex-direction:column;line-height:1.15;min-width:0}.hbe-title b{font-size:14px}.hbe-title small{color:#6b7488;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+.hbe-spacer{flex:1}
+.hbe-btn,.hbe-ico{border:1px solid #d9dce6;background:#fff;border-radius:9px;padding:7px 12px;cursor:pointer;font-weight:600;white-space:nowrap}
+.hbe-btn:hover,.hbe-ico:hover{background:#f3f4f8}.hbe-ico{padding:7px 10px;font-size:15px}.hbe-ico:disabled{opacity:.35;cursor:default}
+.hbe-pub{background:#0b5d2a;border-color:#0b5d2a;color:#fff}.hbe-pub:hover{background:#09481f}
+.hbe-narrow{display:none}
+.hbe-seg{display:inline-flex;background:#f1f2f6;border-radius:9px;padding:2px;gap:2px;flex-wrap:wrap}
+.hbe-seg button{border:0;background:transparent;border-radius:7px;padding:5px 10px;cursor:pointer;font-weight:600;font-size:12px;color:#4a5368}
+.hbe-seg button.on{background:#fff;color:#111;box-shadow:0 1px 3px #0002;outline:1.5px solid #6d28d9}
+.hbe-dev{margin-left:8px}
+.hbe-more{position:relative}.hbe-menu{position:absolute;right:0;top:40px;background:#fff;border:1px solid #d9dce6;border-radius:12px;box-shadow:0 14px 40px #0003;padding:6px;width:300px;z-index:10}
+.hbe-menu[hidden]{display:none}.hbe-menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:9px 10px;border-radius:8px;cursor:pointer}.hbe-menu button:hover{background:#f1f2f6}.hbe-chk{display:flex;gap:8px;padding:9px 10px;align-items:center}
+.hbe-left,.hbe-right{background:#fff;overflow:auto;min-height:0}
+.hbe-left{border-right:1px solid #e2e4ec}.hbe-right{border-left:1px solid #e2e4ec}
+.hbe-tabs{display:flex;gap:4px;padding:10px 10px 0;position:sticky;top:0;background:#fff;z-index:2}
+.hbe-tabs button{flex:1;border:0;background:#f1f2f6;border-radius:9px;padding:8px 4px;cursor:pointer;font-weight:700;color:#4a5368}.hbe-tabs button.on{background:#6d28d9;color:#fff}
+.hbe-lbody{padding:10px}
+.hbe-lbody h4{margin:14px 2px 8px;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:#6b7488}.hbe-lbody h4 small{text-transform:none;letter-spacing:0;font-weight:500}
+.hbe-search{width:100%;border:1px solid #d9dce6;border-radius:9px;padding:8px 10px}
+.hbe-cards{display:grid;grid-template-columns:1fr 1fr;gap:8px}.hbe-cards2{grid-template-columns:1fr 1fr 1fr}
+.hbe-card{display:flex;flex-direction:column;align-items:center;gap:6px;border:1px solid #e2e4ec;background:#fafbfd;border-radius:12px;padding:10px 6px;cursor:pointer;font-size:11.5px;font-weight:600;text-align:center;color:#2b3347}
+.hbe-card:hover{border-color:#6d28d9;background:#f5f0ff}.hbe-thumb{display:grid;place-items:center;width:100%;height:46px;border-radius:8px;background:#e9e6f7;color:#5b21b6;font-size:20px}.hbe-mini .hbe-thumb{height:34px;font-size:16px}
+.hbe-hint{color:#6b7488;font-size:11.5px;margin:6px 2px}.hbe-empty{color:#8a93a6;padding:8px}
+.hbe-ly{display:flex;align-items:center;gap:4px;padding:4px 6px;border-radius:7px;cursor:pointer;border:1px solid transparent}
+.hbe-ly:hover{background:#f3f4f8}.hbe-ly.on{background:#ede7ff;border-color:#c4b5fd}.hbe-ly.dim{opacity:.5}
+.hbe-ly.d-before{box-shadow:0 -2px 0 #6d28d9}.hbe-ly.d-after{box-shadow:0 2px 0 #6d28d9}.hbe-ly.d-inside{background:#ddd2ff}
+.hbe-car{border:0;background:none;width:16px;padding:0;cursor:pointer;color:#6b7488}.hbe-ti{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:6px;background:#eceef5;font-size:11px;flex:none}.hbe-ti.big{width:34px;height:34px;font-size:16px;border-radius:9px}
+.hbe-ln{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbe-la{display:none;gap:0}.hbe-ly:hover .hbe-la,.hbe-ly.on .hbe-la{display:flex}.hbe-la button{border:0;background:none;cursor:pointer;padding:2px 4px;border-radius:5px}.hbe-la button:hover{background:#d9dce6}
+.hbe-up{display:block;text-align:center;border:2px dashed #b9a8f0;border-radius:12px;padding:12px;color:#5b21b6;font-weight:700;cursor:pointer;background:#faf8ff}
+.hbe-imgs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.hbe-img{border:1px solid #e2e4ec;border-radius:10px;padding:6px;background:#fff;text-align:left;cursor:default}.hbe-img.pk{cursor:pointer}.hbe-img.pk:hover{border-color:#6d28d9}
+.hbe-img small{display:block;margin:4px 0;color:#4a5368;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hbe-imgthumb{height:84px;border-radius:7px;background:#eceef5 repeating-conic-gradient(#e4e6ee 0 25%,#f4f5f9 0 50%) 0 0/14px 14px;display:grid;place-items:center;overflow:hidden;color:#8a93a6}
+.hbe-imgthumb img{width:100%;height:100%;object-fit:cover}.hbe-imgthumb.sm{width:48px;height:36px;flex:none}
+.hbe-imgact{display:flex;gap:4px}.hbe-imgact button{flex:1;border:1px solid #d9dce6;background:#fff;border-radius:7px;padding:4px;cursor:pointer;font-size:11px}.hbe-imgact button:hover{background:#f3f4f8}
+.hbe-stage{display:flex;flex-direction:column;min-width:0;min-height:0;padding:14px 14px 0}
+.hbe-framebox{flex:1;min-height:0;margin:0 auto;width:100%;max-width:100%;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 8px 40px #0002;overflow:hidden;transition:width .2s}
+.hbe-frame{display:block;width:100%;height:100%;border:0;background:#fff}
+.hbe-crumbs{flex:none;display:flex;align-items:center;gap:2px;flex-wrap:wrap;padding:6px 10px;font-size:12px;color:#6b7488;min-height:32px}
+.hbe-crumbs button{border:0;background:none;cursor:pointer;padding:2px 5px;border-radius:5px;color:#4a5368}.hbe-crumbs button:hover{background:#dfe1ea}.hbe-crumbs button.on{color:#5b21b6;font-weight:700}
+.hbe-badge{margin-left:auto;background:#6d28d9;color:#fff;border-radius:999px;padding:2px 10px;font-weight:700}
+.hbe.prev .hbe-left,.hbe.prev .hbe-right{display:none}.hbe.prev{grid-template-columns:minmax(0,1fr)}.hbe.prev .hbe-top{grid-column:1}
+.hbe-rh{display:flex;align-items:center;gap:10px;padding:12px;border-bottom:1px solid #e2e4ec;position:sticky;top:0;background:#fff;z-index:2}.hbe-rh small{display:block;color:#6b7488;font-size:11px}.hbe-rh b{display:block}
+.hbe-g{border-bottom:1px solid #eceef5}.hbe-g summary{list-style:none;cursor:pointer;padding:11px 12px;font-weight:700;display:flex;justify-content:space-between}.hbe-g summary::-webkit-details-marker{display:none}.hbe-g summary::after{content:"+";color:#6b7488;font-weight:400}.hbe-g[open] summary::after{content:"–"}
+.hbe-gb{padding:0 12px 12px}
+.hbe-r{display:grid;grid-template-columns:96px minmax(0,1fr);gap:8px;align-items:center;margin:7px 0}.hbe-l{color:#4a5368;font-size:12px}
+.hbe-r.ovr .hbe-l{color:#6d28d9;font-weight:700}
+.hbe-c{display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-width:0}
+.hbe-c input[type=text],.hbe-c input[type=number],.hbe-c select,.hbe-c textarea,.hbe-sub input[type=text],.hbe-sub input[type=number]{width:100%;border:1px solid #d9dce6;border-radius:8px;padding:6px 8px;background:#fff;min-width:0}
+.hbe-c textarea{resize:vertical}.hbe input.bad{border-color:#dc2626;background:#fef2f2}
+.hbe-c .hbe-seg{flex:1}.hbe-c .hbe-seg button{flex:1;padding:5px 6px}
+.hbe-rs{border:0;background:#ede7ff;color:#5b21b6;border-radius:6px;cursor:pointer;padding:3px 7px;font-weight:700}.hbe-rs:disabled{opacity:.3}
+.hbe-col{display:flex;gap:6px;align-items:center;flex:1}.hbe-col input[type=color]{width:34px;height:30px;padding:0;border:1px solid #d9dce6;border-radius:7px;background:#fff;cursor:pointer;flex:none}
+.hbe-toks{display:flex;gap:4px;flex-wrap:wrap;width:100%}.hbe-tok{width:18px;height:18px;border-radius:50%;border:1.5px solid #fff;box-shadow:0 0 0 1px #c5c9d6;cursor:pointer;padding:0}.hbe-tok.on{box-shadow:0 0 0 2px #6d28d9}
+.hbe-sub{background:#f7f8fb;border:1px solid #eceef5;border-radius:10px;padding:8px;margin:8px 0}.hbe-sub>b{display:block;font-size:11.5px;margin-bottom:6px;color:#3a4358}.hbe-sub input{margin:2px 0}
+.hbe-4{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.hbe-4 label{font-size:10.5px;color:#6b7488;display:flex;flex-direction:column;gap:2px}
+.hbe-stop{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px;padding-bottom:8px;border-bottom:1px dashed #dfe2ec}.hbe-stop>input[type=number]{width:62px}
+.hbe-add{border:1px dashed #b9a8f0;background:#faf8ff;color:#5b21b6;border-radius:8px;padding:6px 10px;cursor:pointer;font-weight:700;width:100%;margin-top:4px}.hbe-add:disabled{opacity:.4}
+.hbe-imgf{display:flex;gap:6px;align-items:center;flex:1}.hbe-imgf button{border:1px solid #d9dce6;background:#fff;border-radius:8px;padding:6px 10px;cursor:pointer}
+.hbe-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.hbe-actions button{flex:1 1 45%;border:1px solid #d9dce6;background:#fff;border-radius:8px;padding:7px;cursor:pointer;font-weight:600}.hbe-actions .danger{color:#b91c1c;border-color:#fecaca}
+.hbe-modal{position:fixed;inset:0;z-index:9100;background:rgba(15,20,40,.55);display:grid;place-items:center;padding:16px}
+.hbe-dlg{background:#fff;border-radius:16px;padding:16px;width:min(640px,100%);max-height:86vh;overflow:auto;color:#1c2333;font:13px system-ui,sans-serif}.hbe-dh{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:15px}.hbe-dh button{border:0;background:#f1f2f6;border-radius:8px;padding:6px 10px;cursor:pointer}
+.hbe-dlg .hbe-imgs{grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+@media(max-width:1100px){.hbe{grid-template-columns:230px minmax(0,1fr) 270px}.hbe-title small{max-width:120px}}
+@media(max-width:900px){
+  .hbe{grid-template-columns:minmax(0,1fr)}.hbe-top{grid-column:1;overflow-x:auto}.hbe-narrow{display:inline-block}
+  .hbe-left,.hbe-right{position:fixed;top:52px;bottom:0;width:min(330px,92vw);z-index:20;transform:translateX(-105%);transition:transform .2s;box-shadow:0 0 30px #0004}
+  .hbe-right{right:0;left:auto;transform:translateX(105%)}.hbe-left.open,.hbe-right.open{transform:none}
+  .hbe-stage{padding:8px 0 0}
+}
+
+
+/* ============================================================
+   Isolation contraste — éditeur « Personnalisation de l'accueil »
+   Cause du bug : design-v2.css impose
+   `button:not(.b2):not(.bd):not(.bg){color:var(--on-p)!important}` (texte blanc)
+   et `label{color:var(--m)}`, ce qui rendait blanc sur blanc les boutons,
+   onglets et cartes de l'éditeur. Tout est donc préfixé par #hbe (spécificité
+   d'identifiant) pour garder la priorité, quel que soit le thème de l'application.
+   ============================================================ */
+#hbe{color:#1c2333!important;background:#ececf1!important;color-scheme:light}
+#hbe .hbe-top,#hbe .hbe-left,#hbe .hbe-right,#hbe .hbe-tabs,#hbe .hbe-rh,#hbe .hbe-menu,#hbe .hbe-dlg{background:#fff!important;color:#1c2333!important}
+#hbe .hbe-sub{background:#f7f8fb!important;color:#1c2333!important}
+#hbe .hbe-title b,#hbe .hbe-dh,#hbe .hbe-l,#hbe .hbe-sub>b,#hbe .hbe-rh b,#hbe .hbe-g summary,#hbe .hbe-ln{color:#1c2333!important}
+#hbe .hbe-title small,#hbe .hbe-hint,#hbe .hbe-rh small,#hbe .hbe-lbody h4,#hbe .hbe-crumbs,#hbe #hbe-state,#hbe .hbe-img small,#hbe .hbe-empty{color:#566078!important}
+#hbe label,#hbe .hbe-c label,#hbe .hbe-4 label,#hbe .hbe-chk{color:#3a4358!important}
+#hbe .hbe-r.ovr .hbe-l{color:#5b21b6!important}
+
+/* Base : tout bouton de l'éditeur = texte foncé (sauf pastilles de couleur) */
+#hbe button:not(.hbe-tok){color:#1c2333!important;box-shadow:none;text-shadow:none}
+#hbe button:not(.hbe-tok):hover:not(:disabled){color:#111827!important}
+
+/* Boutons de la barre du haut */
+#hbe .hbe-btn,#hbe .hbe-ico{background:#fff!important;border:1px solid #cfd3df!important;color:#1c2333!important}
+#hbe .hbe-btn:hover:not(:disabled),#hbe .hbe-ico:hover:not(:disabled){background:#eef0f5!important}
+#hbe .hbe-pub,#hbe .hbe-btn.hbe-pub{background:#0b5d2a!important;border-color:#0b5d2a!important;color:#fff!important}
+#hbe .hbe-pub:hover:not(:disabled){background:#09481f!important;color:#fff!important}
+
+/* Sélecteurs segmentés (Ordinateur / Tablette / Mobile, alignements…) */
+#hbe .hbe-seg{background:#e9ebf2!important}
+#hbe .hbe-seg button{background:transparent!important;color:#3a4358!important;border:0!important;box-shadow:none}
+#hbe .hbe-seg button:hover:not(:disabled){background:#f6f7fb!important}
+#hbe .hbe-seg button.on{background:#fff!important;color:#111827!important;outline:1.5px solid #6d28d9;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+
+/* Onglets Ajouter / Calques / Images */
+#hbe .hbe-tabs button{background:#eceef5!important;color:#3a4358!important;border:0!important}
+#hbe .hbe-tabs button:hover:not(.on){background:#e0e3ee!important}
+#hbe .hbe-tabs button.on{background:#6d28d9!important;color:#fff!important}
+
+/* Cartes Sections / Éléments */
+#hbe .hbe-card{background:#fafbfd!important;color:#2b3347!important;border:1px solid #d9dce6!important}
+#hbe .hbe-card:hover:not(:disabled){background:#f5f0ff!important;border-color:#6d28d9!important;color:#2b3347!important}
+#hbe .hbe-thumb{background:#e9e6f7!important;color:#5b21b6!important}
+#hbe .hbe-ti{background:#eceef5!important;color:#3a4358!important}
+
+/* Menu « Plus » et boîtes de dialogue */
+#hbe .hbe-menu button,#hbe .hbe-modal .hbe-dlg button.hbe-menu-i{background:transparent!important;color:#1c2333!important;border:0!important}
+#hbe .hbe-menu button:hover:not(:disabled){background:#eef0f5!important}
+#hbe-pick .hbe-dlg,.hbe-modal .hbe-dlg{background:#fff!important;color:#1c2333!important}
+.hbe-modal .hbe-dh button,#hbe-pick button{background:#f1f2f6!important;color:#1c2333!important;border:1px solid #cfd3df!important;box-shadow:none}
+
+/* Calques */
+#hbe .hbe-ly{color:#1c2333!important}
+#hbe .hbe-car,#hbe .hbe-la button{background:transparent!important;color:#4a5368!important;border:0!important;padding:2px 4px}
+#hbe .hbe-la button:hover:not(:disabled){background:#d9dce6!important;color:#111827!important}
+
+/* Images */
+#hbe .hbe-up{color:#5b21b6!important;background:#faf8ff!important}
+#hbe .hbe-img{background:#fff!important;color:#1c2333!important}
+#hbe .hbe-imgact button,#hbe .hbe-imgf button{background:#fff!important;color:#1c2333!important;border:1px solid #cfd3df!important}
+#hbe .hbe-imgact button:hover:not(:disabled),#hbe .hbe-imgf button:hover:not(:disabled){background:#eef0f5!important}
+
+/* Fil d'Ariane */
+#hbe .hbe-crumbs button{background:transparent!important;color:#4a5368!important;border:0!important;padding:2px 5px}
+#hbe .hbe-crumbs button:hover:not(:disabled){background:#dfe1ea!important}
+#hbe .hbe-crumbs button.on{color:#5b21b6!important;font-weight:700}
+#hbe .hbe-badge{background:#6d28d9!important;color:#fff!important}
+
+/* Panneau de droite : actions, ajout, réinitialisation */
+#hbe .hbe-actions button{background:#fff!important;color:#1c2333!important;border:1px solid #cfd3df!important}
+#hbe .hbe-actions button:hover:not(:disabled){background:#eef0f5!important}
+#hbe .hbe-actions .danger{background:#fff5f5!important;color:#b91c1c!important;border-color:#fecaca!important}
+#hbe .hbe-add{background:#faf8ff!important;color:#5b21b6!important;border:1px dashed #b9a8f0!important}
+#hbe .hbe-add:hover:not(:disabled){background:#efe9ff!important}
+#hbe .hbe-rs{background:#ede7ff!important;color:#5b21b6!important;border:0!important}
+#hbe .hbe-rs:hover:not(:disabled){background:#ddd2ff!important}
+#hbe .hbe-tok{box-shadow:0 0 0 1px #8b93a7!important;border:1.5px solid #fff!important;padding:0!important}
+#hbe .hbe-tok.on{box-shadow:0 0 0 2px #6d28d9!important}
+
+/* Champs de saisie */
+#hbe input[type=text],#hbe input[type=number],#hbe input[type=url],#hbe input[type=search],#hbe input:not([type]),#hbe select,#hbe textarea{background:#fff!important;color:#1c2333!important;border:1px solid #cfd3df!important;caret-color:#1c2333;box-shadow:none}
+#hbe input:focus,#hbe select:focus,#hbe textarea:focus{border-color:#6d28d9!important;box-shadow:0 0 0 3px rgba(109,40,217,.18)!important;outline:none}
+#hbe input::placeholder,#hbe textarea::placeholder{color:#7b849a!important;opacity:1}
+#hbe select option{background:#fff!important;color:#1c2333!important}
+#hbe input[type=color]{background:#fff!important;border:1px solid #cfd3df!important}
+#hbe input.bad{border-color:#dc2626!important;background:#fef2f2!important}
+#hbe button:disabled{opacity:.45}
+#hbe :focus-visible{outline:2px solid #6d28d9;outline-offset:1px}
+
+/* ============================================================
+   Alerte de lisibilité (contraste WCAG texte / fond) + menu burger
+   ============================================================ */
+/* bouton d'alerte dans la barre du haut */
+#hbe .hbe-btn.hbe-warn[hidden]{display:none!important}
+#hbe .hbe-btn.hbe-warn.bad{background:#fee2e2!important;border-color:#f87171!important;color:#991b1b!important}
+#hbe .hbe-btn.hbe-warn.low{background:#fef3c7!important;border-color:#fbbf24!important;color:#78350f!important}
+#hbe .hbe-btn.hbe-warn:hover:not(:disabled){filter:brightness(.97)}
+/* repère à côté d'une couleur de thème (ex. « Texte discret ⚠ 2 ») */
+#hbe .hbe-w{display:inline-block;margin-left:6px;padding:1px 7px;border-radius:999px;font-size:11px;font-weight:700;line-height:1.5;vertical-align:baseline;cursor:help}
+#hbe .hbe-w[hidden]{display:none!important}
+#hbe .hbe-w.bad{background:#fee2e2!important;color:#991b1b!important}
+#hbe .hbe-w.low{background:#fef3c7!important;color:#78350f!important}
+/* bandeau en haut du panneau de droite */
+#hbe .hbe-aud{padding:10px 12px 4px;border-bottom:1px solid #e2e4ec;background:#fff!important}
+#hbe .hbe-aud[hidden]{display:none!important}
+#hbe .hbe-wsum{display:flex;justify-content:space-between;gap:8px;align-items:baseline;margin-bottom:8px;color:#1c2333!important}
+#hbe .hbe-wsum span{color:#566078!important;font-size:12px}
+#hbe .hbe-wbox{border-radius:10px;padding:9px 11px;margin-bottom:8px;border:1px solid;line-height:1.45}
+#hbe .hbe-wbox.bad{background:#fef2f2!important;border-color:#fca5a5!important;color:#7f1d1d!important}
+#hbe .hbe-wbox.low{background:#fffbeb!important;border-color:#fcd34d!important;color:#713f12!important}
+#hbe .hbe-wbox b{color:inherit!important}
+#hbe .hbe-wbox p{margin:4px 0 8px;font-size:12px;color:inherit!important}
+#hbe .hbe-wact{display:flex;flex-wrap:wrap;gap:6px}
+#hbe .hbe-wact button{background:#fff!important;border:1px solid #cfd3df!important;color:#1c2333!important;border-radius:8px;padding:5px 10px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+#hbe .hbe-wact button:hover:not(:disabled){background:#eef0f5!important}
+#hbe .hbe-sw{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid #0004;vertical-align:-1px;margin-right:4px}

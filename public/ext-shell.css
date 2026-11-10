@@ -1,0 +1,304 @@
+/* ext-shell.css — menu vertical à sous-menus flottants, barre supérieure contextuelle, écran de connexion.
+   Chargé après app.css : les règles ciblent #nav.nav2 pour neutraliser l'ancien menu horizontal (>= 1100 px) sans le supprimer. */
+
+/* ===== Mise en page générale ===== */
+#app.ready { display: flex; align-items: flex-start; }
+#app > main { align-self: stretch; padding-top: 0; }
+
+/* ===== Menu vertical ===== */
+#nav.nav2 {
+  width: 248px; flex: none; position: sticky; top: 0;
+  height: 100vh; height: 100dvh; align-self: flex-start;
+  display: flex; flex-direction: column; flex-wrap: nowrap; align-items: stretch; gap: 0;
+  padding: 0; overflow: visible; border-right: 1px solid var(--bd); background: var(--c);
+  z-index: 80;   /* au-dessus du contenu : sinon les sous-menus flottants passent SOUS la page (chevauchement) */
+}
+#nav.nav2.collapsed { width: 68px; }
+#nav.nav2.user-hidden { display: none !important; }
+
+.nav2 .nav-head { display: flex; align-items: center; gap: 10px; padding: 14px 12px 12px; border-bottom: 1px solid var(--bd); min-height: 64px; }
+.nav2 .nav-logo, .login-mark {
+  display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; flex: none; overflow: hidden;
+  background: var(--p); color: #fff; font-weight: 800; font-size: 18px;
+}
+:root[data-theme=dark] .nav2 .nav-logo { color: #06231e; }
+.nav2 .nav-logo.has-img, .login-mark.has-img { background: #fff; }
+.nav2 .nav-logo img, .login-mark img { width: 100%; height: 100%; object-fit: contain; }
+.nav2 .nav-title { min-width: 0; flex: 1; line-height: 1.2; }
+.nav2 .nav-title b { display: block; font-size: 14px; color: var(--p); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav2 .nav-title small { display: block; font-size: 11px; color: var(--m); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav2 .nav-collapse { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 6px; cursor: pointer; color: var(--m); flex: none; margin: 0; padding: 0; }
+.nav2 .nav-collapse:hover, .nav2 .nav-hide:hover { background: var(--pl); color: var(--p); }
+.nav2 .nav-hide { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 6px; cursor: pointer; color: var(--m); flex: none; margin: 0; padding: 0; font-size: 20px; line-height: 1; }
+
+.nav2 .nav-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 8px 10px 14px; }
+.nav2 .nav-link {
+  position: relative; display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 9px 12px; margin: 0 0 2px; border-radius: 8px; cursor: pointer; user-select: none;
+  color: var(--t); font-size: 14px; white-space: nowrap; text-decoration: none; outline: none;
+  transition: background var(--trans), color var(--trans);
+}
+.nav2 .nav-link:hover, .nav2 .nav-link:focus-visible { background: var(--pl); }
+.nav2 .nav-link.on { background: var(--pl); color: var(--p); font-weight: 600; }
+.nav2 .nav-link.on::before { content: ''; position: absolute; left: -10px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: var(--p); }
+.nav2 .nav-node.has-active > .nav-parent { color: var(--p); font-weight: 600; }
+.nav2 .nav-node.has-active > .nav-parent::before { content: ''; position: absolute; left: -10px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: var(--p); }
+.nav2 .nav-node.open > .nav-parent { background: var(--pl); }
+.nav2 .ico { width: 22px; height: 22px; display: inline-grid; place-items: center; text-align: center; font-size: 16px; flex: none; }
+.nav2 .nav-svg { width: 19px; height: 19px; display: block; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.nav2 .nav-parent .nav-svg { width: 20px; height: 20px; }
+.nav2 .nav-label { flex: 1; overflow: hidden; text-overflow: ellipsis; }
+.nav2 .chev { color: var(--m); font-size: 16px; transition: transform var(--trans); }
+.nav2 .nav-node.open > .nav-parent .chev { transform: translateX(2px); color: var(--p); }
+
+/* Mode réduit : icônes seulement (infobulle au survol, sous-menus flottants inchangés) */
+#nav.nav2.collapsed .nav-title, #nav.nav2.collapsed .nav-label, #nav.nav2.collapsed .chev { display: none; }
+#nav.nav2.collapsed .nav-head { flex-direction: column; padding: 12px 6px 8px; gap: 6px; }
+#nav.nav2.collapsed .nav-link { justify-content: center; padding: 10px 0; }
+#nav.nav2.collapsed .nav-link.on::before, #nav.nav2.collapsed .nav-node.has-active > .nav-parent::before { left: -6px; }
+#nav-tip {
+  display: none; position: fixed; z-index: 120; pointer-events: none; padding: 6px 10px; border-radius: 6px;
+  background: #1a2332; color: #fff; font-size: 12.5px; white-space: nowrap; box-shadow: var(--shadow-md);
+}
+
+/* ===== Sous-menus flottants (positionnés en JS, jamais plus hauts que l'écran) ===== */
+.nav2 .flyout {
+  display: none; position: fixed; z-index: 90; min-width: 230px; max-width: min(340px, 92vw); overflow-y: auto; overscroll-behavior: contain;
+  background: var(--c); border: 1px solid var(--bd); border-radius: 12px; box-shadow: var(--shadow-lg); padding: 6px;
+  animation: flyIn .14s ease-out;
+}
+.nav2 .nav-node.open > .flyout { display: block; }
+.nav2 .flyout .flyout-title { padding: 6px 12px 8px; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--m); font-weight: 700; }
+.nav2 .flyout .nav-link.on::before { left: -6px; }
+@keyframes flyIn { from { opacity: 0; transform: translateX(-6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .nav2 .flyout { animation: none; } }
+
+/* ===== Identité du compte client + profil, au-dessus de tous les contenus ===== */
+.tenant-brandbar { display:flex; align-items:center; justify-content:space-between; gap:12px; min-width:0; padding:10px 0 12px; margin:0 0 8px; border-bottom:1px solid var(--bd); }
+.tenant-brand { display:flex; align-items:center; gap:10px; min-width:0; flex:1; color:var(--tenant-accent, var(--p)); }
+.tenant-brand-mark { display:grid; place-items:center; width:60px; height:60px; border-radius:14px; flex:none; overflow:hidden; background:var(--pl); color:var(--p); font-weight:800; font-size:22px; box-shadow:0 2px 8px rgba(15,23,42,.10); }
+.tenant-brand-mark img { width:100%; height:100%; object-fit:contain; display:block; background:var(--c); }
+.tenant-brand-copy { display:block; min-width:0; line-height:1.2; }
+.tenant-brand-copy b { display:block; font-size:clamp(21px, 2vw, 28px); font-weight:850; line-height:1.15; letter-spacing:-.025em; color:var(--p); overflow-wrap:anywhere; }
+.tenant-brand-copy small { display:block; margin-top:3px; font-size:12px; color:var(--m); white-space:normal; overflow-wrap:anywhere; }
+.top {
+  position: sticky; top: 0; z-index: 30; flex-wrap: nowrap; gap: 10px;
+  margin: 0 -20px 16px; padding: 10px 20px; background: var(--c); border-bottom: 1px solid var(--bd);
+}
+.top h2 { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 1.25rem; }
+.top #global-search { flex: 0 1 280px; min-width: 150px; }
+.top .icon-btn { width: 38px; height: 38px; padding: 0; display: inline-grid; place-items: center; font-size: 17px; position: relative; flex: none; }
+.top .nav-toggle { display: none; }
+.top .sc, .top .top-focus { padding: 7px 11px; font-size: 13px; white-space: nowrap; flex: none; }
+.top-shortcuts { display: flex; gap: 6px; flex: none; }
+.top-clock { text-align: right; line-height: 1.15; font-size: 12px; color: var(--m); flex: none; white-space: nowrap; }
+.top-clock .clk-time { display: block; font-size: 15px; color: var(--t); font-variant-numeric: tabular-nums; }
+#bell-n {
+  position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px;
+  background: var(--r); color: #fff; font-size: 11px; font-weight: 700; line-height: 18px; text-align: center;
+}
+#bell-n[hidden] { display: none; }
+
+.user-chip { position: relative; flex: none; }
+.uc-btn { display: flex; align-items: center; gap: 9px; padding: 4px 10px 4px 4px; border: 1px solid var(--bd); border-radius: 999px; background: var(--c); cursor: pointer; }
+.uc-btn:hover, .uc-btn:focus-visible { border-color: var(--p); outline: none; }
+.avatar { width: 34px; height: 34px; border-radius: 50%; background: var(--p); color: #fff; display: inline-grid; place-items: center; font-weight: 700; font-size: 13px; overflow: hidden; flex: none; }
+:root[data-theme=dark] .avatar { color: #06231e; }
+.avatar.big { width: 46px; height: 46px; font-size: 16px; }
+.avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.uc-text { line-height: 1.2; max-width: 190px; min-width: 0; }
+.uc-text b, .uc-text small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.uc-text b { font-size: 13px; }
+.uc-text small { font-size: 11.5px; color: var(--m); }
+.uc-caret { color: var(--m); font-size: 11px; }
+.user-menu {
+  display: none; position: absolute; right: 0; top: calc(100% + 8px); min-width: 250px; z-index: 100; padding: 6px;
+  background: var(--c); border: 1px solid var(--bd); border-radius: 12px; box-shadow: var(--shadow-lg);
+}
+.user-menu.show { display: block; animation: flyIn .12s ease-out; }
+.user-menu .um-head { display: flex; align-items: center; gap: 10px; padding: 10px 10px 12px; border-bottom: 1px solid var(--bd); margin-bottom: 4px; }
+.user-menu .um-head small { display: block; color: var(--m); font-size: 12px; }
+.user-menu a { display: block; padding: 9px 12px; border-radius: 8px; cursor: pointer; color: var(--t); font-size: 14px; outline: none; }
+.user-menu a:hover, .user-menu a:focus-visible { background: var(--pl); }
+.user-menu a.um-danger { color: var(--r); }
+
+#nav-overlay { display: none; position: fixed; inset: 0; background: rgba(10, 20, 30, .45); z-index: 55; }
+#nav-overlay.show { display: block; }
+
+/* ===== Écran de connexion : identité à gauche, formulaire à droite ===== */
+.login-shell { min-height: 100vh; min-height: 100dvh; display: grid; grid-template-columns: minmax(280px, 1.1fr) minmax(320px, 1fr); }
+.login-brand {
+  display: flex; flex-direction: column; justify-content: center; position: relative; padding: 48px 56px; color: #fff;
+  background: linear-gradient(155deg, #0d7a6b 0%, #0a5f53 60%, #08463d 100%);
+}
+.login-brand-inner { max-width: 420px; }
+.login-mark { width: 76px; height: 76px; border-radius: 20px; font-size: 36px; background: rgba(255, 255, 255, .16); color: #fff; }
+.login-mark.has-img { background: #fff; padding: 6px; }
+.login-brand h1 { margin: 22px 0 8px; font-size: 2.3rem; line-height: 1.1; letter-spacing: -.02em; overflow-wrap: anywhere; }
+.login-tagline { margin: 0; font-size: 1.08rem; opacity: .92; line-height: 1.4; }
+.login-copy { position: absolute; left: 56px; bottom: 22px; opacity: .65; }
+.login-form-wrap { display: grid; place-items: center; padding: 24px; background: var(--bg); }
+.login-card { width: 100%; max-width: 380px; padding: 28px 24px; }
+.login-card h2 { margin: 0 0 4px; }
+
+/* ===== Adaptations écran ===== */
+@media (max-width: 1180px) { .top-clock .clk-date { display: none; } .uc-text small { display: none; } .top .sc { display: none; } }
+@media (max-width: 960px) { .uc-text, .uc-caret { display: none; } .uc-btn { padding: 3px; } .top .top-focus { display: none; } }
+.top .nav-toggle { display:none; }
+#nav.nav2.user-hidden ~ main .top .nav-toggle { display:inline-grid; }
+
+@media (max-width: 860px) {
+  #app.ready { display: block; }
+  #nav.nav2 {
+    position: fixed; left: 0; top: 0; bottom: 0; height: auto; z-index: 60;
+    width: min(86vw, 300px) !important; flex-direction: column !important; overflow: hidden !important; padding: 0 !important;
+    border-right: 1px solid var(--bd); border-bottom: 0; transform: translateX(-104%); transition: transform .22s ease; box-shadow: none;
+  }
+  #nav.nav2.drawer-open { transform: none; box-shadow: var(--shadow-lg); }
+  #nav.nav2 .nav-scroll { overflow-y: auto; }
+  #nav.nav2 .nav-collapse { display: none; }
+  #nav.nav2 .nav-hide { margin-left:auto; }
+  #nav.nav2 .nav-link { white-space: normal; }
+  /* Sur mobile, les sous-menus s'ouvrent en accordéon dans le tiroir */
+  .nav2 .flyout { position: static; min-width: 0; max-width: none; max-height: none !important; box-shadow: none; border: 0; border-left: 2px solid var(--bd); border-radius: 0; margin: 0 0 4px 18px; padding: 2px 0 2px 4px; animation: none; background: transparent; }
+  .nav2 .flyout .flyout-title { display: none; }
+  .nav2 .chev { transform: rotate(90deg); }
+  .nav2 .nav-node.open > .nav-parent .chev { transform: rotate(-90deg); }
+  #app > main { padding-top: 0; }
+  .top { flex-wrap: wrap; margin: 0 -12px 12px; padding: 8px 12px; }
+  .top .nav-toggle { display: inline-grid; }
+  .tenant-brandbar { padding:7px 0 9px; gap:8px; }
+  .tenant-brand-mark { width:46px; height:46px; border-radius:11px; }
+  .tenant-brand-copy b { font-size:clamp(19px, 5vw, 23px); }
+  .tenant-brand-copy small { font-size:11px; }
+  .top h2 { flex: 1; font-size: 1.05rem; }
+  .top-clock { order: 4; }
+  .top #global-search { order: 10; flex: 1 1 100%; max-width: none; }
+  .top-shortcuts { display: none; }
+  .login-shell { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+  .login-brand { padding: 28px 24px; text-align: center; align-items: center; }
+  .login-brand-inner { display: flex; flex-direction: column; align-items: center; }
+  .login-brand h1 { font-size: 1.6rem; margin-top: 12px; }
+  .login-mark { width: 56px; height: 56px; font-size: 26px; }
+  .login-copy { display: none; }
+}
+@media (max-width: 480px) { .top-clock { display: none; } }
+
+/* Mode Focus : on masque aussi la nouvelle barre */
+body.focus-mode .top-clock, body.focus-mode .top-shortcuts, body.focus-mode .nav-toggle { display: none !important; }
+/* Date/heure + identité restent visibles en mode focus (en-tête figé) */
+@media print { #nav-overlay, #nav-tip, .user-chip { display: none !important; } }
+
+/* ===== Écran d'administration : aperçu de l'identité ===== */
+.br-prev { display: grid; grid-template-columns: minmax(200px, 260px) 1fr; gap: 12px; align-items: stretch; margin-bottom: 4px; }
+.br-prev-nav { display: flex; align-items: center; gap: 10px; padding: 12px; border: 1px solid var(--bd); border-radius: 10px; background: var(--c); }
+.br-prev-nav .nav-logo { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; background: var(--p); color: #fff; font-weight: 800; overflow: hidden; flex: none; }
+.br-prev-nav .nav-logo img { width: 100%; height: 100%; object-fit: contain; }
+.br-prev-nav b, .br-prev-nav small { display: block; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.br-prev-nav b { color: var(--p); font-size: 14px; } .br-prev-nav small { color: var(--m); font-size: 11px; }
+.br-prev-login { padding: 14px 18px; border-radius: 10px; color: #fff; background: linear-gradient(155deg, #0d7a6b, #08463d); }
+.br-prev-login h3 { margin: 0 0 4px; font-size: 1.3rem; overflow-wrap: anywhere; } .br-prev-login p { margin: 0; opacity: .9; font-size: 13px; }
+@media (max-width: 640px) { .br-prev { grid-template-columns: 1fr; } }
+.top .top-focus[hidden] { display: none !important; }
+
+/* Menu horizontal : flyouts sous les entrées (desktop) */
+@media (min-width: 960px) {
+  body.nav-horizontal .nav2 .nav-node.open > .flyout {
+    position: absolute;
+    top: 100%;
+    left: 0 !important;
+    min-width: 200px;
+    z-index: 40;
+  }
+  body.nav-horizontal .nav2 .nav-scroll {
+    position: relative;
+  }
+  body.nav-horizontal .nav2 .nav-node {
+    position: relative;
+  }
+}
+
+
+/* Notifications de messages non lus : non bloquantes, accessibles et compatibles avec les deux thèmes. */
+.message-unread-toast { position: fixed; right: 18px; top: 76px; z-index: 1200; display: grid; grid-template-columns: minmax(0, 1fr) 34px; width: min(390px, calc(100vw - 24px)); color: var(--t, #172033); background: var(--c, #fff); border: 1px solid var(--bd, #d8dee8); border-left: 4px solid var(--p, #0d9488); border-radius: 14px; box-shadow: 0 12px 34px rgba(0,0,0,.24); overflow: hidden; animation: message-toast-in 180ms ease-out; }
+.message-unread-toast-open { display: block; min-width: 0; padding: 13px 12px 12px 14px; text-align: left; color: inherit; background: transparent; border: 0; cursor: pointer; font: inherit; }
+.message-unread-toast-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+.message-unread-toast-head b { font-size: 14px; overflow-wrap: anywhere; }
+.message-unread-toast-head span, .message-unread-toast-foot { color: var(--m, #64748b); font-size: 11px; }
+.message-unread-toast-body { display: block; font-size: 13px; line-height: 1.4; overflow-wrap: anywhere; }
+.message-unread-toast-foot { display: block; margin-top: 8px; }
+.message-unread-toast-close { align-self: start; margin: 6px 6px 0 0; border: 0; border-radius: 8px; padding: 3px 8px; color: var(--m, #64748b); background: transparent; font-size: 22px; cursor: pointer; }
+.message-unread-toast-open:focus-visible, .message-unread-toast-close:focus-visible { outline: 2px solid var(--p, #0d9488); outline-offset: -2px; }
+@keyframes message-toast-in { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .message-unread-toast { animation: none; } }
+@media (max-width: 520px) { .message-unread-toast { right: 12px; top: 68px; } }
+
+/* Le style global des boutons impose un texte blanc : on le neutralise pour que le pop-up reste lisible (thème clair et sombre). */
+.message-unread-toast button.message-unread-toast-open:not(.b2):not(.bd):not(.bg) { background: transparent; color: var(--t, #172033) !important; box-shadow: none; border: 0; border-radius: 0; padding: 13px 12px 12px 14px; font-weight: 400; transform: none; }
+.message-unread-toast button.message-unread-toast-open:hover:not(:disabled):not(.b2):not(.bd):not(.bg) { background: color-mix(in srgb, var(--p, #0d9488) 8%, transparent); }
+.message-unread-toast button.message-unread-toast-close:not(.b2):not(.bd):not(.bg) { background: transparent; color: var(--m, #64748b) !important; box-shadow: none; border: 0; border-radius: 8px; padding: 3px 8px; font-size: 22px; font-weight: 400; transform: none; }
+.message-unread-toast button.message-unread-toast-close:hover:not(:disabled):not(.b2):not(.bd):not(.bg) { background: color-mix(in srgb, var(--p, #0d9488) 12%, transparent); }
+.message-unread-toast-body { color: var(--t, #172033); }
+
+
+/* ===== Profil toujours ancré à droite, lisible sur tout écran ===== */
+.top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+.top #global-search {
+  flex: 1 1 auto;
+  min-width: 120px;
+  max-width: 420px;
+  order: 0;
+}
+.top .top-shortcuts,
+.top .top-clock,
+.top .icon-btn {
+  flex: none;
+}
+.user-chip {
+  position: relative;
+  flex: none !important;
+  margin-left: auto;
+  order: 99;
+  z-index: 5;
+}
+.user-chip .uc-btn {
+  max-width: min(260px, 42vw);
+}
+.user-chip .uc-text {
+  display: block !important;
+  max-width: 160px;
+}
+.user-chip .uc-text b,
+.user-chip .uc-text small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 960px) {
+  .user-chip .uc-text small { display: none; }
+  .user-chip .uc-text { max-width: 110px; }
+}
+@media (max-width: 860px) {
+  .top { flex-wrap: wrap; }
+  /* La recherche peut passer sous la ligne, le profil reste à droite de la 1re ligne */
+  .top #global-search {
+    order: 10;
+    flex: 1 1 100%;
+    max-width: none;
+    min-width: 0;
+  }
+  .user-chip {
+    order: 5;
+    margin-left: auto;
+  }
+  .user-chip .uc-text { display: block !important; max-width: 90px; }
+}
+@media (max-width: 480px) {
+  .user-chip .uc-text b { font-size: 12px; }
+  .user-chip .uc-text { max-width: 72px; }
+}

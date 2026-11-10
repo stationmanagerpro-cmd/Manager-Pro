@@ -1,0 +1,30 @@
+const { JSDOM } = require('jsdom');
+const fs = require('fs');
+const html = '<body><div id="login"></div><div id="app"></div><input id="amt" type="number"></body>';
+const dom = new JSDOM(html, { runScripts: 'outside-only', pretendToBeVisual: true });
+const w = dom.window; w.eval(fs.readFileSync(require('path').join(__dirname, '..', 'public/ext-calc.js'), 'utf8'));
+const $ = s => w.document.querySelector(s), key = k => $(`[data-k="${k}"]`).click();
+const log = (n, v) => console.log((v ? 'OK   ' : 'FAIL ') + n);
+dom.window.addEventListener('load', () => {
+log('bouton masqué avant connexion', !$('#smp-calc-btn').classList.contains('on'));
+$('#app').classList.add('ready');
+setTimeout(() => {
+  log('bouton visible après connexion', $('#smp-calc-btn').classList.contains('on'));
+  $('#amt').focus(); $('#smp-calc-btn').click();
+  log('panneau ouvert', $('#smp-calc').classList.contains('open'));
+  ['2','0','0','+','1','0','%'].forEach(key);
+  log('aperçu 220', $('.cc-res').textContent.replace(/\s/g,'') === '220');
+  key('=');
+  log('résultat 220 + historique', $('.cc-res').textContent.replace(/\s/g,'') === '220' && $('.cc-hist button'));
+  $('.cc-ins').click();
+  log('insertion dans le champ', $('#amt').value === '220');
+  key('C'); key('1'); key(','); key('5'); key(','); 
+  log('une seule virgule', $('.cc-expr').textContent === '1,5');
+  w.document.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  log('Échap ferme', !$('#smp-calc').classList.contains('open'));
+  w.document.dispatchEvent(new w.KeyboardEvent('keydown', { key: 'c', altKey: true, bubbles: true }));
+  log('Alt+C ouvre', $('#smp-calc').classList.contains('open'));
+  $('#app').classList.remove('ready');
+  setTimeout(() => { log('déconnexion : fermée et masquée', !$('#smp-calc').classList.contains('open') && !$('#smp-calc-btn').classList.contains('on')); process.exit(0); }, 20);
+}, 20);
+});

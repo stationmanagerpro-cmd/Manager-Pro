@@ -1,0 +1,728 @@
+/* Responsive v3 : en-tête unifié (même fond que le menu de gauche), toujours visible au scroll. */
+
+/* ---- En-tête figé (sticky) : ne disparaît jamais pendant le scroll ---- */
+/* overflow-x: clip sur main (app.css) pour ne pas casser sticky. */
+#app-header {
+  position: sticky;
+  top: var(--safe-top, 0px);
+  z-index: 100;
+  margin: 0 -24px 16px;
+  padding: 0 24px;
+  background: var(--hd-bg, var(--sb-bg));
+  color: var(--sb-text);
+  box-shadow: 0 6px 20px rgba(8, 18, 44, .16);
+  isolation: isolate;
+}
+/* Bande réservée à la barre d'état : fixe, même couleur que l'en-tête.
+   Hauteur 0 (invisible) sur ordinateur et partout où il n'y a pas de zone système. */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: var(--safe-top, 0px);
+  background: var(--hd-bg, var(--sb-bg));
+  z-index: 101;
+  pointer-events: none;
+}
+/* Le menu latéral (z-index 80) contient les sous-menus flottants : l'en-tête fixe (100) les masquait dès qu'ils
+   remontaient sous la barre. Sur ordinateur/tablette, l'en-tête passe juste sous le menu (modales et calculatrice
+   restent au-dessus : z-index 100). Sur mobile le menu est un tiroir : inchangé. */
+@media (min-width: 861px) {
+  #app-header { z-index: 79; }
+}
+#app-header .tenant-brandbar,
+#app-header #tenant-brandbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  margin: 0;
+  border-bottom: 1px solid var(--sb-line);
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+#app-header .tenant-brand { color: #fff; min-width: 0; flex: 1 1 auto; }
+#app-header .tenant-brand-mark {
+  width: 48px; height: 48px; font-size: 20px;
+  background: rgba(255,255,255,.12); color: #fff; box-shadow: none;
+}
+#app-header .tenant-brand-copy { min-width: 0; }
+#app-header .tenant-brand-copy b {
+  display: block; color: #fff; font-size: clamp(15px, 2vw, 24px);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#app-header .tenant-brand-copy small {
+  color: var(--sb-muted); display: block;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+/* Zone droite : date/heure + compte, même ligne que le nom client */
+#app-header .brandbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 0 0 auto;
+  margin-left: auto;
+  min-width: 0;
+}
+#app-header .header-clock {
+  text-align: right;
+  line-height: 1.15;
+  flex: none;
+  white-space: nowrap;
+  color: var(--sb-muted, rgba(255,255,255,.72));
+  font-size: clamp(11px, 1.6vw, 13px);
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.12);
+}
+#app-header .header-clock .clk-date {
+  display: block;
+  font-weight: 500;
+  letter-spacing: .01em;
+  color: var(--sb-muted, rgba(255,255,255,.72));
+}
+#app-header .header-clock .clk-time {
+  display: block;
+  font-size: clamp(13px, 2vw, 16px);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+  letter-spacing: .02em;
+}
+#app-header .user-chip { flex: none; }
+
+#app-header .top {
+  position: static; margin: 0; padding: 10px 0;
+  background: transparent; border: 0; box-shadow: none; flex-wrap: wrap;
+}
+#app-header .top h2 { color: #fff; }
+body.dv2-home #app-header .top h2 { display: none; }
+
+@media (max-width: 860px) {
+  #app-header { margin: 0 -14px 12px; padding: 0 14px; }
+  #app-header .tenant-brand-mark { width: 40px; height: 40px; font-size: 17px; }
+  #app-header .top { gap: 8px; }
+  #app-header #global-search { order: 10; flex: 1 1 100%; max-width: none; width: 100%; }
+  #app-header .header-clock { padding: 3px 8px; }
+  #app-header .header-clock .clk-date { font-size: 10.5px; }
+  #app-header .header-clock .clk-time { font-size: 13px; }
+}
+@media (max-width: 560px) {
+  #app-header .header-clock .clk-date { font-size: 10px; }
+  #app-header .header-clock .clk-time { font-size: 12.5px; }
+  #app-header .brandbar-right { gap: 6px; }
+}
+@media (max-width: 480px) {
+  #app-header .user-chip .uc-text { display: none; }
+  #app-header .top-shortcuts { display: none; }
+  #app-header .header-clock { display: block; }
+}
+@media print { #app-header { display: none !important; } }
+
+
+/* Profil utilisateur sur bandeau sombre : contraste lisible */
+#app-header .brandbar-right .user-chip { margin-left: 0; order: 0; }
+#app-header .brandbar-right .uc-btn {
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.18);
+  color: #fff;
+}
+#app-header .brandbar-right .uc-text b { color: #fff; }
+#app-header .brandbar-right .uc-text small { color: var(--sb-muted, rgba(255,255,255,.7)); }
+#app-header .brandbar-right .uc-caret { color: rgba(255,255,255,.7); }
+
+/* ---- Tableaux : défilement horizontal au lieu d'être coupés ---- */
+.tw-auto { display: block; max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; margin-bottom: 12px; }
+.tw-auto > table { width: max-content; min-width: 100%; }
+.tw-auto th, .tw-auto td { white-space: nowrap; }
+.dv2-tw { max-width: 100%; }
+.dv2-tw > table, .tw > table { min-width: 100%; }
+main, #pg { min-width: 0; max-width: 100%; }
+#pg img, #pg canvas, #pg svg { max-width: 100%; }
+#pg .cards, #pg .grid { min-width: 0; }
+#m > div { max-width: min(96vw, 760px); max-height: 92vh; overflow: auto; }
+@media (max-width: 720px) {
+  #pg .bar { flex-wrap: wrap; }
+  #pg .bar > * { flex: 1 1 auto; }
+  .fg, .fgrid, .form-grid { grid-template-columns: minmax(0, 1fr) !important; }
+}
+
+/* Ouverture de quart : lignes de participants */
+.pt-row .pt-del { height: 40px; min-width: 40px; padding: 0 10px; }
+@media (max-width: 720px) {
+  .pt-row { grid-template-columns: minmax(0, 1fr) !important; padding-bottom: 8px; border-bottom: 1px dashed var(--line, rgba(0,0,0,.12)); }
+  .pt-row .pt-del { justify-self: end; }
+}
+
+/* ======================================================================
+   Barre d'outils de l'en-tête — ordre fixe, adaptatif :
+   [☰ menu] [← retour] [Recherche (à gauche)]  [titre de page …]  [+Vente Caisse] [Focus] [🌙] [heure] [🔔]  [Profil (tout à droite)]
+   ====================================================================== */
+#app-header .top { display: flex; flex-wrap: nowrap; align-items: center; gap: 10px; min-width: 0; }
+#app-header .top .nav-toggle        { order: 0; }
+#app-header .top #nav-back          { order: 1; }
+#app-header .top #global-search     { order: 2; flex: 0 1 380px; min-width: 150px; max-width: 380px; margin-right: auto; }
+#app-header .top #stsel             { order: 3; flex: none; max-width: 200px; }
+#app-header .top h2                 { order: 3; flex: 1 1 0; min-width: 0; max-width: none; margin: 0 8px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: clamp(1rem, 1.6vw, 1.3rem); }
+#app-header .top .top-shortcuts     { order: 4; flex: none; }
+#app-header .top .top-focus         { order: 5; flex: none; }
+#app-header .top #theme-toggle      { order: 6; flex: none; }
+#app-header .top #live-clock        { order: 7; flex: none; }
+#app-header .top #bell              { order: 8; flex: none; }
+#app-header .top [data-pwa-install] { order: 9; flex: none; }
+#app-header .top .user-chip         { order: 99; flex: none; margin-left: 6px; }   /* profil : toujours tout au bout, à droite */
+#app-header .top .sc { display: inline-flex; }
+
+/* Portables / petites fenêtres : on garde l'essentiel sur une seule ligne */
+@media (max-width: 1180px) {
+  #app-header .top #global-search { flex-basis: 280px; }
+  #app-header .top .top-focus { display: none; }
+}
+@media (max-width: 1024px) {
+  #app-header .top .top-shortcuts { display: none; }
+  #app-header .top #live-clock { display: none; }
+}
+
+/* Tablettes / téléphones : ligne 1 = menu, retour, titre, 🌙, 🔔, profil ; ligne 2 = recherche pleine largeur */
+@media (max-width: 860px) {
+  #app-header .top { flex-wrap: wrap; row-gap: 8px; }
+  #app-header .top .nav-toggle { display: inline-grid; }
+  #app-header .top h2 { flex: 1 1 0; margin: 0 4px; }
+  #app-header .top #global-search { order: 10; flex: 1 1 100%; max-width: none; margin-right: 0; }
+  #app-header .top #stsel { order: 9; }
+  #app-header .top .top-shortcuts, #app-header .top .top-focus, #app-header .top #live-clock { display: none; }
+  body.dv2-home #app-header .top h2 { display: block; visibility: hidden; }   /* garde le profil à droite sur l'accueil */
+}
+@media (max-width: 480px) {
+  #app-header .top { gap: 6px; }
+  #app-header .top .icon-btn { width: 34px; height: 34px; }
+  #app-header .top h2 { font-size: 1rem; }
+  #app-header .top #theme-toggle { display: none; }
+  #app-header .top .user-chip .uc-text, #app-header .top .user-chip .uc-caret { display: none; }
+}
+
+/* A4 — Barre du haut sur UNE seule ligne dès 1280 px : la recherche et le titre se rétrécissent, rien ne passe à la ligne. */
+@media (min-width: 1280px) {
+  #app-header .top { flex-wrap: nowrap; min-width: 0; }
+  #app-header .top h2 { flex: 0 1 auto; min-width: 0; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #app-header .top #global-search { flex: 1 1 120px; min-width: 90px; max-width: 420px; }
+  #app-header .top #top-shortcuts button, #app-header .top .top-focus { padding: 7px 10px; white-space: nowrap; }
+  #app-header .top .icon-btn, #app-header .top .top-clock { flex: none; }
+  #app-header .top #stsel { flex: 0 1 170px; min-width: 100px; text-overflow: ellipsis; }
+  #app-header .top-shortcuts { flex: 0 1 auto; min-width: 0; }
+  #app-header .top-clock .clk-date { display: none; }
+}
+@media (min-width: 1280px) and (max-width: 1500px) {
+  #app-header .top #top-shortcuts button { font-size: 12px; padding: 6px 8px; }
+  #app-header .top #global-search { max-width: 280px; }
+}
+
+/* A4 — Style « carte » homogène pour les pages principales (affichage seulement) */
+#pg > .bar, #pg > .r { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 0 0 12px; }
+#pg > h2:first-child { margin: 0 0 6px; font-size: 1.35rem; }
+#pg .tw { border-radius: var(--radius-lg, 18px); }
+#pg th { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--m); }
+#pg td, #pg th { padding: 11px 14px; }
+#pg .tw tbody tr:hover { background: var(--pl); }
+
+/* Tableaux : barre de défilement horizontale en bas, sur tous les écrans, pour qu'aucune colonne ne soit coupée.
+   (Corrige les règles « overflow: hidden » qui masquaient les colonnes en trop sur les petits écrans.) */
+.tw, .tw-auto, .dv2-tw, .table-wrap, #pg div:has(> table), #m div:has(> table) {
+  max-width: 100%;
+  overflow-x: auto !important;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: auto;
+  scrollbar-color: var(--p) var(--bd);
+}
+.tw > table, .tw-auto > table, .dv2-tw > table, .table-wrap > table { width: max-content; min-width: 100%; }
+.tw th, .tw td, .tw-auto th, .tw-auto td, .dv2-tw th, .dv2-tw td { white-space: nowrap; }
+.tw::-webkit-scrollbar, .tw-auto::-webkit-scrollbar, .dv2-tw::-webkit-scrollbar, .table-wrap::-webkit-scrollbar,
+#pg div:has(> table)::-webkit-scrollbar, #m div:has(> table)::-webkit-scrollbar { height: 12px; }
+.tw::-webkit-scrollbar-track, .tw-auto::-webkit-scrollbar-track, .dv2-tw::-webkit-scrollbar-track, .table-wrap::-webkit-scrollbar-track,
+#pg div:has(> table)::-webkit-scrollbar-track, #m div:has(> table)::-webkit-scrollbar-track { background: var(--bd); border-radius: 6px; }
+.tw::-webkit-scrollbar-thumb, .tw-auto::-webkit-scrollbar-thumb, .dv2-tw::-webkit-scrollbar-thumb, .table-wrap::-webkit-scrollbar-thumb,
+#pg div:has(> table)::-webkit-scrollbar-thumb, #m div:has(> table)::-webkit-scrollbar-thumb { background: var(--p); border-radius: 6px; border: 2px solid var(--bd); }
+
+/* Zone PUB en bas du menu de gauche (images du Super Admin, défilement aléatoire) */
+.nav-pub { flex: none; position: relative; margin: 8px 12px 12px; padding: 22px 8px 8px; border-radius: 14px; border: 1px dashed rgba(255,255,255,.28); background: rgba(255,255,255,.06); text-align: center; }
+.nav-pub-label { position: absolute; top: 6px; left: 0; right: 0; font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--sb-muted, rgba(255,255,255,.7)); }
+.nav-pub-btn { display: block; width: 100%; padding: 0; border: 0; background: transparent; cursor: zoom-in; box-shadow: none; }
+.nav-pub-img { display: block; max-width: 100%; max-height: 150px; width: auto; margin: 0 auto; object-fit: contain; border-radius: 10px; background: rgba(255,255,255,.92); }
+.nav-pub-img.in { animation: pubFade .45s ease; }
+#nav.nav2.collapsed .nav-pub { display: none; }
+@media (max-height: 640px) { .nav-pub { display: none; } }
+.pub-popup { position: fixed; inset: 0; z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; background: rgba(8, 18, 44, .6); cursor: zoom-out; }
+.pub-popup-box { position: relative; max-width: min(520px, 92vw); max-height: 86vh; padding: 10px; border-radius: 16px; background: var(--c, #fff); box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+.pub-popup-box img { display: block; max-width: 100%; max-height: calc(86vh - 20px); margin: 0 auto; border-radius: 10px; }
+.pub-popup-x { position: absolute; top: -12px; right: -12px; width: 32px; height: 32px; padding: 0; border-radius: 50%; font-size: 20px; line-height: 1; }
+
+/* A8 — Mode démonstration : bandeau impossible à manquer + cadre orange autour de l'écran */
+#demo-banner { position: fixed; top: 0; left: 0; right: 0; z-index: 3000; height: 44px; display: flex; align-items: center; justify-content: center; gap: 16px; padding: 0 12px;
+  background: repeating-linear-gradient(135deg, #f97316 0 18px, #ea580c 18px 36px); color: #fff; font-weight: 800; font-size: 14px; letter-spacing: .02em; text-align: center; text-shadow: 0 1px 2px rgba(0,0,0,.35); box-shadow: 0 4px 14px rgba(0,0,0,.35); }
+#demo-banner button { flex: none; padding: 5px 12px; border-radius: 8px; font-size: 12px; background: #fff; color: #9a3412; border: 0; font-weight: 700; text-shadow: none; }
+body.demo-on { padding-top: 44px; }
+body.demo-on::after { content: ''; position: fixed; inset: 0; border: 5px solid #f97316; pointer-events: none; z-index: 2999; }
+body.demo-on #nav.nav2 { top: 44px; height: calc(100dvh - 44px); }
+body.demo-on #app-header { top: 44px; }
+@media (max-width: 640px) { #demo-banner { font-size: 11px; gap: 8px; } }
+/* A8 — Boutons d'aide « ? » */
+.help-btn { flex: none; width: 30px; height: 30px; min-width: 30px; padding: 0; border-radius: 50%; font-weight: 800; font-size: 15px; line-height: 1; }
+.help-q { margin-left: 8px; width: 24px; height: 24px; padding: 0; border-radius: 50%; font-weight: 800; font-size: 13px; line-height: 1; vertical-align: middle; }
+
+/* Correctif affichage : libellés coupés (titre, onglets) et contenus débordants sur petit écran */
+/* Titre de page : deux lignes au lieu d'une troncature « Tableau de bord plat… » */
+#app-header .top h2, .top h2 { white-space: normal; line-height: 1.2; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; }
+/* Onglets : hauteur automatique, rien n'est rogné en haut ni en bas */
+.tabs { padding: 4px 0 8px; align-items: stretch; }
+.tabs a { line-height: 1.3; display: inline-flex; align-items: center; min-height: 36px; }
+.tabs-v { max-width: 100%; }
+.tabs-v a { white-space: normal; line-height: 1.3; }
+/* Grilles et cartes : jamais plus larges que l'écran */
+.cards > *, .card { min-width: 0; max-width: 100%; box-sizing: border-box; overflow-wrap: anywhere; }
+.card .tag { flex: none; white-space: nowrap; }
+.onboard-card > div:first-child { flex-wrap: wrap; }
+.onboard-card > div:first-child b { flex: 1 1 140px; min-width: 0; }
+@media (max-width: 640px) {
+  .cards { grid-template-columns: minmax(0, 1fr); }
+  main, #view, .card { max-width: 100%; }
+  .card:has(> table), .card:has(> .tw) { overflow-x: auto; }
+  input, select, textarea { max-width: 100%; box-sizing: border-box; }
+  .grid, .g2, .g3, .row, .r { flex-wrap: wrap; }
+  .form-grid, .fg { grid-template-columns: minmax(0, 1fr) !important; }
+}
+
+/* Tablettes / téléphones : recherche + profil restent sur la MÊME ligne ; la recherche se rétrécit, le profil ne descend jamais */
+@media (max-width: 860px) {
+  #app-header .top #global-search { order: 10; flex: 1 1 0; min-width: 0; width: auto; max-width: none; margin-right: 0; }
+  #app-header .top .user-chip { order: 11; flex: none; margin-left: 0; }
+  #app-header .top .user-chip .uc-btn { padding: 3px; gap: 0; }
+  #app-header .top .user-chip .uc-text, #app-header .top .user-chip .uc-caret { display: none !important; }
+  /* Ligne 1 : menu, retour, titre, actions. Les actions passent avant la recherche pour que celle-ci forme la ligne 2 avec le profil */
+  #app-header .top h2 { flex: 1 1 0; min-width: 0; }
+  #app-header .top #global-search { flex-basis: 0; }
+}
+@media (max-width: 860px) {
+  /* force le retour à la ligne avant la recherche, sans retirer le profil de cette ligne */
+  #app-header .top::after { content: none; }
+  #app-header .top .nav-toggle, #app-header .top #nav-back { order: 0; }
+  #app-header .top h2 { order: 3; flex: 1 1 40%; }
+  #app-header .top #bell, #app-header .top [data-pwa-install] { order: 8; }
+  #app-header .top #global-search { flex: 1 1 calc(100% - 60px); }
+}
+
+/* Menu latéral : marque plus grande et lisible, onglet actif toujours lisible, contenu remonté */
+#nav.nav2 .nav-head { padding: 10px 12px; min-height: 0; gap: 10px; }
+#nav.nav2 .nav-logo { width: 56px; height: 56px; border-radius: 14px; }
+#nav.nav2 .nav-title b { font-size: 19px; font-weight: 800; line-height: 1.15; color: #fff !important; white-space: normal; overflow: visible; text-overflow: clip; }
+#nav.nav2 .nav-title small { font-size: 12px; color: rgba(255,255,255,.78) !important; white-space: normal; overflow: visible; text-overflow: clip; }
+#nav.nav2 .nav-scroll { padding-top: 8px; }
+#nav.nav2 .nav-link { padding: 9px 12px; margin-bottom: 2px; }
+#nav.nav2 .nav-link.on, #nav.nav2 .nav-node.has-active > .nav-parent { background: #2563eb !important; color: #fff !important; }
+#nav.nav2 .nav-link.on *, #nav.nav2 .nav-node.has-active > .nav-parent * { color: #fff !important; }
+#nav.nav2 .nav-link.on .nav-label, #nav.nav2 .nav-node.has-active > .nav-parent .nav-label { display: block !important; opacity: 1 !important; visibility: visible !important; }
+#nav.nav2.collapsed .nav-logo { width: 44px; height: 44px; }
+
+/* Connexion : carte compacte (ma règle « .card { max-width:100% } » avait annulé le max-width de .login-card) */
+.login-form-wrap .login-card { width: 100%; max-width: 400px; padding: 28px 26px; box-sizing: border-box; margin: 0 auto; }
+.login-form-wrap { padding: 24px 16px; }
+/* Menu profil : nom lisible (il héritait d'une couleur claire) */
+.user-menu .um-head b { color: var(--t) !important; font-size: 15px; font-weight: 700; display: block; }
+.user-menu .um-head small { color: var(--m) !important; }
+
+/* Signature imposée par le contrat : visible en pied de l'application */
+#ft .forced-sig { margin-top: 4px; font-weight: 700; font-size: 13px; color: var(--t); text-align: center; }
+
+/* Publicité : bannière sous la barre du haut, affichée dès que la « Zone PUB » du menu n'est pas visible
+   (téléphone, menu masqué ou réduit, écran peu haut) */
+.pub-mobile { display: none; }
+.pub-mobile.show { display: flex; position: relative; align-items: center; justify-content: center; margin: 8px 0 10px; padding: 6px; border-radius: 12px; background: rgba(255,255,255,.12); }
+.pub-mobile-btn { display: block; padding: 0; border: 0; background: transparent; box-shadow: none; cursor: zoom-in; max-width: 100%; }
+.pub-mobile-img { display: block; max-width: 100%; max-height: 110px; width: auto; margin: 0 auto; object-fit: contain; border-radius: 8px; background: rgba(255,255,255,.92); }
+.pub-mobile-img.in { animation: pubFade .45s ease; }
+.pub-mobile-x { position: absolute; top: 2px; right: 4px; width: 22px; height: 22px; min-width: 22px; padding: 0; border-radius: 50%; border: 0; background: rgba(0,0,0,.45); color: #fff; font-size: 14px; line-height: 1; box-shadow: none; }
+@media (max-width: 860px) { .pub-mobile-img { max-height: 84px; } }
+
+/* Signature imposée par le contrat : toujours visible en haut (sous le nom), en plus du pied de page */
+.tenant-brand-copy .tenant-sig { display: block; margin-top: 2px; font-size: 12px; font-weight: 700; font-style: italic; color: var(--sb-text, #fff); opacity: .95; white-space: normal; overflow-wrap: anywhere; }
+#app-header .tenant-brand-copy .tenant-sig { color: #fff; white-space: normal; overflow: visible; text-overflow: clip; }
+#ft .forced-sig { font-size: 14px; padding-top: 6px; border-top: 1px dashed var(--bd); margin-top: 8px; }
+
+/* ===== Alignement imposé : nom + slogan de l'application (menu) et titres / onglets d'en-tête ===== */
+/* Texte toujours horizontal, aligné à gauche, jamais coupé lettre par lettre : retour à la ligne uniquement entre les mots */
+#nav.nav2 .nav-head { align-items: center; gap: 10px; }
+#nav.nav2 .nav-title { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; text-align: left; min-width: 0; flex: 1 1 auto; }
+#nav.nav2 .nav-title b {
+  display: block; font-size: 16px; font-weight: 800; line-height: 1.2; text-align: left;
+  white-space: normal; overflow: visible; text-overflow: clip; word-break: normal; overflow-wrap: anywhere; hyphens: none; /* nom complet : retour à la ligne entre les mots, jamais coupé */
+}
+#nav.nav2 .nav-logo { flex: none; }
+#nav.nav2 .nav-logo.has-img, #nav.nav2 .nav-logo:has(img) { background: #fff; padding: 3px; box-sizing: border-box; }
+#nav.nav2 .nav-logo img { width: 100%; height: 100%; object-fit: contain; display: block; }
+#nav.nav2 .nav-collapse, #nav.nav2 .nav-hide { flex: none; }
+#nav.nav2 .nav-title small {
+  display: block; margin-top: 2px; font-size: 12px; line-height: 1.3; text-align: left;
+  white-space: normal; overflow: visible; text-overflow: clip; word-break: normal; overflow-wrap: normal; hyphens: none;
+}
+#app-header .top h2, .top h2 {
+  writing-mode: horizontal-tb; text-orientation: mixed; transform: none; text-align: left;
+  white-space: normal; overflow: visible; text-overflow: clip; max-width: none; min-width: max-content; word-break: normal; overflow-wrap: normal; hyphens: none; line-height: 1.25; /* titre complet, jamais tronqué ni coupé en pleine lettre */
+}
+#app-header .top button, #app-header .top .b2, #app-header .top a, #app-header .user-chip, #app-header .user-chip * {
+  writing-mode: horizontal-tb; transform: none; white-space: nowrap; word-break: normal; overflow-wrap: normal;
+}
+.tenant-brand-copy b, .tenant-brand-copy small { text-align: left; word-break: normal; overflow-wrap: normal; hyphens: none; }
+.tenant-brand-copy { text-align: left; }
+
+/* ===== Centre de contrôle administrateur : onglets et sous-onglets en ligne (horizontaux) ===== */
+.tab-layout.admin-hz { display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+.tab-layout.admin-hz > .tabs-v {
+  display: flex; flex-direction: row; flex-wrap: wrap; gap: 8px; min-width: 0; max-width: 100%; max-height: none;
+  overflow: visible; padding: 0; border: 0; background: transparent;
+  width: 100%; flex: 0 0 auto; position: static; z-index: auto; transition: none; /* neutralise le style générique « nav » (menu latéral 220 px) */
+}
+.tab-layout.admin-hz > .tabs-v a {
+  display: inline-flex; align-items: center; white-space: nowrap; padding: 9px 16px; border-left: 0; border-radius: 12px;
+}
+.tab-layout.admin-hz > .tabs-v a.on { background: var(--p); color: var(--on-p, #fff) !important; border-left: 0; box-shadow: 0 4px 12px color-mix(in srgb, var(--p) 30%, transparent); }
+.tab-layout.admin-hz > .tab-content { width: 100%; }
+.tab-layout.admin-hz .subtabs { display: flex; flex-direction: row; flex-wrap: wrap; gap: 6px; }
+.tab-layout.admin-hz .subtabs a { white-space: nowrap; }
+
+/* Carte Mapbox : la bulle d'information suit le thème (clair / nuit).
+   Mapbox impose un fond blanc ; avec le texte clair du mode nuit, la description était illisible. */
+.mapboxgl-popup .mapboxgl-popup-content { background: var(--c, #fff); color: var(--t, #1c2330); box-shadow: var(--shadow-md, 0 4px 12px rgba(0,0,0,.25)); border: 1px solid var(--bd, transparent); padding: 12px 28px 12px 14px; line-height: 1.5; font-size: 13px; }
+.mapboxgl-popup .mapboxgl-popup-content b { color: var(--t, #1c2330); }
+.mapboxgl-popup .mapboxgl-popup-close-button { color: var(--m, #5a6678); font-size: 18px; }
+.mapboxgl-popup .mapboxgl-popup-close-button:hover { background: transparent; color: var(--t, #1c2330); }
+.mapboxgl-popup-anchor-top .mapboxgl-popup-tip, .mapboxgl-popup-anchor-top-left .mapboxgl-popup-tip, .mapboxgl-popup-anchor-top-right .mapboxgl-popup-tip { border-bottom-color: var(--c, #fff); }
+.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip, .mapboxgl-popup-anchor-bottom-left .mapboxgl-popup-tip, .mapboxgl-popup-anchor-bottom-right .mapboxgl-popup-tip { border-top-color: var(--c, #fff); }
+.mapboxgl-popup-anchor-left .mapboxgl-popup-tip { border-right-color: var(--c, #fff); }
+.mapboxgl-popup-anchor-right .mapboxgl-popup-tip { border-left-color: var(--c, #fff); }
+
+/* ============================================================
+   Responsive v3.1 — listes & fiches Client / Fournisseur / Employé
+   Adaptation automatique petit téléphone → tablette → grand écran
+   ============================================================ */
+
+/* --- Conteneur principal fluide --- */
+#app, #app .main, main, #pg {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+#pg {
+  padding-bottom: max(24px, env(safe-area-inset-bottom, 0px));
+}
+
+/* --- Barres d'actions listes (Clients, Fournisseurs, Employés) --- */
+#pg .bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+#pg .bar .q,
+#pg .bar input.q {
+  flex: 1 1 180px;
+  min-width: 0;
+  max-width: 100%;
+}
+#pg .bar button {
+  flex: 0 1 auto;
+  white-space: nowrap;
+}
+
+/* --- Cartes KPI / synthèse --- */
+#pg .cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
+  gap: 10px;
+}
+#pg .cards .card,
+#pg .dv2-kpi {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* --- Fiches détail (client, fournisseur, employé) --- */
+.detail-page {
+  width: 100%;
+  max-width: min(1500px, 100%);
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 0 2px;
+}
+.detail-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px 14px;
+  margin-bottom: 12px;
+}
+.detail-head h2 {
+  margin: 0;
+  font-size: clamp(1.15rem, 2.5vw, 1.55rem);
+  line-height: 1.25;
+  word-break: break-word;
+}
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.detail-actions button {
+  flex: 0 1 auto;
+}
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr));
+  gap: 10px;
+}
+.detail-stat {
+  min-width: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: var(--c, #fff);
+  border: 1px solid var(--bd, #e5e7eb);
+}
+.detail-tabs,
+.pp-tabs,
+.emp-tabs {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 6px;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  padding-bottom: 8px;
+  margin: 10px 0 14px;
+}
+.detail-tabs button,
+.pp-tabs a,
+.pp-tabs button,
+.emp-tabs a,
+.emp-tabs button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-size: clamp(11px, 1.4vw, 14px);
+}
+
+/* --- Tableaux listes : scroll horizontal sans couper le layout --- */
+#pg .tw,
+#pg .tw-auto {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+#pg .tw table,
+#pg .tw-auto table {
+  width: max-content;
+  min-width: 100%;
+}
+#pg tbody tr[onclick] {
+  cursor: pointer;
+}
+
+/* --- Modales / formulaires --- */
+#m .g,
+.modal .g {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  gap: 10px 12px;
+}
+#m label,
+.modal label {
+  min-width: 0;
+}
+#m input,
+#m select,
+#m textarea,
+.modal input,
+.modal select,
+.modal textarea {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+#m .r,
+.modal .r {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+/* --- Grands écrans : aération --- */
+@media (min-width: 1200px) {
+  #pg .cards {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+  .detail-page {
+    padding: 0 8px;
+  }
+  .detail-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+@media (min-width: 1600px) {
+  .detail-page {
+    max-width: 1600px;
+  }
+  #pg .cards {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+/* --- Tablettes --- */
+@media (max-width: 960px) {
+  #pg .bar button {
+    flex: 1 1 auto;
+  }
+  .detail-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .detail-actions {
+    width: 100%;
+  }
+  .detail-actions button {
+    flex: 1 1 auto;
+    min-width: calc(50% - 6px);
+  }
+}
+
+/* --- Smartphones --- */
+@media (max-width: 640px) {
+  #pg {
+    padding-left: 0;
+    padding-right: 0;
+  }
+  #pg > h2,
+  #pg .detail-page > .detail-head h2 {
+    font-size: 1.2rem;
+  }
+  #pg .bar {
+    gap: 6px;
+  }
+  #pg .bar .q {
+    flex: 1 1 100%;
+  }
+  #pg .bar button {
+    flex: 1 1 calc(50% - 4px);
+    font-size: 13px;
+    padding: 9px 10px;
+  }
+  #pg .cards {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  #pg .cards .card b,
+  #pg .cards .card .val {
+    font-size: 1rem;
+  }
+  /* Listes clients / fournisseurs / employés : densifier un peu */
+  #pg .tw td,
+  #pg .tw th {
+    padding: 9px 10px;
+    font-size: 13px;
+  }
+  /* Masquer colonnes secondaires si data-hide-sm (optionnel) */
+  #pg .tw th[data-hide-sm],
+  #pg .tw td[data-hide-sm] {
+    display: none;
+  }
+  .detail-actions button {
+    flex: 1 1 100%;
+  }
+  .detail-stat b {
+    font-size: 1.05rem;
+  }
+  .detail-tabs button,
+  .pp-tabs a,
+  .emp-tabs a {
+    padding: 8px 12px;
+  }
+  /* Formulaire modal plein largeur utile */
+  #m .card,
+  #m > div {
+    max-width: min(100vw - 16px, 520px);
+  }
+}
+
+@media (max-width: 400px) {
+  #pg .cards {
+    grid-template-columns: 1fr;
+  }
+  #pg .bar button {
+    flex: 1 1 100%;
+  }
+}
+
+/* --- Fiche employé (ext-core) : en-tête + onglets --- */
+.pp-hero,
+.emp-hero,
+.empf-head {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+.pp-hero .av.big,
+.emp-hero .av.big {
+  flex: 0 0 auto;
+}
+.pp-hero > div,
+.emp-hero > div {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+/* --- Safe areas (encoche iPhone, etc.) --- */
+@supports (padding: max(0px)) {
+  #bottom-nav {
+    padding-bottom: max(6px, env(safe-area-inset-bottom));
+  }
+}
+
+/* ===== Logos : identiques en mode jour et en mode nuit (fond fixe, aucun filtre, aucune teinte du thème) ===== */
+.tenant-brand-mark:has(img), #app-header .tenant-brand-mark:has(img),
+.nav2 .nav-logo.has-img, #nav.nav2 .nav-logo:has(img), .login-mark.has-img, .login-mark:has(img), .br-prev-nav .nav-logo:has(img) {
+  background: #ffffff !important; box-shadow: 0 2px 8px rgba(15, 23, 42, .18);
+}
+.tenant-brand-mark img, #app-header .tenant-brand-mark img, .nav2 .nav-logo img, .login-mark img, .br-prev-nav .nav-logo img {
+  background: #ffffff !important; filter: none !important; opacity: 1 !important; mix-blend-mode: normal !important;
+}
+
+
+/* Nom du site : toujours sur UNE seule ligne, droit, jamais coupé ni renvoyé à la ligne (la taille s'ajuste automatiquement) */
+#nav.nav2 .nav-head { gap: 8px; }
+#nav.nav2 .nav-logo { width: 50px; height: 50px; }
+#nav.nav2 .nav-title { min-width: 0; flex: 1 1 0; overflow: hidden; }
+#nav.nav2 .nav-title b {
+  /* Nom du site agrandi : retour à la ligne uniquement entre les mots, jamais coupé dans un mot (taille ajustée par fitNavName) */
+  white-space: normal !important; overflow: visible; text-overflow: clip; overflow-wrap: normal !important; word-break: keep-all !important;
+  text-transform: none; font-size: 26px; font-weight: 800; line-height: 1.1; letter-spacing: 0; transform: none; writing-mode: horizontal-tb;
+}
+#nav.nav2 .nav-title small { font-size: 11px; }
+
+/* ======================================================================
+   Ouverture de quart : modale élargie (date / heure, index, participants)
+   ====================================================================== */
+@media (min-width: 721px) {
+  #m > div.oq-wide { max-width: min(96vw, 1080px); width: 100%; }
+}
+#m > div.oq-wide .g {
+  max-height: none !important;
+  overflow: visible !important;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+}

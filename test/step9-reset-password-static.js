@@ -1,0 +1,23 @@
+// Vérifications statiques de la réinitialisation du mot de passe depuis la fiche employé.
+const fs = require('fs');
+const assert = require('assert');
+const api = fs.readFileSync('src/catalog.js', 'utf8');
+const ui = fs.readFileSync('public/ext-core.js', 'utf8');
+const routeStart = api.indexOf("r.post('/employees/:id/reset-password'");
+const routeEnd = api.indexOf('// ---------- Clients ----------', routeStart);
+assert(routeStart >= 0 && routeEnd > routeStart, 'Route de réinitialisation présente');
+const route = api.slice(routeStart, routeEnd);
+assert(/need\('user\.manage'\)/.test(route), 'Permission user.manage requise');
+assert(/station_id = \$2/.test(route) && /\[targetId, req\.sid\]/.test(route), 'Employé limité à la station active');
+assert(/e\.status === 'inactif'/.test(route), 'Employé inactif refusé');
+assert(/!e\.user_id/.test(route), 'Employé sans compte refusé');
+assert(/u\.is_global/.test(route) && /!u\.active/.test(route), 'Comptes globaux et comptes désactivés refusés');
+assert(/crypto\.randomBytes\(12\)\.toString\('hex'\)/.test(route), 'Mot de passe temporaire aléatoire et robuste');
+assert(/bcrypt\.hash\(temporaryPassword, 12\)/.test(route), 'Mot de passe haché avec bcrypt');
+assert(/failed_logins = 0, lockout_until = NULL/.test(route), 'Compteur et verrouillage réinitialisés');
+assert(/UPDATE user_sessions SET revoked_at = now\(\)/.test(route), 'Sessions existantes révoquées');
+assert(/await audit\(/.test(route) && !/audit\([^;]*temporaryPassword/.test(route), 'Action auditée sans journaliser le mot de passe temporaire');
+assert(/can\('user\.manage'\).*empResetPassword/.test(ui), 'Bouton réservé aux personnes autorisées');
+assert(/confirm\('Créer un nouveau mot de passe temporaire/.test(ui), 'Confirmation explicite avant action sensible');
+assert(/result\.temporary_password/.test(ui), 'Mot de passe affiché après création');
+console.log('✔ Contrôles statiques étape 9 — réinitialisation mot de passe employé : 13/13');

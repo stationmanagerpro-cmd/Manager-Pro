@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a2a6b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="description" content="Station Manager PRO – Gestion de station-service">
+  <title>Station Manager PRO</title>
+  <link rel="icon" type="image/png" href="/icons/favicon-32.png">
+  <link rel="manifest" href="/api/branding/manifest.json">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="/app.css">
+  <link rel="stylesheet" href="/ext-shell.css">
+  <link rel="stylesheet" href="/design-v2.css">
+  <link rel="stylesheet" href="/performance-motion.css">
+  <link rel="stylesheet" href="/responsive-v3.css">
+  <link rel="stylesheet" href="/ext-polish.css?v=2">
+  <link rel="stylesheet" href="/ext-calc.css">
+  <link rel="stylesheet" href="/ext-sa-dash.css">
+  <link rel="stylesheet" href="/ext-product-profile.css?v=2">
+  <link rel="stylesheet" href="/ext-my-profile.css?v=2">
+  <link rel="stylesheet" href="/ext-product-catalog.css?v=1">
+  <link rel="stylesheet" href="/ext-parties.css?v=1">
+  <link rel="stylesheet" href="/ext-treasury.css?v=1">
+  <link rel="stylesheet" href="/ext-accounting.css?v=2">
+  <link rel="stylesheet" href="/home-editor.css">
+  <link rel="stylesheet" href="/responsive-phone.css?v=2">
+  <link rel="stylesheet" href="/ext-banner.css?v=1">
+  <link rel="stylesheet" href="/ext-license-ticker.css?v=1">
+  <link rel="stylesheet" href="/ext-skin-pro.css?v=2">
+  <link rel="stylesheet" href="/ext-tabs-motion.css?v=1">
+</head>
+<body>
+  <div id="login"></div>
+
+  <div id="app">
+    <nav id="nav"></nav>
+    <main>
+      <header id="app-header">
+      <div class="tenant-brandbar" id="tenant-brandbar">
+        <div class="tenant-brand" id="tenant-brand" aria-label="Identité du compte">
+          <span class="tenant-brand-mark">S</span><span class="tenant-brand-copy"><b>Station Manager PRO</b><small></small></span>
+        </div>
+        <div class="brandbar-right">
+          <div class="header-clock" id="live-clock" role="timer" aria-label="Date et heure">
+            <span class="clk-date"></span><b class="clk-time"></b>
+          </div>
+          <div class="user-chip" id="user-chip"></div>
+        </div>
+      </div>
+      <div class="top" id="topbar-ctx">
+        <button class="b2 icon-btn nav-toggle" id="nav-toggle" aria-label="Ouvrir le menu" aria-expanded="false" onclick="toggleNavDrawer()">&#9776;</button>
+        <button type="button" class="b2 icon-btn" id="nav-back" onclick="goBack()" title="Retour" aria-label="Retour à la page précédente" disabled style="opacity:0.45">←</button>
+        <h2 id="ttl"></h2>
+        <div id="global-search">
+          <input type="search" id="gs" placeholder="Rechercher… ( / )" autocomplete="off" aria-label="Recherche globale">
+          <div id="search-results"></div>
+        </div>
+        <select id="stsel" style="display:none" onchange="chSt(this.value)"></select>
+        <div id="top-shortcuts" class="top-shortcuts"></div>
+        <button class="b2 keep-focus top-focus" onclick="toggleFocusMode()" title="Mode pompiste (écran simplifié)">Focus</button>
+        <button class="b2 icon-btn" id="theme-toggle" onclick="toggleDayNight()" title="Mode jour / nuit" aria-label="Basculer mode jour ou nuit">🌙</button>
+        <button class="b2 icon-btn bell" id="bell" onclick="bellClick()" title="Notifications" aria-label="Notifications">&#128276;<span id="bell-n" hidden></span></button>
+        <button type="button" class="b2 icon-btn" data-pwa-install hidden onclick="pwaInstall()" title="Installer l’application" aria-label="Installer l’application">⬇ App</button>
+      </div>
+      </header>
+      <div id="pg" class="fade-in"></div>
+      <footer id="ft"></footer>
+    </main>
+  </div>
+
+  <nav id="bottom-nav" aria-label="Navigation mobile"></nav>
+
+  <div id="m"></div>
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script src="/ext-time24.js"></script>
+  <script src="/native-bridge.js?v=2"></script>
+  <script src="/vendor/chart.umd.min.js"></script>
+  <script src="/i18n.js"></script>
+  <script src="/app.js"></script>
+  <script src="/ext-core.js?v=2"></script>
+  <script src="/ext-fin.js"></script>
+  <script src="/ext-hr-v2.js"></script>
+  <script src="/ext-contracts.js"></script>
+  <script src="/ext-roles.js"></script>
+  <script src="/ext-ops.js"></script>
+  <script src="/ext-p3.js"></script>
+  <script src="/ext-finance-p4.js?v=2"></script>
+  <script src="/ext-p5.js?v=2"></script>
+  <script src="/ext-p6.js"></script>
+  <script src="/ext-p7.js"></script>
+  <script src="/ext-p8.js"></script>
+  <script src="/ext-p9.js"></script>
+  <script src="/ext-p10.js"></script>
+  <script src="/ext-p11.js"></script>
+  <script src="/ext-p12.js"></script>
+  <script src="/ext-premium.js"></script>
+  <script src="/ext-improvements.js"></script>
+  <script src="/ext-ux-v2.js"></script>
+  <script src="/ext-brand-admin.js"></script>
+  <script src="/ext-platform.js"></script>
+  <script src="/ext-sa-dash.js"></script>
+  <script src="/ext-archive.js"></script>
+  <script src="/ext-period-range.js"></script>
+  <script src="/ext-detail-pages.js"></script>
+  <script src="/ext-profile-stats.js"></script>
+  <script src="/ext-product-profile.js"></script>
+  <script src="/ext-product-catalog.js?v=1"></script>
+  <script src="/ext-parties.js?v=1"></script>
+  <script src="/ext-branded-pdf.js?v=2"></script>
+  <script src="/ext-report-tools.js?v=1"></script>
+  <script src="/ext-shifts-sales-pdf.js?v=1"></script>
+  <script src="/ext-treasury.js?v=4"></script>
+  <script src="/ext-money-match.js?v=1"></script>
+  <script src="/ext-skin-pro.js?v=2"></script>
+  <script src="/ext-banner.js?v=2"></script>
+  <script src="/ext-license-ticker.js?v=1"></script>
+  <script src="/ext-accounting.js?v=3"></script>
+  <script src="/ext-import.js?v=3"></script>
+  <script src="/ext-multistation.js"></script>
+  <script src="/ext-multistation-views.js?v=4"></script>
+  <script src="/ext-profit.js"></script>
+  <script src="/ext-map.js?v=2"></script>
+  <script src="/ext-messaging.js?v=3"></script>
+  <script src="/ext-modern-pack.js?v=2"></script>
+  <script src="/ext-avenir.js"></script>
+  <script src="/ext-billing.js?v=2"></script>
+  <script src="/ext-purchase-order.js"></script>
+  <script src="/ext-achats.js?v=3"></script>
+  <script src="/ext-magasins.js?v=2"></script>
+  <script src="/ext-vendeurs.js"></script>
+  <script src="/ext-purchase-orders.js?v=2"></script>
+  <script src="/ext-sale-shift.js"></script>
+  <script src="/ext-stock-reports.js"></script>
+  <script src="/ext-alert-config.js"></script>
+  <script src="/ext-tanks.js"></script>
+  <script src="/ext-fleet.js?v=2"></script>
+  <script src="/ext-notif-rules.js"></script>
+  <script src="/ext-fiscal.js"></script>
+  <script src="/ext-fiscal-wizard.js"></script>
+  <script src="/ext-fiscal-admin.js"></script>
+  <script src="/ext-proposals.js"></script>
+  <script src="/ext-shell.js"></script>
+  <script src="/ext-nav-colors.js"></script>
+  <script src="/responsive-v3.js"></script>
+  <script src="/ext-aggregates.js?v=1"></script>
+  <script src="/ext-dash-range.js?v=1"></script>
+  <script src="/ext-design.js?v=3"></script>
+  <script src="/ext-direction.js?v=2"></script>
+  <script src="/ext-pilotage-pdf.js?v=1"></script>
+  <script src="/ext-export-all.js?v=1"></script>
+  <script src="/home-core.js"></script>
+  <script src="/ext-home.js"></script>
+  <script src="/home-editor.js"></script>
+  <script src="/ext-teamroles.js"></script>
+  <script src="/ext-my-profile.js?v=2"></script>
+  <script src="/ext-push.js"></script>
+  <script src="/ext-confort.js"></script>
+  <script src="/ext-sidebar-pub.js"></script>
+  <script src="/ext-aide-demo.js"></script>
+  <script src="/ext-calc.js"></script>
+  <script src="/ext-offline-sales.js"></script>
+  <script src="/ext-offline-close.js"></script>
+  <script src="/pwa.js"></script>
+  <script src="/table-fit.js?v=1" defer></script>
+</body>
+</html>

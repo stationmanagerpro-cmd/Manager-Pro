@@ -1,0 +1,53 @@
+/* Manager PRO — onglets et changements de page plus fluides (« flottants »).
+   Chargé en dernier. Respecte data-motion="off" et prefers-reduced-motion (règles globales de performance-motion.css). */
+:root {
+  --smp-ease: cubic-bezier(.22, 1, .36, 1);      /* décélération douce, sans à-coup */
+  --smp-tab-dur: 320ms;
+}
+
+/* ---- Onglets : changement d'état progressif, léger effet de flottement au survol ---- */
+html:not([data-motion="off"]) .tabs a,
+html:not([data-motion="off"]) .tabs-v a,
+html:not([data-motion="off"]) .subtabs a,
+html:not([data-motion="off"]) .pp-tabs button,
+html:not([data-motion="off"]) .emp-tabs button,
+html:not([data-motion="off"]) .detail-tabs button {
+  transition: background-color var(--smp-tab-dur) var(--smp-ease), color var(--smp-tab-dur) var(--smp-ease),
+    border-color var(--smp-tab-dur) var(--smp-ease), box-shadow var(--smp-tab-dur) var(--smp-ease),
+    transform var(--smp-tab-dur) var(--smp-ease), filter var(--smp-tab-dur) var(--smp-ease);
+  will-change: transform;
+}
+html:not([data-motion="off"]) .tabs a:hover,
+html:not([data-motion="off"]) .subtabs a:hover,
+html:not([data-motion="off"]) .pp-tabs button:hover,
+html:not([data-motion="off"]) .emp-tabs button:hover,
+html:not([data-motion="off"]) .detail-tabs button:hover { transform: translateY(-2px); }
+html:not([data-motion="off"]) .tabs-v a:hover { transform: translateX(3px); }
+html:not([data-motion="off"]) .tabs a:active,
+html:not([data-motion="off"]) .subtabs a:active,
+html:not([data-motion="off"]) .tabs-v a:active,
+html:not([data-motion="off"]) .pp-tabs button:active,
+html:not([data-motion="off"]) .emp-tabs button:active,
+html:not([data-motion="off"]) .detail-tabs button:active { transform: scale(.97); transition-duration: 120ms; }
+/* L'onglet actif « flotte » légèrement au-dessus des autres */
+html:not([data-motion="off"]) .tabs a.on,
+html:not([data-motion="off"]) .pp-tabs button.on,
+html:not([data-motion="off"]) .emp-tabs button.on,
+html:not([data-motion="off"]) .detail-tabs button.on { transform: translateY(-1px); }
+
+/* ---- Contenu de la page : fondu + glissement doux à chaque changement d'onglet / de vue ---- */
+@keyframes smpPageIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes smpPaneIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+html:not([data-motion="off"]) #pg > * { animation: smpPageIn 380ms var(--smp-ease) both; }
+html:not([data-motion="off"]) .pp-pane:not([hidden]),
+html:not([data-motion="off"]) .tab-content > * { animation: smpPaneIn 320ms var(--smp-ease) both; }
+
+/* ---- Fenêtres modales : apparition plus douce ---- */
+@keyframes smpModalIn { from { opacity: 0; transform: translateY(14px) scale(.97); } to { opacity: 1; transform: none; } }
+html:not([data-motion="off"]) #m > div { animation: smpModalIn 300ms var(--smp-ease) both; }
+html:not([data-motion="off"]) #m { animation: fadeIn 240ms ease both; }
+
+@media (prefers-reduced-motion: reduce) {
+  #pg > *, .pp-pane, .tab-content > *, #m, #m > div { animation: none !important; }
+  .tabs a, .tabs-v a, .subtabs a, .pp-tabs button, .emp-tabs button, .detail-tabs button { transition: none !important; transform: none !important; }
+}

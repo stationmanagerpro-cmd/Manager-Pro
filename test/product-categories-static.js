@@ -1,0 +1,14 @@
+const fs = require('fs');
+const assert = require('assert');
+const api = fs.readFileSync('src/catalog.js','utf8');
+const ui = fs.readFileSync('public/app.js','utf8');
+assert(api.includes("r.get('/categories'"));
+assert(api.includes("r.post('/categories', need('settings.edit')"));
+assert(api.includes("r.patch('/categories/:id', need('settings.edit')"));
+assert(api.includes("r.delete('/categories/:id', need('settings.edit')"));
+assert(api.includes('Catégorie utilisée par'));
+assert(api.includes("cat.label AS category_label"));
+assert(ui.includes('manageProductCategories'));
+assert(ui.includes("Gérer les catégories"));
+assert(ui.includes('category_label || p.category'));
+console.log('OK — 9 contrôles statiques des catégories produits');

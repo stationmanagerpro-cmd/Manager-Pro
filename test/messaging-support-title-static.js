@@ -1,0 +1,25 @@
+'use strict';
+const fs = require('fs');
+const assert = require('assert');
+const api = fs.readFileSync('src/messaging.js', 'utf8');
+const shell = fs.readFileSync('public/ext-shell.js', 'utf8');
+const ui = fs.readFileSync('public/ext-messaging.js', 'utf8');
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+const listStart = api.indexOf("r.get('/messaging/conversations'");
+const unreadStart = api.indexOf("r.get('/messaging/unread'");
+assert(listStart >= 0 && unreadStart > listStart, 'conversation and unread endpoints exist');
+const list = api.slice(listStart, unreadStart);
+const unread = api.slice(unreadStart, api.indexOf("/** Ouvrir ou créer une conversation individuelle */", unreadStart));
+let passed = 0;
+function check(name, fn) { fn(); passed++; console.log('✓ ' + name); }
+check('support title uses creator display name', () => assert.match(list, /COALESCE\(NULLIF\(creator\.full_name, ''\), creator\.login, 'Administrateur'\)/));
+check('support title includes client name', () => assert.match(list, /concat_ws\(' — ',[\s\S]*cl\.name\)/));
+check('client conversation list computes display title without changing stored subject', () => assert.match(list, /ELSE c\.title END AS title/));
+check('Superadmin list joins client and creator', () => assert.match(list, /LEFT JOIN clients cl ON cl\.id = c\.client_id[\s\S]*LEFT JOIN users creator ON creator\.id = c\.created_by/));
+check('client list retains tenant filter', () => assert.match(list, /WHERE c\.client_id = \$1 AND c\.deleted_at IS NULL/));
+check('unread notification title follows support display format', () => assert.match(unread, /AS conversation_title, COALESCE\(c\.is_support, FALSE\) AS is_support/));
+check('unread query joins client and creator', () => assert.match(unread, /LEFT JOIN clients cl ON cl\.id = c\.client_id[\s\S]*LEFT JOIN users creator ON creator\.id = c\.created_by/));
+check('support remains a category label in toast', () => assert.match(shell, /const label = item\.is_support \? 'Support' :/));
+check('conversation list still escapes displayed title', () => assert.match(ui, /esc\(convLabel\(c\)\)/));
+check('test command registered', () => assert.equal(pkg.scripts['test:messaging-support-title'], 'node test/messaging-support-title-static.js'));
+console.log(`\n${passed}/10 contrôles statiques réussis.`);

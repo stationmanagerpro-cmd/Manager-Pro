@@ -1,0 +1,15 @@
+const fs = require('fs');
+const assert = require('assert');
+const mod = fs.readFileSync('src/files.js','utf8');
+const mig = fs.readFileSync('migrations/060_stored_files.sql','utf8');
+const files = ['src/auth.js','src/admin.js','src/home_page.js','src/branding.js','src/fiscal.js','src/hr.js','src/docs.js'];
+assert(mig.includes('CREATE TABLE IF NOT EXISTS stored_files'));
+assert(mig.includes('content BYTEA NOT NULL'));
+assert(mig.includes('file_size <= 2097152'));
+assert(mod.includes('INSERT INTO stored_files'));
+assert(mod.includes('SELECT content FROM stored_files'));
+assert(mod.includes('DELETE FROM stored_files'));
+assert(mod.includes('crypto.randomUUID()'));
+assert(mod.includes('function decode'));
+for (const f of files) assert(fs.readFileSync(f,'utf8').includes("require('./files')"), `${f} référence le module fichiers`);
+console.log('OK — 9 contrôles statiques du stockage Neon');

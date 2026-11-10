@@ -1,0 +1,21 @@
+'use strict';
+const fs = require('fs');
+const assert = require('assert');
+const src = fs.readFileSync('src/contracts.js', 'utf8');
+const ui = fs.readFileSync('public/ext-contracts.js', 'utf8');
+const detail = fs.readFileSync('public/ext-detail-pages.js', 'utf8');
+const pkg = require('../package.json');
+let n = 0;
+function check(label, fn) { fn(); n++; console.log('✔ ' + label); }
+const route = src.slice(src.indexOf("r.post('/admin/clients/:id/license/set-expiry'"), src.indexOf('/** Suspension manuelle */'));
+check('route réservée à l’Administrateur Principal', () => assert(/set-expiry', needPrincipal/.test(route)));
+check('date précise ou durée à retrancher, jamais les deux', () => assert(/!!b\.expires_at !== !!\(b\.reduce_unit && b\.reduce_value\)/.test(route)));
+check('une date antérieure à l’échéance actuelle est acceptée (réduction)', () => assert(!/doit être dans le futur/.test(route) && /shorter/.test(route)));
+check('la date ne peut pas précéder le début du contrat', () => assert(/ne peut pas précéder le début/.test(route)));
+check('historique « reduction » ou « modification » + audit', () => assert(/'reduction' : 'modification'/.test(route) && /audit\(c, req, 'licences'/.test(route)));
+check('verrou de ligne et transaction', () => assert(/FOR UPDATE/.test(route) && /await tx\(/.test(route)));
+check('la migration autorise l’opération « reduction »', () => assert(/'reduction'/.test(fs.readFileSync('migrations/019_licenses.sql', 'utf8'))));
+check('interface : fenêtre « Modifier l’échéance » reliée à la route', () => assert(/clSetExpiry = safe/.test(ui) && /license\/set-expiry/.test(ui)));
+check('boutons présents (fiche contrat, liste, pages de détail)', () => assert(/clSetExpiry\(\$\{id\}\)/.test(ui) && /clSetExpiry\(\$\{c\.client_id/.test(ui) && (detail.match(/clSetExpiry/g) || []).length === 2));
+check('script de test déclaré', () => assert(pkg.scripts['test:license-set-expiry']));
+console.log(`\n${n}/10 contrôles statiques réussis.`);

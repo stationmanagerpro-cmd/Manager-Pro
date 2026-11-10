@@ -1,0 +1,73 @@
+# Déploiement : docker compose up -d --build
+# Premier démarrage :
+#   export DB_PASSWORD=... JWT_SECRET=$(openssl rand -hex 32)
+#   docker compose up -d --build
+#   docker compose run --rm api node src/setup.js admin "MotDePasseSolide1" "Ma station"
+#
+# Avec HTTPS (profil proxy) :
+#   docker compose --profile proxy up -d --build
+
+services:
+  db:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: "${DB_PASSWORD:?définir DB_PASSWORD}"
+      POSTGRES_DB: station_manager
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    # Ne pas exposer le port en production
+    # ports: ["5432:5432"]
+
+  api:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgres://postgres:${DB_PASSWORD}@db:5432/station_manager"
+      JWT_SECRET: "${JWT_SECRET:?définir JWT_SECRET (32 caractères minimum)}"
+      BACKUP_AUTO: "1"
+      BACKUP_KEEP_DAYS: "14"
+      NODE_ENV: production
+      PORT: "3000"
+      # CORS_ORIGIN: "https://votre-domaine.com"
+      # MAPBOX_TOKEN: "pk.…"   # jeton PUBLIC Mapbox pour la carte des stations (restreignez-le par URL côté Mapbox)
+      # SMTP_HOST / SMTP_PORT / SMTP_USER / SMTP_PASS / BACKUP_NOTIFY_EMAIL
+    ports:
+      - "3000:3000"
+    volumes:
+      - appdata:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # Reverse-proxy HTTPS optionnel (Caddy)
+  caddy:
+    image: caddy:2-alpine
+    profiles: ["proxy"]
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  dbdata: {}
+  appdata: {}
+  caddy_data: {}
+  caddy_config: {}

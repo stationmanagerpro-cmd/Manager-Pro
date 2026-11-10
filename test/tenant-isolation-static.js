@@ -1,0 +1,20 @@
+// Contrôles statiques des barrières tenant/station et des modules contractuels.
+const fs = require('fs');
+const assert = require('assert');
+const core = fs.readFileSync('src/core.js', 'utf8');
+const server = fs.readFileSync('src/server.js', 'utf8');
+const security = fs.readFileSync('test/security.js', 'utf8');
+const restore = fs.readFileSync('scripts/ci-restore-test.js', 'utf8');
+const runner = fs.readFileSync('test/all.js', 'utf8');
+assert(/JOIN stations st ON st\.id = us\.station_id/.test(core), 'L’affectation doit joindre la station réelle');
+assert(/st\.active = true/.test(core), 'Une station inactive doit être refusée');
+assert(/u\.client_id IS NULL OR st\.client_id = u\.client_id/.test(core), 'Une station d’un autre client doit être refusée');
+assert(/featureOn\(contract, 'module:sales'\)/.test(server), 'Le contrat doit contrôler le module ventes');
+assert(/featureOn\(contract, 'module:stock'\)/.test(server), 'Le contrat doit contrôler le module stock');
+assert(/featureOn\(contract, 'module:messaging'\)/.test(server), 'Le contrat doit contrôler la messagerie');
+assert(/featureOn\(contract, 'can_export_reports'\)/.test(server), 'Le contrat doit contrôler les exports');
+assert(/localhost.*127\.0\.0\.1.*::1/.test(security), 'Le test de sécurité doit être limité à une API locale');
+assert(/ALLOW_DESTRUCTIVE_TESTS !== '1'/.test(restore), 'Le test de restauration doit exiger une confirmation explicite');
+assert(/ALLOW_DESTRUCTIVE_TESTS !== '1'/.test(runner), 'Le test d’intégration complet doit exiger une confirmation explicite');
+assert(/DATABASE_URL local de test requis/.test(runner), 'Le test d’intégration doit refuser une URL absente/invalide');
+console.log('✔ Contrôles statiques isolation client/station et garde-fous de tests : 11/11');

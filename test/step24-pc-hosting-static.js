@@ -1,0 +1,21 @@
+const fs = require('fs');
+const assert = require('assert');
+const server = fs.readFileSync('src/server.js', 'utf8');
+const env = fs.readFileSync('.env.pc.example', 'utf8');
+const guide = fs.readFileSync('docs/HEBERGEMENT_PC_WINDOWS_TAILSCALE_FUNNEL.md', 'utf8');
+const start = fs.readFileSync('scripts/windows/start-pc-server.ps1', 'utf8');
+const funnel = fs.readFileSync('scripts/windows/start-tailscale-funnel.ps1', 'utf8');
+const backup = fs.readFileSync('scripts/windows/backup-now.ps1', 'utf8');
+let n = 0;
+function check(label, fn) { fn(); n++; console.log('✔ ' + label); }
+check('HOST optionnel et écoute localhost configurable', () => assert(server.includes('const host = process.env.HOST || null') && server.includes('app.listen(port, host, onListening)')));
+check('comportement par défaut sans HOST conservé pour compatibilité', () => assert(server.includes('else app.listen(port, onListening)')));
+check('modèle PC lie le serveur à localhost', () => assert(env.includes('HOST=127.0.0.1')));
+check('modèle PC garde les opérations destructives désactivées', () => assert(env.includes('RESTORE_ENABLED=0') && env.includes('RESET_GLOBAL_ENABLED=0') && env.includes('CLIENT_RESTORE_ENABLED=0')));
+check('script de lancement force localhost', () => assert(start.includes("$env:HOST = '127.0.0.1'") && start.includes('npm start')));
+check('script Funnel ne l’active pas automatiquement', () => assert(funnel.includes('n’est pas lancée automatiquement') && !/Invoke-Expression|Start-Process\s+tailscale\s+funnel/i.test(funnel)));
+check('script sauvegarde échoue si npm run backup échoue', () => assert(backup.includes('npm run backup') && backup.includes('$LASTEXITCODE -ne 0')));
+check('guide avertit que Funnel est public', () => assert(guide.toLowerCase().includes("toute personne qui possède l'url") && guide.includes('Tailscale Serve')));
+check('guide couvre sauvegarde hors PC et test restauration', () => assert(guide.includes('copie chiffrée') && guide.includes('test de restauration')));
+check('guide confirme que le serveur ne dépend d’aucun service cloud', () => assert(guide.includes('ne dépend d\'aucun service cloud') && guide.includes('PostgreSQL installé sur le PC')));
+console.log(`\n${n}/${n} contrôles statiques réussis.`);

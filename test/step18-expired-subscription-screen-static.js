@@ -1,0 +1,24 @@
+'use strict';
+const fs = require('fs');
+const assert = require('assert');
+const server = fs.readFileSync('src/server.js', 'utf8');
+const contracts = fs.readFileSync('src/contracts.js', 'utf8');
+const app = fs.readFileSync('public/app.js', 'utf8');
+const messaging = fs.readFileSync('src/messaging.js', 'utf8');
+const ui = fs.readFileSync('public/ext-contracts.js', 'utf8');
+let n = 0;
+function check(name, fn) { fn(); n++; console.log('✓ ' + name); }
+check('Le middleware n’autorise l’exception de support qu’à ADMIN local', () => assert(server.includes("path === '/messaging/support/to-admin' && req.user.role === 'ADMIN'")));
+check('Les autres routes restent bloquées en cas de contrat suspendu', () => assert(server.includes('!expiredSupportRequest')));
+check('Le support de renouvellement reste possible après expiration', () => assert(messaging.includes('renewalSupportException') && messaging.includes('!clientCanSupport(contract) && !renewalSupportException')));
+check('Le statut de licence expose un numéro superadmin configurable', () => assert(contracts.includes("key = 'superadmin_phone'") && contracts.includes('process.env.SUPERADMIN_PHONE')));
+check('Le numéro est lu depuis le paramétrage global', () => assert(contracts.includes('station_id IS NULL AND key = \'superadmin_phone\'')));
+check('L’écran C2 affiche le texte demandé', () => assert(ui.includes('VOTRE ABONNEMENT EST ARRIVÉ À TERME, MERCI DE CONTACTER L’ADMINISTRATEUR POUR LE RENOUVELER.')));
+check('Le message d’expiration configuré côté serveur est aussi affiché avec échappement HTML', () => assert(ui.includes("String(status.message || '').trim()") && ui.includes('esc(detailMessage)') && ui.includes('${detailHtml}')));
+check('Le bouton de contact et le formulaire ne sont proposés qu’à ADMIN local', () => assert(ui.includes('const isLocalAdmin = ME.role === \'ADMIN\'') && ui.includes('expired-contact')));
+check('Le formulaire utilise le titre Demande d’abonnement et la durée souhaitée', () => assert(ui.includes('Demande d’abonnement') && ui.includes('expired-duration')));
+check('La demande incrémente le suivi de renouvellement côté serveur', () => assert(ui.includes("Po('/me/license/renewal-request'")));
+check('La demande passe également par la messagerie de support', () => assert(ui.includes("Po('/messaging/support/to-admin'")));
+check('L’écran est affiché au démarrage et le contenu métier masqué', () => assert(app.includes('window.showExpiredSubscriptionScreen()') && ui.includes("getElementById('app').style.display = 'none'")));
+check('Les 403 LICENSE_EXPIRED déclenchent l’écran dédié', () => assert(app.includes("j.code === 'LICENSE_EXPIRED'") && app.includes('window.__onLicenseExpired(j)')));
+console.log(`\n${n}/${n} vérifications réussies.`);

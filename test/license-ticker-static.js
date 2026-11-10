@@ -1,0 +1,10 @@
+const assert = require('assert'), fs = require('fs'), path = require('path');
+const r = f => fs.readFileSync(path.join(__dirname, '..', f), 'utf8');
+const js = r('public/ext-license-ticker.js'), css = r('public/ext-license-ticker.css');
+let n = 0; const ok = (t, f) => { f(); n++; console.log('OK  ' + t); };
+ok('seuil 15 jours, jamais pour illimité/expirée', () => { assert(/THRESHOLD = 15/.test(js)); assert(/is_indefinite/.test(js)); assert(/EXPIREE/.test(js) && /SUSPENDUE/.test(js)); assert(/d >= 0 && d <= THRESHOLD/.test(js)); });
+ok('réservé ADMIN local et GERANT', () => assert(/ME\.role === 'ADMIN' \|\| ME\.role === 'GERANT'/.test(js) && /!ME\.is_global/.test(js)));
+ok('automatique (surveillance + relecture)', () => assert(/setInterval/.test(js) && /REFRESH_MS/.test(js)));
+ok('défilement droite → gauche, tout en haut', () => { assert(/translateX\(-100%\)/.test(css) && /position: fixed; top: 0/.test(css)); });
+ok('chargé par index.html et mis en cache hors ligne', () => { for (const f of ['ext-license-ticker.js?v=1', 'ext-license-ticker.css?v=1']) { assert(r('public/index.html').includes(f)); assert(r('public/sw.js').includes(f)); } });
+console.log(n + ' tests OK');

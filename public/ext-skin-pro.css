@@ -1,0 +1,152 @@
+/* ext-skin-pro.css — habillage « Pro » (maquette Station Manager PRO) : bandeau avec slogan et photo, panneau de travail arrondi,
+   fil d'Ariane, onglets en pilules, boutons en dégradé, tableaux à en-tête de couleur.
+   Chargé EN DERNIER. Actif seulement si <html data-skin="pro"> (par défaut) ; localStorage smp-skin=classic ou ?skin=classic le désactive.
+   Les couleurs viennent des jetons existants (--p, --p2, --on-p, --pl, --c, --bd) : couleur de marque et mode sombre restent respectés,
+   et chaque fond coloré garde son texte explicite (--on-p) pour la lisibilité. */
+
+/* ===== Bandeau (identité du client) ===== */
+html[data-skin=pro] .tenant-brandbar { position: relative; min-height: 96px; padding: 14px 0; margin: 0; border-bottom: 1px solid var(--sb-line, rgba(255,255,255,.09)); overflow: hidden; }
+html[data-skin=pro] .tenant-brand { flex: 0 0 auto; max-width: 34%; z-index: 2; }
+html[data-skin=pro] .tenant-brand-copy b { color: #fff; }
+html[data-skin=pro] #tenant-brand .tenant-brand-copy small { display: none !important; }          /* le slogan passe au centre du bandeau */
+html[data-skin=pro] .tenant-brand-mark { background: rgba(255,255,255,.1); color: #fff; border: 2px solid rgba(255,255,255,.35); border-radius: 18px; }
+html[data-skin=pro] .skin-slogan { flex: 1 1 0; min-width: 0; z-index: 2; text-align: center; color: #fff; font-style: italic; font-weight: 800; font-size: clamp(13px, 1.4vw, 22px); line-height: 1.25; text-shadow: 0 2px 6px rgba(0,10,40,.55); padding: 0 12px; }
+html[data-skin=pro] .skin-slogan:empty { display: none; }
+html[data-skin=pro] .brandbar-right { z-index: 2; }
+html[data-skin=pro] .skin-banner { position: relative; flex: 0 0 min(20%, 300px); align-self: stretch; margin: -14px 14px -14px 0; z-index: 1; pointer-events: none;
+  background: var(--skin-banner) center/cover no-repeat;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 30%, #000 85%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 30%, #000 85%, transparent 100%); }
+html[data-skin=pro] .skin-banner:not([style*="--skin-banner"]) { display: none; }
+
+/* ===== Menu latéral ===== */
+html[data-skin=pro] .nav2 .nav-link { border-radius: 13px; font-weight: 600; }
+html[data-skin=pro] .nav2 .nav-link.on { background: linear-gradient(100deg, var(--p), var(--p2)); color: var(--on-p); box-shadow: 0 6px 16px rgba(2, 20, 80, .38), inset 0 1px rgba(255,255,255,.18); }
+html[data-skin=pro] .nav2 .nav-node.has-active > .nav-parent { background: linear-gradient(100deg, var(--p), var(--p2)); color: var(--on-p); box-shadow: 0 6px 16px rgba(2, 20, 80, .38); }
+html[data-skin=pro] .nav2 .nav-node.has-active > .nav-parent .chev, html[data-skin=pro] .nav2 .nav-node.has-active > .nav-parent .nav-label { color: var(--on-p); }
+html[data-skin=pro] .nav-pop .nav-link.on, html[data-skin=pro] .nav-fly .nav-link.on, html[data-skin=pro] .nav2 .nav-sub .nav-link.on { background: linear-gradient(100deg, #c2410c, #9a3412); color: #fff; }   /* sous-menu actif : orange (blanc ≥ 5:1) */
+
+/* ===== Fil d'Ariane + panneau de travail ===== */
+html[data-skin=pro] .skin-crumbbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; padding: 4px 6px 4px 8px; color: var(--t); }
+html[data-skin=pro] .skin-crumb { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; min-width: 0; }
+html[data-skin=pro] .skin-crumb b { color: var(--t); }
+html[data-skin=pro] .skin-crumb span { color: var(--m); font-weight: 600; }
+html[data-skin=pro] .skin-datepill { background: var(--c); border: 1px solid var(--bd); border-radius: 10px; padding: 7px 12px; font-size: 12px; font-weight: 750; box-shadow: var(--shadow); white-space: nowrap; }
+html[data-skin=pro] #pg { background: linear-gradient(145deg, var(--c) 0%, color-mix(in srgb, var(--pl) 45%, var(--c)) 100%); border: 1px solid var(--bd); border-radius: 24px; padding: 18px 18px 16px; box-shadow: 0 9px 24px rgba(26, 75, 151, .12); min-height: calc(100vh - 260px); }
+html[data-skin=pro] .card { border-radius: 17px; }
+
+/* ===== Onglets en pilules ===== */
+html[data-skin=pro] .tabs { gap: 10px; }
+html[data-skin=pro] .tabs a { border: 1px solid var(--bd); border-radius: 15px; background: linear-gradient(145deg, var(--tab-bg, #edf3ff), var(--tab-hover, #dce7fc)); color: var(--t); font-weight: 800; padding: 11px 16px; box-shadow: 0 3px 8px rgba(13, 60, 133, .08); }
+html[data-skin=pro] .tabs a.on { background: linear-gradient(110deg, var(--p), var(--p2)); color: var(--on-p); border-color: var(--p); box-shadow: 0 5px 15px rgba(8, 114, 239, .38), inset 0 1px rgba(255,255,255,.3); }
+:root[data-theme=dark][data-skin=pro] .tabs a.on { color: var(--on-p); }
+
+/* ===== Boutons ===== */
+html[data-skin=pro] #pg button:not([class]), html[data-skin=pro] #m button:not([class]), html[data-skin=pro] .bar > button:not(.b2):not(.bd):not(.bg) {
+  background: linear-gradient(100deg, var(--p), var(--p2)); color: var(--on-p); border-radius: 12px; font-weight: 800; box-shadow: 0 5px 13px rgba(7, 91, 215, .28); }
+html[data-skin=pro] #pg button:not([class]):hover, html[data-skin=pro] #m button:not([class]):hover { filter: brightness(1.06); background: linear-gradient(100deg, var(--p), var(--p2)); color: var(--on-p); }
+html[data-skin=pro] .b2 { background: linear-gradient(145deg, var(--c), var(--pl)); border: 1px solid var(--bd); border-radius: 12px; color: var(--p-text, var(--t)) !important; font-weight: 800; }
+html[data-skin=pro] .b-orange { background: linear-gradient(100deg, #c2410c, #9a3412) !important; color: #fff !important; border-radius: 12px; font-weight: 800; }   /* « Annuler » de la maquette, texte blanc lisible */
+
+/* ===== Tableaux ===== */
+html[data-skin=pro] #pg table thead, html[data-skin=pro] #m table thead { background: linear-gradient(100deg, var(--p), var(--p2)); color: var(--on-p); }
+html[data-skin=pro] #pg table thead th, html[data-skin=pro] #m table thead th { background: transparent; color: var(--on-p); font-weight: 800; border-bottom: 0; }
+html[data-skin=pro] #pg table thead th:first-child { border-top-left-radius: 12px; }
+html[data-skin=pro] #pg table thead th:last-child { border-top-right-radius: 12px; }
+html[data-skin=pro] #pg table { border-radius: 12px; }
+
+/* ===== Tous les formulaires et fenêtres (même présentation que l'écran de vente) ===== */
+html[data-skin=pro] #m > div[data-pf] { border-radius: 24px; padding: 20px 22px; max-width: 700px; box-shadow: 0 24px 60px rgba(2, 20, 70, .35); }
+html[data-skin=pro] #m > div[data-pf="wide"] { max-width: 900px; }
+html[data-skin=pro] .pf-head { display: flex; align-items: center; gap: 14px; margin: 0 0 14px; }
+html[data-skin=pro] .pf-ico { width: 46px; height: 44px; flex: none; border-radius: 13px; background: linear-gradient(145deg, var(--pl), var(--bd)); display: grid; place-items: center; font-size: 24px; }
+html[data-skin=pro] .pf-head h3 { margin: 0; font-size: 21px; letter-spacing: -.4px; line-height: 1.2; min-width: 0; overflow-wrap: anywhere; }
+html[data-skin=pro] :is(#m, #pg, .login-card) label:not(td label):not(th label):has(> :is(input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=file]), select, textarea)), html[data-skin=pro] #m .g > label, html[data-skin=pro] #pg .g > label { background: linear-gradient(145deg, var(--pl), var(--c)); border: 1px solid var(--bd); border-radius: 13px; padding: 9px 10px 8px; font-weight: 800; font-size: 13px; }
+html[data-skin=pro] #m .g > label[style*="display:none"], html[data-skin=pro] #m .g > label[style*="display: none"], html[data-skin=pro] #pg .g > label[style*="display:none"] { display: none; }
+html[data-skin=pro] #m .g input, html[data-skin=pro] #m .g select, html[data-skin=pro] #m .g textarea, html[data-skin=pro] #pg .g input, html[data-skin=pro] #pg .g select, html[data-skin=pro] #pg .g textarea { border-radius: 9px; font-weight: 700; }
+html[data-skin=pro] #m .g input[type=checkbox], html[data-skin=pro] #m .g input[type=radio] { height: auto; }
+html[data-skin=pro] #m .r, html[data-skin=pro] .pf-actions { margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--bd); display: flex; gap: 9px; justify-content: flex-end; align-items: center; flex-wrap: wrap; }
+html[data-skin=pro] .pf-cancel { border-radius: 12px; padding: 11px 18px; font-weight: 800; }
+html[data-skin=pro] .pf-save { background: linear-gradient(100deg, var(--p), var(--p2)); color: var(--on-p); border-radius: 12px; padding: 12px 22px; font-weight: 800; box-shadow: 0 5px 13px rgba(7, 91, 215, .3); }
+html[data-skin=pro] .pf-save:not(.sp-save)::before { content: "✓ "; }
+html[data-skin=pro] .pf-save:disabled { opacity: .6; cursor: wait; }
+html[data-skin=pro] #m .tabs { margin-bottom: 12px; }
+@media (max-width: 760px) { html[data-skin=pro] #m > div[data-pf] { padding: 16px; border-radius: 18px; } html[data-skin=pro] .pf-head h3 { font-size: 18px; } html[data-skin=pro] #m .r .pf-save { flex: 1; } }
+
+/* ===== Écran de connexion ===== */
+html[data-skin=pro] .login-card { border-radius: 24px; padding: 28px 26px; box-shadow: 0 24px 60px rgba(2, 20, 70, .22); }
+html[data-skin=pro] .login-card h2 { font-size: 24px; letter-spacing: -.5px; }
+html[data-skin=pro] .login-card label { margin-top: 10px; }
+html[data-skin=pro] .login-card input { border-radius: 9px; height: 40px; font-weight: 700; }
+html[data-skin=pro] .login-card > button:not([class]) { background: linear-gradient(100deg, var(--p), var(--p2)); color: var(--on-p); border-radius: 12px; height: 46px; font-weight: 800; font-size: 16px; box-shadow: 0 5px 13px rgba(7, 91, 215, .3); }
+
+/* ===== Écran de vente carburant (Lot 2) : mêmes champs et règles, présentation de la maquette ===== */
+html[data-skin=pro] #m > div:has(.sp) { max-width: 1020px; border-radius: 24px; padding: 20px 22px; }
+html[data-skin=pro] .sp-head { display: flex; align-items: center; gap: 14px; margin: 0 0 14px; flex-wrap: wrap; }
+html[data-skin=pro] .sp-ico { width: 52px; height: 48px; border-radius: 14px; background: linear-gradient(145deg, var(--pl), var(--bd)); display: grid; place-items: center; font-size: 28px; flex: none; }
+html[data-skin=pro] .sp-ttl { flex: 1 1 260px; min-width: 0; }
+html[data-skin=pro] .sp-ttl h3 { margin: 0 0 3px; font-size: 22px; letter-spacing: -.5px; }
+html[data-skin=pro] .sp-ttl p { margin: 0; font-size: 12.5px; color: var(--m); }
+html[data-skin=pro] .sp-shift { margin-left: auto; background: linear-gradient(100deg, var(--p), var(--p2)); color: var(--on-p); border-radius: 30px; padding: 10px 16px; font-size: 12px; font-weight: 800; box-shadow: 0 4px 12px rgba(8, 101, 215, .3); white-space: nowrap; }
+html[data-skin=pro] .sp-grid { display: grid; grid-template-columns: minmax(0, 2.2fr) minmax(250px, .95fr); gap: 16px; align-items: start; }
+html[data-skin=pro] .sp .g { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+html[data-skin=pro] .sp .g > label { background: linear-gradient(145deg, var(--pl), var(--c)); border: 1px solid var(--bd); border-radius: 13px; padding: 9px 10px 8px; font-weight: 800; font-size: 13px; }
+html[data-skin=pro] .sp .g > label[style*="display:none"], html[data-skin=pro] .sp .g > label[style*="display: none"] { display: none; }
+html[data-skin=pro] .sp .g input, html[data-skin=pro] .sp .g select { border-radius: 9px; height: 38px; font-weight: 700; }
+html[data-skin=pro] .sp-pay { margin-top: 12px; border: 1px solid var(--bd); border-radius: 14px; padding: 12px; background: linear-gradient(145deg, var(--pl), var(--c)); }
+html[data-skin=pro] .sp-paytitle { font-size: 15px; font-weight: 900; margin-bottom: 10px; }
+html[data-skin=pro] .sp-paybtns { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; }
+html[data-skin=pro] .sp-paybtns .pay { border: 1px solid var(--bd); border-radius: 10px; background: var(--c); color: var(--t); padding: 11px 6px; font-size: 13px; font-weight: 800; box-shadow: none; }
+html[data-skin=pro] .sp-paybtns .pay.selected { background: linear-gradient(100deg, var(--p), var(--p2)); color: var(--on-p); border-color: var(--p); box-shadow: 0 3px 9px rgba(7, 91, 215, .3); }
+html[data-skin=pro] .sp-paybtns .pay:disabled { opacity: .55; cursor: not-allowed; }
+html[data-skin=pro] .sp-sum { border: 1px solid var(--bd); border-radius: 15px; overflow: hidden; background: var(--c); box-shadow: 0 8px 22px rgba(22, 75, 156, .14); }
+html[data-skin=pro] .sp-sum-head { padding: 13px 16px; background: linear-gradient(100deg, var(--p), var(--p2)); color: var(--on-p); font-size: 17px; font-weight: 900; }
+html[data-skin=pro] .sp-sum-body { padding: 10px 14px 14px; }
+html[data-skin=pro] .sp-line { display: flex; justify-content: space-between; gap: 8px; padding: 9px 2px; border-bottom: 1px solid var(--bd); font-size: 13px; font-weight: 700; }
+html[data-skin=pro] .sp-line strong { text-align: right; }
+html[data-skin=pro] .sp-total { margin: 12px -2px; padding: 12px 11px; border-radius: 12px; background: linear-gradient(110deg, #0b2a73, #061d59); color: #fff; box-shadow: 0 4px 12px rgba(7, 60, 154, .35); }
+html[data-skin=pro] .sp-total span { display: block; font-size: 14px; font-weight: 800; }
+html[data-skin=pro] .sp-total strong { display: block; text-align: right; font-size: 26px; color: #ffdc00; margin-top: 4px; white-space: nowrap; }
+html[data-skin=pro] .sp-ready { text-align: center; padding: 11px; border-radius: 11px; font-size: 13px; font-weight: 900; background: var(--pl); color: var(--t); }
+html[data-skin=pro] .sp-ready[data-ok="1"] { background: #d7f9e5; color: #065f2c; }
+:root[data-theme=dark][data-skin=pro] .sp-ready[data-ok="1"] { background: #0f3d26; color: #7ee2a8; }
+html[data-skin=pro] .sp-note { margin-top: 8px; font-size: 12px; color: var(--m); text-align: center; }
+html[data-skin=pro] .sp-actions { margin-top: 14px; padding-top: 13px; border-top: 1px solid var(--bd); display: flex; gap: 9px; justify-content: flex-end; align-items: center; }
+html[data-skin=pro] .sp-actions .b-orange { padding: 12px 20px; font-size: 15px; }
+html[data-skin=pro] .sp-save { background: linear-gradient(100deg, var(--p), var(--p2)); color: var(--on-p); box-shadow: 0 5px 13px rgba(7, 91, 215, .32); font-weight: 800; min-width: 240px; padding: 13px 22px; font-size: 16px; border-radius: 12px; }
+@media (max-width: 760px) {
+  html[data-skin=pro] .sp-grid { grid-template-columns: 1fr; }
+  html[data-skin=pro] .sp-sum { order: -1; }
+  html[data-skin=pro] .sp .g { grid-template-columns: 1fr 1fr; }
+  html[data-skin=pro] .sp-shift { margin-left: 0; }
+  html[data-skin=pro] .sp-save { flex: 1; min-width: 0; }
+}
+
+/* ===== Mobile ===== */
+@media (max-width: 760px) {
+  html[data-skin=pro] .tenant-brandbar { min-height: 64px; }
+  html[data-skin=pro] .skin-slogan, html[data-skin=pro] .skin-banner, html[data-skin=pro] .skin-datepill { display: none; }
+  html[data-skin=pro] #pg { border-radius: 17px; padding: 11px; min-height: 0; }
+  html[data-skin=pro] .tabs a { padding: 9px 12px; }
+}
+@media print { html[data-skin=pro] .skin-crumbbar, html[data-skin=pro] .skin-banner { display: none !important; } html[data-skin=pro] #pg { box-shadow: none; border: 0; } }
+
+/* Grand bandeau d'accueil affiché : le petit bandeau du haut (photo + slogan) est masqué pour ne pas répéter */
+html[data-skin=pro][data-hero] .skin-banner, html[data-skin=pro][data-hero] .skin-slogan { display: none; }
+
+/* Grand bandeau affiché tout en haut : il porte déjà le logo et le nom de la station → on retire la ligne d'identité en double.
+   L'heure n'est plus dans l'en-tête : elle descend sous le profil, à côté de la date (fil d'Ariane). */
+html[data-skin=pro][data-hero] #app-header #tenant-brandbar { display: none !important; }
+html[data-skin=pro] #app-header .header-clock { display: none !important; }
+html[data-skin=pro] .skin-datepill .skin-time { font-variant-numeric: tabular-nums; margin-left: 6px; padding-left: 8px; border-left: 1px solid var(--bd); color: var(--p-text, var(--p)); }
+html[data-skin=pro] .skin-crumb a.skin-crumb-link { color: var(--m); font-weight: 600; cursor: pointer; text-decoration: none; border-radius: 6px; padding: 2px 4px; margin: -2px -4px; }
+html[data-skin=pro] .skin-crumb a.skin-crumb-link:hover { color: var(--p-text, var(--p)); text-decoration: underline; background: var(--pl); }
+html[data-skin=pro] .skin-crumb a.skin-crumb-link:focus-visible { outline: 3px solid #f0a500; outline-offset: 1px; }
+
+/* Correctif : bouton « actif » des filtres de période (Mes stations, Achats, Vendeurs…) — le texte restait de la couleur du fond (illisible).
+   La règle .b2 du skin Pro impose sa couleur en !important : l'état .on doit donc l'emporter explicitement. */
+html[data-skin=pro] .b2.on, html[data-skin=pro] .bar .b2.on, html[data-skin=pro] button.b2.on[aria-pressed=true] {
+  background: var(--p) !important;
+  color: var(--on-p, #fff) !important;
+  border-color: var(--p) !important;
+  font-weight: 700;
+}

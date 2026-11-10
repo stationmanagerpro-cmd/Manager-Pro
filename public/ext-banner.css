@@ -1,0 +1,45 @@
+/* ext-banner.css — grand bandeau d'accueil personnalisable (photo + nom de la station + slogan) */
+.hero { position: relative; display: flex; align-items: center; min-height: clamp(180px, 19vw, 250px); margin: 0 0 16px; border-radius: 18px; overflow: hidden; isolation: isolate;
+  background: linear-gradient(110deg, var(--p), var(--p2, var(--p))); color: var(--on-p, #fff); box-shadow: 0 6px 22px rgba(10, 30, 80, .14); }
+.hero.has-img { background: var(--hero-img) center / cover no-repeat, #1b2a4a; color: var(--hero-fg, #fff); }
+.hero.has-img::before { content: ""; position: absolute; inset: 0; z-index: 0; background: var(--hero-scrim, none); pointer-events: none; }
+.hero-in { position: relative; z-index: 1; padding: 18px clamp(18px, 4vw, 46px); max-width: min(64%, 760px); }
+.hero.al-center { justify-content: center; text-align: center; } .hero.al-center .hero-in { max-width: min(70%, 860px); }
+.hero.al-right { justify-content: flex-end; text-align: right; }
+.hero-name { margin: 0; font-size: clamp(28px, 5.4vw, 66px); line-height: 1.04; font-weight: 900; letter-spacing: -1.2px; text-wrap: balance; overflow-wrap: anywhere; color: inherit; }
+.hero.len-m .hero-name { font-size: clamp(24px, 4vw, 48px); } .hero.len-l .hero-name { font-size: clamp(20px, 3vw, 36px); letter-spacing: -.6px; }
+.hero.len-l .hero-slogan { font-size: clamp(13px, 1.5vw, 19px); }
+.hero-slogan { margin: 8px 0 0; font-size: clamp(14px, 1.9vw, 24px); font-weight: 600; line-height: 1.3; color: inherit; opacity: .96; }
+.hero-slogan:empty { display: none; }
+.hero.has-img.tone-light .hero-name, .hero.has-img.tone-light .hero-slogan { text-shadow: 0 2px 12px rgba(0, 0, 0, .45); }
+.hero.has-img.tone-dark .hero-name, .hero.has-img.tone-dark .hero-slogan { text-shadow: 0 1px 10px rgba(255, 255, 255, .65); }
+.hero-cta { margin-top: 14px; border: 0; border-radius: 12px; padding: 10px 20px; font-weight: 800; font-size: 14px; cursor: pointer; background: #fff; color: #0b2a66; box-shadow: 0 4px 12px rgba(0, 0, 0, .2); }
+.hero-edit { position: absolute; z-index: 2; top: 10px; right: 10px; border: 0; border-radius: 10px; padding: 7px 12px; font-size: 12.5px; font-weight: 800; cursor: pointer; background: rgba(255, 255, 255, .94); color: #0b2a66; box-shadow: 0 2px 8px rgba(0, 0, 0, .25); }
+.hero-warn { position: absolute; z-index: 2; right: 10px; bottom: 10px; border: 0; border-radius: 10px; padding: 6px 12px; font-size: 12.5px; font-weight: 800; cursor: pointer; background: #fff3cd; color: #6b4200; box-shadow: 0 2px 8px rgba(0, 0, 0, .25); }
+.hero.al-right .hero-warn { right: auto; left: 10px; }
+.hero.is-preview { aspect-ratio: 4 / 1; min-height: 0; overflow: hidden; pointer-events: none; margin-bottom: 8px; }
+.hero.is-preview .hero-name, .hero.is-preview.len-m .hero-name, .hero.is-preview.len-l .hero-name { font-size: clamp(14px, 2.4vw, 28px); line-height: 1.05; } .hero.is-preview .hero-slogan { font-size: 13px; }
+.bn-verdict { border-radius: 10px; padding: 8px 12px; font-size: 13px; font-weight: 700; margin: 6px 0 10px; }
+.bn-verdict.ok { background: #e6f6ec; color: #0b5a2b; } .bn-verdict.warn { background: #fff3cd; color: #6b4200; border: 1px solid #e0a800; }
+.bn-seg { display: flex; flex-wrap: nowrap; max-width: 100%; border: 1px solid var(--bd, #ccd); border-radius: 10px; overflow: hidden; margin-top: 4px; width: fit-content; }
+html body .bn-seg button { flex: 0 1 auto; border: 0 !important; border-radius: 0 !important; background: var(--c, #fff) !important; background-image: none !important; color: var(--t, #222) !important; padding: 8px 12px !important; font-weight: 700; cursor: pointer; box-shadow: none !important; min-width: 0; white-space: nowrap; }
+html body .bn-seg button.on { background: var(--p) !important; color: var(--on-p, #fff) !important; }
+.bn-seg button:focus-visible { outline: 3px solid #f0a500; outline-offset: -3px; }
+@media (max-width: 700px) { .hero { min-height: 170px; } .hero-in { max-width: 100%; padding: 16px; } .hero-edit { top: 6px; right: 6px; } .hero.al-right, .hero.al-center { text-align: left; justify-content: flex-start; } }
+/* Bandeau placé tout en haut de la page, au-dessus de la barre d'en-tête (pleine largeur) */
+.hero.hero-top { margin: 0 -24px; border-radius: 0; min-height: clamp(150px, 15vw, 210px); box-shadow: none; }
+.hero-in { display: flex; align-items: center; gap: clamp(12px, 2vw, 26px); }
+.hero-txt { min-width: 0; }
+.hero.hero-top .hero-in { max-width: min(92%, 1100px); }
+.hero-logo { flex: none; display: grid; place-items: center; width: clamp(60px, 7.5vw, 104px); aspect-ratio: 1; border-radius: 50%; overflow: hidden; background: #fff; color: var(--p, #0b2a66); font-weight: 900; font-size: clamp(24px, 3.4vw, 44px); border: 3px solid rgba(255, 255, 255, .9); box-shadow: 0 4px 14px rgba(0, 0, 0, .28); }
+.hero-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.hero.is-preview .hero-logo { width: clamp(30px, 6%, 52px); font-size: 16px; border-width: 2px; }
+/* Autres pages : même bandeau, moins haut pour laisser la place au contenu */
+.hero.hero-compact { min-height: clamp(92px, 8.5vw, 124px); }
+.hero.hero-compact .hero-in { padding-top: 10px; padding-bottom: 10px; }
+.hero.hero-compact .hero-name, .hero.hero-compact.len-m .hero-name, .hero.hero-compact.len-l .hero-name { font-size: clamp(20px, 3vw, 38px); letter-spacing: -.5px; }
+.hero.hero-compact .hero-slogan { font-size: clamp(12px, 1.4vw, 18px); margin-top: 4px; }
+.hero.hero-compact .hero-logo { width: clamp(46px, 5.2vw, 72px); font-size: clamp(20px, 2.4vw, 30px); }
+@media (max-width: 860px) { .hero.hero-top { margin: 0 -14px; } }
+@media (max-width: 700px) { .hero-in { gap: 12px; } .hero-logo { width: 54px; font-size: 22px; } }
+@media print { .hero-edit, .hero-warn, .hero-cta { display: none !important; } }

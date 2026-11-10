@@ -1,0 +1,10 @@
+'use strict';
+const fs = require('fs');
+const assert = require('assert');
+const source = fs.readFileSync('public/ext-core.js', 'utf8');
+assert(source.includes('Diagramme des ventes par produit'), 'le profil RH doit afficher le diagramme des ventes par produit');
+assert(source.includes("type: 'bar'"), 'le diagramme doit utiliser un graphique en barres');
+assert(source.includes('products.map(x => Number(x.amount || 0))'), 'les montants du diagramme doivent provenir des résultats de performance');
+assert(source.includes("if (typeof Chart === 'undefined') return;"), 'le profil doit rester utilisable si Chart.js est indisponible');
+assert(source.includes('Aucune donnée produit pour cette période.'), 'un état vide doit être affiché sans données');
+console.log('Étape 55 — diagramme de performance employé : 5 contrôles réussis.');

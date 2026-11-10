@@ -1,0 +1,14 @@
+'use strict';
+const fs = require('fs');
+const assert = require('assert');
+const api = fs.readFileSync('src/contracts.js', 'utf8');
+const ui = fs.readFileSync('public/ext-contracts.js', 'utf8');
+for (const route of ["/admin/subscription-payment-info", "/me/subscription-payment-info", "/me/license/status-message"]) assert(api.includes(route), `route absente: ${route}`);
+assert(api.includes("'subscription_payment_info'"), 'clé de configuration globale absente');
+assert(api.includes('needPrincipal'), 'routes Superadmin non protégées');
+assert(api.includes('SARALI') === false, 'le serveur ne doit pas imposer de marque dans la configuration');
+for (const token of ['showExpiredSubscriptionScreen', 'SARALI ORANGE', 'Malitel', 'function vSubscription', 'saveSubscriptionPaymentInfo', 'submitSubscriptionRenewal', "subscription: ['Abonnement'", 'expires_at']) assert(ui.includes(token), `élément UI absent: ${token}`);
+for (const token of ['subOpenRequest', 'sub-cta', 'Historique des abonnements', '/me/license/history', 'sub-table']) assert(ui.includes(token), `élément UI absent: ${token}`);
+assert(api.includes("'/me/license/history'") && /FROM license_history WHERE client_id = \$1/.test(api), 'route historique client absente');
+assert(!/performed_by|admin_login|admin_note|process_note/.test(api.slice(api.indexOf("'/me/license/history'"), api.indexOf("'/me/license/history'") + 1400)), 'historique client : aucune donnée interne');
+console.log('OK — 12 contrôles statiques de l’interface Abonnement et des QR');

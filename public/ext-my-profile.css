@@ -1,0 +1,27 @@
+/* Profil personnel : mise en page (couleurs héritées du thème clair / sombre via les variables --c, --bd, --m, --p) */
+.mp-head { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; margin-bottom: 8px; }
+.mp-head .avatar.big { width: 72px; height: 72px; border-radius: 50%; overflow: hidden; flex: 0 0 auto; display: inline-grid; place-items: center; font-size: 1.5rem; }
+.mp-head .avatar.big img { width: 100%; height: 100%; object-fit: cover; }
+.mp-id { flex: 1 1 260px; min-width: 0; }
+.mp-actions { margin: 0; }
+.mp-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; margin: 0 0 12px; }
+.mp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 12px; margin: 0 0 12px; }
+.mp-perms { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+.mp-chart { position: relative; height: 230px; }
+.mp-help { margin: 0; padding-left: 18px; }
+.mp-help li { margin: 4px 0; }
+.mp-ok, .mp-no { list-style: none; margin: 0; padding: 0; }
+.mp-ok li, .mp-no li { padding: 4px 0; border-bottom: 1px dashed var(--bd); font-size: 13px; }
+.mp-ok li::before { content: '✔ '; color: #16a34a; }
+.mp-no li::before { content: '✖ '; color: #dc2626; }
+.mp-ok code, .mp-no code { color: var(--m); font-size: 11px; margin-left: 4px; }
+.mp-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.mp-filters input, .mp-filters select { width: 100%; }
+@media (max-width: 640px) { .mp-head { align-items: flex-start; } .mp-chart { height: 200px; } }
+
+/* Photo de profil cliquable : ouvre « Changer ma photo » */
+.mp-head .avatar.big.mp-av-click { position: relative; cursor: pointer; }
+.mp-head .avatar.big.mp-av-click::after { content: "📷 Changer"; position: absolute; inset: auto 0 0 0; padding: 4px 0 5px; font-size: 10px; font-weight: 700; line-height: 1; text-align: center; color: #fff; background: rgba(0, 0, 0, .55); opacity: 0; transform: translateY(100%); transition: opacity .25s ease, transform .25s ease; }
+.mp-head .avatar.big.mp-av-click:hover::after, .mp-head .avatar.big.mp-av-click:focus-visible::after { opacity: 1; transform: none; }
+.mp-head .avatar.big.mp-av-click:focus-visible { outline: 2px solid var(--p); outline-offset: 3px; }
+@media (hover: none) { .mp-head .avatar.big.mp-av-click::after { opacity: 1; transform: none; } }

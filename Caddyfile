@@ -1,0 +1,14 @@
+# Le domaine vient de la variable d'environnement APP_DOMAIN (ex. station.exemple.com), définie dans .env / docker-compose.
+# Sans valeur, Caddy refuse de démarrer au lieu de servir un domaine fictif ; `npm run doctor` contrôle aussi la valeur.
+{$APP_DOMAIN} {
+  reverse_proxy api:3000 {
+    flush_interval -1
+  }
+  encode gzip
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options nosniff
+    X-Frame-Options DENY
+    Referrer-Policy strict-origin-when-cross-origin
+  }
+}

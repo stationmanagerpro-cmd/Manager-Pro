@@ -1,0 +1,14 @@
+node_modules
+.env
+.env.*
+!.env.example
+!.env.pc.example
+backups
+uploads
+.git
+# ANO-11 : scripts de dépannage et fichiers de développement hors image de production
+scripts/dev
+check-*.js
+fix-*.cjs
+forms_report.json
+shot-*.png

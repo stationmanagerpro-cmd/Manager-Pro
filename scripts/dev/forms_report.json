@@ -1,0 +1,1787 @@
+{
+ "pages": [
+  {
+   "key": "dash",
+   "title": "Tableau de bord",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 1
+   }
+  },
+  {
+   "key": "quart",
+   "title": "Quarts de service",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "ventes",
+   "title": "Ventes",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "prod",
+   "title": "Produits et stock",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 3
+   }
+  },
+  {
+   "key": "pompes",
+   "title": "Pompes et compteurs",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "cli",
+   "title": "Clients",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 1
+   }
+  },
+  {
+   "key": "four",
+   "title": "Fournisseurs et achats",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 1
+   }
+  },
+  {
+   "key": "achats",
+   "title": "Achats",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 3
+   }
+  },
+  {
+   "key": "vendeurs",
+   "title": "Vendeurs & commissions",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "stations",
+   "title": "Mes stations",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 1
+   }
+  },
+  {
+   "key": "emp",
+   "title": "Employés",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 1
+   }
+  },
+  {
+   "key": "caisse",
+   "title": "Caisse et dépenses",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "alert",
+   "title": "Alertes",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "audit",
+   "title": "Journal d'audit",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 1
+   }
+  },
+  {
+   "key": "param",
+   "title": "Paramètres",
+   "ok": true,
+   "inline": {
+    "n": 9,
+    "styled": 9,
+    "inputs": 9
+   }
+  },
+  {
+   "key": "rh",
+   "title": "Gestion RH",
+   "ok": true,
+   "inline": {
+    "n": 1,
+    "styled": 1,
+    "inputs": 1
+   }
+  },
+  {
+   "key": "rhr",
+   "title": "Rapports RH",
+   "ok": true,
+   "inline": {
+    "n": 2,
+    "styled": 2,
+    "inputs": 2
+   }
+  },
+  {
+   "key": "act",
+   "title": "Activation paie",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "audrh",
+   "title": "Audit RH",
+   "ok": true,
+   "inline": {
+    "n": 2,
+    "styled": 2,
+    "inputs": 2
+   }
+  },
+  {
+   "key": "moi",
+   "title": "Mon profil",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "fin",
+   "title": "Rapports financiers",
+   "ok": true,
+   "inline": {
+    "n": 12,
+    "styled": 12,
+    "inputs": 12
+   }
+  },
+  {
+   "key": "rhdash",
+   "title": "Tableau RH",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "rhctl",
+   "title": "Contrôle paie",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "rhalerts",
+   "title": "Alertes RH",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "rhleaves",
+   "title": "Congés",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "rhatt",
+   "title": "Présences",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "rhot",
+   "title": "Heures sup.",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "rhcontracts",
+   "title": "Contrats",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "rhdocs",
+   "title": "Documents RH",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "rhsched",
+   "title": "Planning",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "rhperiods",
+   "title": "Périodes paie",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "rhsettings",
+   "title": "Modules RH",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "clients",
+   "title": "Tableau de bord",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 1
+   }
+  },
+  {
+   "key": "subscription",
+   "title": "Abonnement",
+   "ok": true,
+   "inline": {
+    "n": 2,
+    "styled": 2,
+    "inputs": 2
+   }
+  },
+  {
+   "key": "roles",
+   "title": "Tableau de bord",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 1
+   }
+  },
+  {
+   "key": "jour",
+   "title": "Jour J",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "declarations",
+   "title": "Déclarations",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "auditx",
+   "title": "Audit filtré",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 5
+   }
+  },
+  {
+   "key": "finevents",
+   "title": "Journal finance",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "stock",
+   "title": "Gestion des stocks",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 1
+   }
+  },
+  {
+   "key": "exports",
+   "title": "Exports",
+   "ok": true,
+   "inline": {
+    "n": 2,
+    "styled": 2,
+    "inputs": 2
+   }
+  },
+  {
+   "key": "dashcfg",
+   "title": "Config. Dashboard",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 23
+   }
+  },
+  {
+   "key": "admin",
+   "title": "Tableau de bord",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 1
+   }
+  },
+  {
+   "key": "reconcile",
+   "title": "Rapprochement",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 1
+   }
+  },
+  {
+   "key": "periodlock",
+   "title": "Clôture période",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "packs",
+   "title": "Tableau de bord",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 1
+   }
+  },
+  {
+   "key": "onboard",
+   "title": "Premiers pas",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "settings_hub",
+   "title": "Paramètres station",
+   "ok": true,
+   "inline": {
+    "n": 9,
+    "styled": 9,
+    "inputs": 9
+   }
+  },
+  {
+   "key": "pfin",
+   "title": "Tableau de bord",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 1
+   }
+  },
+  {
+   "key": "treso",
+   "title": "Trésorerie",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "dettes",
+   "title": "Créances & dettes",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 2
+   }
+  },
+  {
+   "key": "compta",
+   "title": "Comptabilité",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "imports",
+   "title": "Imports Excel",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "consolidee",
+   "title": "Vue consolidée",
+   "ok": true,
+   "inline": {
+    "n": 3,
+    "styled": 3,
+    "inputs": 3
+   }
+  },
+  {
+   "key": "parstation",
+   "title": "Vue par station",
+   "ok": true,
+   "inline": {
+    "n": 1,
+    "styled": 1,
+    "inputs": 1
+   }
+  },
+  {
+   "key": "archive",
+   "title": "Archivage mensuel",
+   "ok": true,
+   "inline": {
+    "n": 1,
+    "styled": 1,
+    "inputs": 1
+   }
+  },
+  {
+   "key": "profit",
+   "title": "Rapport client & marges",
+   "ok": true,
+   "inline": {
+    "n": 4,
+    "styled": 4,
+    "inputs": 4
+   }
+  },
+  {
+   "key": "carte",
+   "title": "Carte des stations",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "msg",
+   "title": "Messagerie",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 2
+   }
+  },
+  {
+   "key": "direction",
+   "title": "Pilotage direction",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 1
+   }
+  },
+  {
+   "key": "eod",
+   "title": "Fin de journée",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 1
+   }
+  },
+  {
+   "key": "offlineq",
+   "title": "File hors-ligne",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "mmcomm",
+   "title": "Commissions Mobile Money",
+   "ok": true,
+   "inline": {
+    "n": 3,
+    "styled": 3,
+    "inputs": 3
+   }
+  },
+  {
+   "key": "avenir",
+   "title": "À venir",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "factures",
+   "title": "Facturation",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "rapports",
+   "title": "Rapports",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "alertcfg",
+   "title": "Alertes",
+   "ok": true,
+   "inline": {
+    "n": 16,
+    "styled": 16,
+    "inputs": 128
+   }
+  },
+  {
+   "key": "cuves",
+   "title": "Cuves et jaugeage",
+   "ok": true,
+   "inline": {
+    "n": 2,
+    "styled": 2,
+    "inputs": 2
+   }
+  },
+  {
+   "key": "flotte",
+   "title": "Cartes flotte",
+   "ok": true,
+   "inline": {
+    "n": 1,
+    "styled": 1,
+    "inputs": 1
+   }
+  },
+  {
+   "key": "notifrules",
+   "title": "Alertes",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "fiscalhub",
+   "title": "Fiscalité",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "fiscal",
+   "title": "Fiscalité · Profil",
+   "ok": true,
+   "inline": {
+    "n": 16,
+    "styled": 16,
+    "inputs": 16
+   }
+  },
+  {
+   "key": "fiscal2",
+   "title": "Fiscalité · Modules",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "fiscal3",
+   "title": "Fiscalité · Périodes",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "fiscaldash",
+   "title": "Fiscalité · Dashboard",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "fiscaldl",
+   "title": "Fiscalité · Échéances",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "fiscalcheck",
+   "title": "Fiscalité · Pièces",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "fiscalaudit",
+   "title": "Fiscalité · Journal",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "fiscalrulesview",
+   "title": "Fiscalité · Règles",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "fiscalstorage",
+   "title": "Fiscalité · Stockage",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "fiscalscore",
+   "title": "Fiscalité · Complétude",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "fiscalactivity",
+   "title": "Fiscalité · Activité",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "fiscalyear",
+   "title": "Fiscalité · Année",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "alerthealth",
+   "title": "Santé alertes auto",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "accesskeys",
+   "title": "Tableau de bord",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 1
+   }
+  },
+  {
+   "key": "homeadmin",
+   "title": "Tableau de bord",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 1
+   }
+  },
+  {
+   "key": "teamroles",
+   "title": "Rôles de mon équipe",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  },
+  {
+   "key": "aide",
+   "title": "Manuel & aide",
+   "ok": true,
+   "inline": {
+    "n": 0,
+    "styled": 0,
+    "inputs": 0
+   }
+  }
+ ],
+ "modals": [
+  {
+   "page": "dash",
+   "t": "🛒Nouvelle vente",
+   "open": false
+  },
+  {
+   "page": "dash",
+   "t": "Produit",
+   "open": true,
+   "title": "Enregistrer une vente de produit",
+   "pf": true,
+   "sp": true,
+   "head": true,
+   "fields": 5,
+   "cardFields": 5,
+   "labels": 5,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "quart",
+   "t": "＋ Vente",
+   "open": true,
+   "title": "Nouvelle vente",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 0,
+   "cardFields": 0,
+   "labels": 0,
+   "actions": true,
+   "save": false
+  },
+  {
+   "page": "quart",
+   "t": "Dépense",
+   "open": true,
+   "title": "Dépense",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 5,
+   "cardFields": 5,
+   "labels": 5,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "quart",
+   "t": "Ajouter une note / anomalie",
+   "open": true,
+   "title": "Anomalie",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 3,
+   "cardFields": 3,
+   "labels": 3,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "quart",
+   "t": "Voir",
+   "open": true,
+   "title": "Quart N° 5 · ouvert",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 0,
+   "cardFields": 0,
+   "labels": 0,
+   "actions": true,
+   "save": false
+  },
+  {
+   "page": "quart",
+   "t": "Afficher",
+   "open": false
+  },
+  {
+   "page": "quart",
+   "t": "Voir",
+   "open": true,
+   "title": "Quart N° 4 · ferme",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 0,
+   "cardFields": 0,
+   "labels": 0,
+   "actions": true,
+   "save": false
+  },
+  {
+   "page": "quart",
+   "t": "Afficher",
+   "open": false
+  },
+  {
+   "page": "quart",
+   "t": "Voir",
+   "open": true,
+   "title": "Quart N° 3 · ferme",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 0,
+   "cardFields": 0,
+   "labels": 0,
+   "actions": true,
+   "save": false
+  },
+  {
+   "page": "ventes",
+   "t": "＋ Nouvelle vente",
+   "open": true,
+   "title": "Nouvelle vente",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 0,
+   "cardFields": 0,
+   "labels": 0,
+   "actions": true,
+   "save": false
+  },
+  {
+   "page": "ventes",
+   "t": "Produit",
+   "open": true,
+   "title": "Enregistrer une vente de produit",
+   "pf": true,
+   "sp": true,
+   "head": true,
+   "fields": 5,
+   "cardFields": 5,
+   "labels": 5,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "ventes",
+   "t": "Carburant",
+   "open": true,
+   "title": "Enregistrer une vente carburant",
+   "pf": true,
+   "sp": true,
+   "head": true,
+   "fields": 13,
+   "cardFields": 13,
+   "labels": 13,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "ventes",
+   "t": "Dépense",
+   "open": true,
+   "title": "Dépense",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 5,
+   "cardFields": 5,
+   "labels": 5,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "prod",
+   "t": "＋ Nouveau produit",
+   "open": true,
+   "title": "Produit",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 9,
+   "cardFields": 9,
+   "labels": 9,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "prod",
+   "t": "Mouvement de stock",
+   "open": true,
+   "title": "Mouvement de stock",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 4,
+   "cardFields": 4,
+   "labels": 4,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "pompes",
+   "t": "Modifier",
+   "open": true,
+   "title": "Modifier la pompe Pompe 1",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 7,
+   "cardFields": 7,
+   "labels": 7,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "pompes",
+   "t": "Modifier",
+   "open": true,
+   "title": "Modifier la pompe Pompe 1",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 7,
+   "cardFields": 7,
+   "labels": 7,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "pompes",
+   "t": "Modifier",
+   "open": true,
+   "title": "Modifier la pompe Pompe 2",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 7,
+   "cardFields": 7,
+   "labels": 7,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "pompes",
+   "t": "+ Ajouter une pompe",
+   "open": true,
+   "title": "Nouvelle pompe",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 5,
+   "cardFields": 5,
+   "labels": 5,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "cli",
+   "t": "＋ Nouveau client",
+   "open": true,
+   "title": "Client",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 5,
+   "cardFields": 5,
+   "labels": 5,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "four",
+   "t": "＋ Nouveau fournisseur",
+   "open": true,
+   "title": "Fournisseur",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 6,
+   "cardFields": 6,
+   "labels": 6,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "four",
+   "t": "🛒 Nouvelle commande",
+   "open": true,
+   "title": "Nouveau bon de commande",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 5,
+   "cardFields": 2,
+   "labels": 2,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "achats",
+   "t": "+ Nouvelle commande",
+   "open": true,
+   "title": "Nouveau bon de commande",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 5,
+   "cardFields": 2,
+   "labels": 2,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "vendeurs",
+   "t": "+ Nouveau vendeur",
+   "open": false
+  },
+  {
+   "page": "vendeurs",
+   "t": "Octroyer un accès compte",
+   "open": true,
+   "title": "Octroyer un accès compte",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 4,
+   "cardFields": 4,
+   "labels": 4,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "stations",
+   "t": "+ Nouveau magasin / dépôt",
+   "open": false
+  },
+  {
+   "page": "emp",
+   "t": "Ajouter un employé",
+   "open": true,
+   "title": "Employé",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 5,
+   "cardFields": 5,
+   "labels": 5,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "emp",
+   "t": "Octroyer un accès compte",
+   "open": true,
+   "title": "Octroyer un accès compte",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 4,
+   "cardFields": 4,
+   "labels": 4,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "caisse",
+   "t": "Nouvelle dépense",
+   "open": true,
+   "title": "Dépense",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 5,
+   "cardFields": 5,
+   "labels": 5,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "caisse",
+   "t": "Mouvement de caisse",
+   "open": true,
+   "title": "Mouvement de caisse",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 4,
+   "cardFields": 4,
+   "labels": 4,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "caisse",
+   "t": "Nouveau prêt",
+   "open": true,
+   "title": "Nouveau prêt hors-exploitation",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 7,
+   "cardFields": 7,
+   "labels": 7,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "alert",
+   "t": "Messagerie / alertes auto",
+   "open": false
+  },
+  {
+   "page": "act",
+   "t": "Activer…",
+   "open": true,
+   "title": "Activer — AMO — Assurance Maladie Obligatoire",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 7,
+   "cardFields": 7,
+   "labels": 7,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "act",
+   "t": "Activer…",
+   "open": true,
+   "title": "Activer — INPS — Sécurité sociale",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 9,
+   "cardFields": 9,
+   "labels": 9,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "act",
+   "t": "Activer…",
+   "open": true,
+   "title": "Activer — ITS — Impôt sur les traitements et salaires (DGI)",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 10,
+   "cardFields": 10,
+   "labels": 10,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "act",
+   "t": "Activer…",
+   "open": true,
+   "title": "Activer — Charges patronales complémentaires",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 6,
+   "cardFields": 6,
+   "labels": 6,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "clients",
+   "t": "🛒Nouvelle vente",
+   "open": false
+  },
+  {
+   "page": "clients",
+   "t": "Produit",
+   "open": true,
+   "title": "Enregistrer une vente de produit",
+   "pf": true,
+   "sp": true,
+   "head": true,
+   "fields": 5,
+   "cardFields": 5,
+   "labels": 5,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "roles",
+   "t": "🛒Nouvelle vente",
+   "open": false
+  },
+  {
+   "page": "roles",
+   "t": "Produit",
+   "open": true,
+   "title": "Enregistrer une vente de produit",
+   "pf": true,
+   "sp": true,
+   "head": true,
+   "fields": 5,
+   "cardFields": 5,
+   "labels": 5,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "stock",
+   "t": "Mouvement de stock",
+   "open": true,
+   "title": "Mouvement de stock",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 4,
+   "cardFields": 4,
+   "labels": 4,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "exports",
+   "t": "Personnaliser les couleurs",
+   "open": true,
+   "title": "Couleurs globales des rapports",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 3,
+   "cardFields": 3,
+   "labels": 3,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "admin",
+   "t": "🛒Nouvelle vente",
+   "open": false
+  },
+  {
+   "page": "admin",
+   "t": "Produit",
+   "open": true,
+   "title": "Enregistrer une vente de produit",
+   "pf": true,
+   "sp": true,
+   "head": true,
+   "fields": 5,
+   "cardFields": 5,
+   "labels": 5,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "packs",
+   "t": "🛒Nouvelle vente",
+   "open": false
+  },
+  {
+   "page": "packs",
+   "t": "Produit",
+   "open": true,
+   "title": "Enregistrer une vente de produit",
+   "pf": true,
+   "sp": true,
+   "head": true,
+   "fields": 5,
+   "cardFields": 5,
+   "labels": 5,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "pfin",
+   "t": "🛒Nouvelle vente",
+   "open": false
+  },
+  {
+   "page": "pfin",
+   "t": "Produit",
+   "open": true,
+   "title": "Enregistrer une vente de produit",
+   "pf": true,
+   "sp": true,
+   "head": true,
+   "fields": 5,
+   "cardFields": 5,
+   "labels": 5,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "treso",
+   "t": "🧾 Dépense / frais",
+   "open": true,
+   "title": "Dépense",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 5,
+   "cardFields": 5,
+   "labels": 5,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "treso",
+   "t": "＋ Nouveau compte",
+   "open": true,
+   "title": "Nouveau compte",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 5,
+   "cardFields": 5,
+   "labels": 5,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "treso",
+   "t": "✎",
+   "open": true,
+   "title": "Modifier le compte",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 4,
+   "cardFields": 4,
+   "labels": 4,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "treso",
+   "t": "✎",
+   "open": true,
+   "title": "Modifier le compte",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 4,
+   "cardFields": 4,
+   "labels": 4,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "parstation",
+   "t": "Ouvrir le tableau de bord",
+   "open": false
+  },
+  {
+   "page": "msg",
+   "t": "＋",
+   "open": true,
+   "title": "Nouveau message",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 2,
+   "cardFields": 0,
+   "labels": 0,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "msg",
+   "t": "Nouveau groupe",
+   "open": true,
+   "title": "Nouveau groupe",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 2,
+   "cardFields": 2,
+   "labels": 2,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "msg",
+   "t": "Configurer les alertes",
+   "open": false
+  },
+  {
+   "page": "factures",
+   "t": "Nouvelle facture",
+   "open": true,
+   "title": "Nouvelle facture (multi-lignes)",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 8,
+   "cardFields": 4,
+   "labels": 4,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "factures",
+   "t": "Ouvrir",
+   "open": true,
+   "title": "Facture FAC-20261106-0002 · payee",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 0,
+   "cardFields": 0,
+   "labels": 0,
+   "actions": true,
+   "save": false
+  },
+  {
+   "page": "factures",
+   "t": "Ouvrir",
+   "open": true,
+   "title": "Facture FAC-20261106-0001 · partielle",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 0,
+   "cardFields": 0,
+   "labels": 0,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "cuves",
+   "t": "Nouvelle cuve",
+   "open": true,
+   "title": "Nouvelle cuve",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 4,
+   "cardFields": 4,
+   "labels": 4,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "flotte",
+   "t": "Nouvelle carte",
+   "open": true,
+   "title": "Nouvelle carte flotte",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 15,
+   "cardFields": 15,
+   "labels": 15,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "flotte",
+   "t": "Modifier",
+   "open": true,
+   "title": "Modifier la carte FC38164467",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 14,
+   "cardFields": 14,
+   "labels": 14,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "flotte",
+   "t": "Modifier",
+   "open": true,
+   "title": "Modifier la carte FC19325356",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 14,
+   "cardFields": 14,
+   "labels": 14,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "notifrules",
+   "t": "＋ Nouvelle règle",
+   "open": true,
+   "title": "Nouvelle règle de notification",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 30,
+   "cardFields": 12,
+   "labels": 12,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "fiscaldl",
+   "t": "Ajouter une échéance",
+   "open": true,
+   "title": "Nouvelle échéance",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 7,
+   "cardFields": 7,
+   "labels": 7,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "accesskeys",
+   "t": "🛒Nouvelle vente",
+   "open": false
+  },
+  {
+   "page": "accesskeys",
+   "t": "Produit",
+   "open": true,
+   "title": "Enregistrer une vente de produit",
+   "pf": true,
+   "sp": true,
+   "head": true,
+   "fields": 5,
+   "cardFields": 5,
+   "labels": 5,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "homeadmin",
+   "t": "🛒Nouvelle vente",
+   "open": false
+  },
+  {
+   "page": "homeadmin",
+   "t": "Produit",
+   "open": true,
+   "title": "Enregistrer une vente de produit",
+   "pf": true,
+   "sp": true,
+   "head": true,
+   "fields": 5,
+   "cardFields": 5,
+   "labels": 5,
+   "actions": true,
+   "save": true
+  },
+  {
+   "page": "teamroles",
+   "t": "+ Nouveau rôle personnalisé",
+   "open": true,
+   "title": "Nouveau rôle personnalisé",
+   "pf": true,
+   "sp": false,
+   "head": true,
+   "fields": 75,
+   "cardFields": 1,
+   "labels": 1,
+   "actions": false,
+   "save": false
+  },
+  {
+   "page": "aide",
+   "t": "Ouvrir",
+   "open": false
+  },
+  {
+   "page": "aide",
+   "t": "Ouvrir",
+   "open": false
+  },
+  {
+   "page": "aide",
+   "t": "Ouvrir",
+   "open": false
+  },
+  {
+   "page": "aide",
+   "t": "Ouvrir",
+   "open": false
+  },
+  {
+   "page": "aide",
+   "t": "Ouvrir",
+   "open": false
+  },
+  {
+   "page": "aide",
+   "t": "Ouvrir",
+   "open": false
+  },
+  {
+   "page": "aide",
+   "t": "Ouvrir",
+   "open": false
+  },
+  {
+   "page": "aide",
+   "t": "Ouvrir",
+   "open": false
+  }
+ ],
+ "inline": [],
+ "errors": []
+}

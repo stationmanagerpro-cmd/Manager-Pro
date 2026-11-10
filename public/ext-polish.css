@@ -1,0 +1,95 @@
+/* ======================================================================
+   Correctifs d'interface (2026-11-01)
+   1) Nom du site dans le menu : une seule ligne, droit, aligné, taille automatique
+   2) Messagerie : texte plus grand + taille réglable par l'utilisateur + photos de profil
+   ====================================================================== */
+#nav.nav2 .nav-head { align-items: center; gap: 10px; }
+#nav.nav2 .nav-logo { flex: none; }
+#nav.nav2 .nav-title {
+  display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
+  text-align: left; min-width: 0; flex: 1 1 0; overflow: hidden;
+}
+#nav.nav2 .nav-title b {
+  display: block; width: 100%; font-size: 17px; font-weight: 800; line-height: 1.2; letter-spacing: 0; text-align: left;
+  white-space: nowrap !important; overflow: hidden; text-overflow: clip;
+  word-break: normal !important; overflow-wrap: normal !important; hyphens: none; transform: none; writing-mode: horizontal-tb;
+}
+#nav.nav2 .nav-title small {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; width: 100%;
+  margin-top: 2px; font-size: 11px; line-height: 1.25; text-align: left;
+  white-space: normal !important; overflow: hidden; text-overflow: ellipsis; word-break: normal; overflow-wrap: normal; hyphens: none;
+}
+#nav.nav2 .nav-title small[hidden] { display: none; }
+
+/* --- Messagerie : tailles proportionnelles au réglage utilisateur (--msg-fs, 1 = 100 %) --- */
+.wa-app { --msg-fs: 1; }
+.wa-app .wa-side-head h3 { font-size: calc(24px * var(--msg-fs)); }
+.wa-app .wa-name { font-size: calc(18px * var(--msg-fs)); }
+.wa-app .wa-prev { font-size: calc(15.5px * var(--msg-fs)); }
+.wa-app .wa-time { font-size: calc(13px * var(--msg-fs)); }
+.wa-app .wa-badge { font-size: calc(12.5px * var(--msg-fs)); }
+.wa-app .wa-search input { font-size: max(16px, calc(16px * var(--msg-fs))); }
+.wa-app button.wa-chip:not(.b2):not(.bd):not(.bg) { font-size: calc(14.5px * var(--msg-fs)); }
+.wa-app .wa-empty-list { font-size: calc(15px * var(--msg-fs)); }
+.wa-app .wa-head-txt b { font-size: calc(18px * var(--msg-fs)); }
+.wa-app .wa-head-txt small { font-size: calc(13.5px * var(--msg-fs)); }
+.wa-app .wa-day span { font-size: calc(14px * var(--msg-fs)); }
+.wa-app .msg-body { font-size: calc(17px * var(--msg-fs)); line-height: 1.4; }
+.wa-app .msg-sender { font-size: calc(14px * var(--msg-fs)); }
+.wa-app .msg-meta { font-size: calc(12px * var(--msg-fs)); }
+.wa-app .wa-pending { font-size: calc(14px * var(--msg-fs)); }
+.wa-app .wa-compose #msg-input { font-size: max(16px, calc(17px * var(--msg-fs))); padding: 12px 18px; }
+.wa-app .msg-attachments button.tag { font-size: calc(14px * var(--msg-fs)); }
+.wa-app .wa-menu-list button { font-size: calc(15px * var(--msg-fs)); }
+.wa-app .wa-av { font-size: calc(17px * var(--msg-fs)); position: relative; }
+.wa-app .wa-av img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+.wa-app .wa-av-xs { width: 36px; height: 36px; font-size: 13px; flex: none; }
+.wa-app .msg-line-other { align-items: flex-end; gap: 8px; }
+.wa-app .msg-line-other .wa-av-xs { margin-bottom: 2px; }
+
+/* --- Réglage de la taille du texte (A− / curseur / A+) --- */
+.wa-fs summary { font-size: 15px !important; font-weight: 800; letter-spacing: -.5px; }
+.wa-app .wa-fs .wa-menu-list.wa-fs-panel { min-width: 250px; padding: 12px 14px; }
+.wa-fs-row { display: flex; align-items: center; gap: 10px; }
+.wa-fs-row input[type=range] { flex: 1; min-width: 0; accent-color: var(--p); }
+.wa-app .wa-fs-panel button:not(.b2):not(.bd):not(.bg) {
+  display: inline-flex; width: auto; padding: 4px 10px; border-radius: 8px; border: 1px solid var(--wa-line);
+  background: var(--wa-panel); color: var(--wa-text) !important; font-weight: 700; cursor: pointer; line-height: 1.2;
+}
+.wa-app .wa-fs-panel .wa-fs-sm { font-size: 13px !important; }
+.wa-app .wa-fs-panel .wa-fs-lg { font-size: 19px !important; }
+.wa-fs-val { text-align: center; margin: 6px 0; font-size: 13px; color: var(--wa-sub); }
+.wa-app .wa-fs-panel .wa-fs-reset { width: 100%; justify-content: center; font-size: 13.5px !important; font-weight: 600; }
+.wa-head .wa-fs { margin-left: auto; }
+.wa-head .wa-fs .wa-menu-list { right: 0; left: auto; }
+
+/* ======================================================================
+   Pilotage direction : classements et statistiques par station (même design que le tableau de bord)
+   ====================================================================== */
+.dir2 .neg { color: var(--r-text, #b91c1c); }
+.dir2 .dir-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; }
+.dir-rank { display: flex; flex-direction: column; gap: 14px; }
+.dir-rk { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.dir-pos { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 800; background: color-mix(in srgb, var(--p) 14%, var(--c)); color: var(--p-text, var(--p)); }
+.dir-rk-main { flex: 1; min-width: 0; }
+.dir-rk-main b { display: block; font-size: 14px; font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dir-rk-main small { display: block; color: var(--m); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dir-rk-main .dv2-bar { margin-top: 5px; height: 6px; }
+.dir-rk-val { flex: none; text-align: right; font-size: 13.5px; font-weight: 800; white-space: nowrap; }
+.dir-rk-val small { display: block; color: var(--m); font-size: 11.5px; font-weight: 500; }
+.dir-sec { margin: 6px 0 -4px; font-size: 1.15rem; font-weight: 800; letter-spacing: -.02em; }
+.dir-st-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 16px; }
+.dir-st-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 14px; }
+.dir-st-kpis > div { background: color-mix(in srgb, var(--p) 5%, var(--c)); border: 1px solid var(--bd); border-radius: 12px; padding: 8px 10px; min-width: 0; }
+.dir-st-kpis small { display: block; color: var(--m); font-size: 11.5px; }
+.dir-st-kpis b { display: block; font-size: .95rem; font-weight: 800; overflow-wrap: anywhere; }
+.dir-st-tops { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.dir-st-tops h4 { margin: 0 0 6px; font-size: 12.5px; color: var(--m); font-weight: 700; }
+.dir-st-tops ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; }
+.dir-st-tops li { display: flex; flex-direction: column; min-width: 0; }
+.dir-st-tops li span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dir-st-tops li b { font-weight: 700; }
+@media (max-width: 760px) {
+  .dir-st-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dir-st-tops { grid-template-columns: minmax(0, 1fr); }
+}

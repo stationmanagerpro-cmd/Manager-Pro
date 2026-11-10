@@ -1,0 +1,28 @@
+'use strict';
+const fs = require('fs');
+const path = require('path');
+const root = path.resolve(__dirname, '..');
+const checks = [];
+function check(label, condition) { checks.push({ label, ok: !!condition }); }
+const admin = fs.readFileSync(path.join(root, 'src/admin.js'), 'utf8');
+const core = fs.readFileSync(path.join(root, 'public/ext-core.js'), 'utf8');
+const shell = fs.readFileSync(path.join(root, 'public/ext-shell.js'), 'utf8');
+const shellCss = fs.readFileSync(path.join(root, 'public/ext-shell.css'), 'utf8');
+const appCss = fs.readFileSync(path.join(root, 'public/app.css'), 'utf8');
+const html = fs.readFileSync(path.join(root, 'public/index.html'), 'utf8');
+const shifts = fs.readFileSync(path.join(root, 'public/ext-p7.js'), 'utf8');
+check('Identité station renvoie le nom du compte client', /c\.name AS client_name/.test(admin));
+check('Modification du logo station autorisée avec settings.edit ou appearance.manage', /stationIdentity[\s\S]*settings\.edit[\s\S]*appearance\.manage/.test(admin));
+check('Suppression du logo station utilise la même vérification dédiée', /r\.delete\('\/images\/:entity\/:id', canManageImage/.test(admin));
+check('Interface propose l’édition du logo station avec permission identité', /ent === 'stations'[\s\S]*can\('settings\.edit'\)[\s\S]*can\('appearance\.manage'\)/.test(core));
+check('Bandeau client et profil réunis avant la barre supérieure', /tenant-brandbar[\s\S]*id="tenant-brand"[\s\S]*id="user-chip"[\s\S]*id="topbar-ctx"/.test(html));
+check('Bandeau de marque affiche client, station et logo', /refreshTenantBrand[\s\S]*client_name[\s\S]*images\/stations/.test(shell));
+check('Identité rafraîchie après chargement de l’apparence', /refreshTenantBrand\(\)/.test(core));
+check('Logo de station rafraîchi après remplacement ou suppression', /__tenantLogoKey = null/.test(core) && /applyAppearance\(\)/.test(core));
+check('Menu gauche peut être masqué et réouvert', /hideNavCompletely[\s\S]*smp-nav-hidden[\s\S]*toggleNavDrawer/.test(shell));
+check('CSS permet le masquage complet du menu', /#nav\.nav2\.user-hidden\s*\{\s*display:\s*none/.test(shellCss));
+check('Tables gardent une largeur minimale et un défilement tactile horizontal', /\.tw table\s*\{\s*width:\s*max-content;\s*min-width:\s*100%/.test(appCss) && /-webkit-overflow-scrolling:\s*touch/.test(appCss));
+check('Bouton Fiche complète empêche la propagation et appelle un identifiant numérique', /event\.stopPropagation\(\);window\.showShiftFull\(\$\{Number\(s\.id\)\}\)/.test(fs.readFileSync(path.join(root, 'public/ext-p10.js'), 'utf8')));
+for (const c of checks) console.log(`${c.ok ? 'OK' : 'ÉCHEC'} — ${c.label}`);
+console.log(`Résultat : ${checks.filter(c => c.ok).length}/${checks.length}`);
+if (checks.some(c => !c.ok)) process.exitCode = 1;

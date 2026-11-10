@@ -1,0 +1,22 @@
+const fs = require('fs');
+const assert = require('assert');
+const api = fs.readFileSync('src/messaging.js', 'utf8');
+const shell = fs.readFileSync('public/ext-shell.js', 'utf8');
+const css = fs.readFileSync('public/ext-shell.css', 'utf8');
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+let passed = 0;
+function check(name, fn) { fn(); passed++; console.log('✓ ' + name); }
+check('route dédiée aux messages non lus', () => assert.match(api, /r\.get\('\/messaging\/unread'/));
+check('requête réservée aux conversations dont l’utilisateur est membre', () => assert.match(api, /JOIN conversation_members cm ON cm\.conversation_id = c\.id AND cm\.user_id = \$1/));
+check('isolation client côté API', () => assert.match(api, /AND c\.client_id = \$2/));
+check('Superadmin limité aux conversations de support', () => assert.match(api, /COALESCE\(c\.is_support, FALSE\) = TRUE/));
+check('messages non lus triés du plus ancien au plus récent', () => assert.match(api, /ORDER BY m\.created_at ASC, m\.id ASC/));
+check('messages déjà lus exclus', () => assert.match(api, /ms\.read_at IS NULL/));
+check('cloche additionne les messages non lus', () => assert.match(shell, /G\('\/messaging\/unread'\)/));
+check('intervalle de cinq minutes entre les toasts', () => assert.match(shell, /MESSAGE_TOAST_GAP_MS = 5 \* 60 \* 1000/));
+check('notifications affichées sans bloquer le travail', () => assert.match(shell, /className = 'message-unread-toast'/));
+check('clic sur la notification ouvre la conversation', () => assert.match(shell, /window\.openConv\(Number\(item\.conversation_id\)\)/));
+check('la file purge les messages lus', () => assert.match(shell, /if \(!unreadIds\.has\(Number\(messageToastQueue\[i\]\.message_id\)\)\) messageToastQueue\.splice/));
+check('respect de réduire les animations et styles de thème', () => { assert.match(css, /prefers-reduced-motion: reduce/); assert.match(css, /color: var\(--t/); });
+check('commande de test ajoutée au package.json', () => assert.equal(pkg.scripts['test:messaging-unread-notifications'], 'node test/messaging-unread-notifications-static.js'));
+console.log(`\n${passed}/13 contrôles statiques réussis.`);

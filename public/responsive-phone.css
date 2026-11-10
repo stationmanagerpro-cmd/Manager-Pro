@@ -1,0 +1,108 @@
+/* ============================================================
+   Mode téléphone — réduit l'échelle de l'interface sur petits écrans
+   (WebView Android / navigateur mobile). Chargé en dernier.
+   Pour ajuster : modifier --ph-scale (0.85 = plus petit, 1 = normal).
+   ============================================================ */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+
+@media (max-width: 640px) {
+  html { font-size: 87.5%; }              /* 14px au lieu de 16px : tout ce qui est en rem rétrécit */
+  body { font-size: 13px; line-height: 1.4; }
+
+  /* Titres */
+  #pg > h2, #pg h2 { font-size: 1.05rem; margin: 8px 0; }
+  #pg h3 { font-size: .95rem; }
+
+  /* Tableaux : compacts, MAIS jamais coupés lettre par lettre.
+     Les libellés et les valeurs restent sur une seule ligne ; si le tableau est plus large que l'écran,
+     il défile horizontalement (curseur « table-fit.js » sous le tableau). */
+  #pg table, #m table { font-size: 11.5px; }
+  #pg th, #pg td, #m th, #m td,
+  #pg .tw th, #pg .tw td, #pg .tw-auto th, #pg .tw-auto td {
+    padding: 8px 10px;
+    font-size: 11.5px;
+    white-space: nowrap;
+    word-break: normal;
+    overflow-wrap: normal;
+    hyphens: none;
+    vertical-align: middle;
+    text-align: left;
+  }
+  #pg th, #m th { font-size: 10.5px; line-height: 1.25; }
+  #pg .tw table, #pg .tw-auto table, #pg .dv2-tw table, .tw > table, .tw-auto > table, .table-wrap > table {
+    width: max-content;
+    min-width: 100%;
+  }
+  /* Colonnes de montants : alignées à droite (libellé et valeurs) — posé automatiquement par table-fit.js */
+  #pg th.tf-num, #pg td.tf-num, #m th.tf-num, #m td.tf-num { text-align: right; font-variant-numeric: tabular-nums; }
+  /* Textes longs (notes, adresses…) : seuls ces cellules passent à la ligne, entre les mots */
+  #pg td.tf-wrap, #m td.tf-wrap { white-space: normal; min-width: 170px; max-width: 260px; word-break: normal; overflow-wrap: break-word; }
+  #pg td button, #pg td .b2 { padding: 4px 8px; font-size: 11px; }
+
+  /* Cartes / KPI */
+  #pg .card { padding: 10px; }
+  #pg .card small { font-size: 11px; }
+  #pg .cards .card b, #pg .cards .card .val, .card b { font-size: .95rem; }
+
+  /* Boutons, champs, formulaires */
+  button, .b, .b2, select, input, textarea { font-size: 13px; }
+  #pg .bar button { font-size: 12px; padding: 7px 8px; }
+  input, select, textarea { padding: 7px 9px; }
+
+  /* Fenêtres modales */
+  #m .card, #m > div { padding: 12px; }
+
+  /* En-tête et menu */
+  #app-header { font-size: 13px; }
+  .topbar-item { font-size: 10px; min-width: 48px; }
+}
+
+/* Très petits téléphones */
+@media (max-width: 400px) {
+  html { font-size: 81.25%; }             /* 13px */
+  #pg th, #pg td { padding: 5px 5px; font-size: 11px; }
+}
+
+/* ============================================================
+   Tableaux (tous écrans) : alignement + curseur de défilement horizontal
+   ============================================================ */
+#pg th, #m th { vertical-align: middle; }
+#pg th.tf-num, #pg td.tf-num, #m th.tf-num, #m td.tf-num { text-align: right; font-variant-numeric: tabular-nums; }
+.tf-on { scrollbar-width: none !important; }
+.tf-on::-webkit-scrollbar { display: none !important; height: 0 !important; }
+.tf-rail { display: flex; align-items: center; gap: 8px; margin: 2px 2px 14px; min-height: 28px; user-select: none; -webkit-user-select: none; }
+.tf-rail[hidden] { display: none; }
+.tf-btn {
+  flex: none; width: 30px; height: 28px; padding: 0; border-radius: 9px; border: 1px solid var(--bd);
+  background: var(--c); color: var(--t); font-size: 16px; line-height: 1; font-weight: 800; cursor: pointer;
+  display: inline-grid; place-items: center; box-shadow: var(--shadow);
+}
+.tf-btn:active { background: var(--pl); }
+.tf-track { position: relative; flex: 1 1 auto; height: 10px; border-radius: 99px; background: var(--bd); touch-action: none; cursor: pointer; }
+.tf-thumb {
+  position: absolute; left: 0; top: -5px; height: 20px; min-width: 44px; border-radius: 99px; background: var(--p);
+  box-shadow: 0 1px 4px rgba(0,0,0,.28); touch-action: none; cursor: grab;
+}
+.tf-thumb::after { content: ""; position: absolute; left: 50%; top: 50%; width: 14px; height: 2px; margin: -1px 0 0 -7px; border-radius: 2px; background: rgba(255,255,255,.85); box-shadow: 0 -4px 0 rgba(255,255,255,.55), 0 4px 0 rgba(255,255,255,.55); }
+.tf-thumb:active { cursor: grabbing; }
+@media print { .tf-rail { display: none !important; } }
+
+/* ============================================================
+   Mobile (tiroir) : le menu passe AU-DESSUS de l'en-tête fixe
+   Avant : en-tête z-index 100 > menu z-index 60 → le haut du menu (logo, premières rubriques,
+   premiers sous-onglets) était caché sous l'en-tête.
+   ============================================================ */
+@media (max-width: 860px) {
+  #nav.nav2 { z-index: 130; }
+  #nav-overlay { z-index: 120; }
+  #nav.nav2 .nav-head { padding-top: calc(10px + env(safe-area-inset-top, 0px)); }
+  #nav.nav2 .nav-scroll {
+    overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+    padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px));
+  }
+  /* sous-onglets déployés dans le tiroir : jamais coupés */
+  .nav2 .flyout { max-width: 100%; overflow: visible; }
+  .nav2 .flyout .nav-link { white-space: normal; }
+  /* le contenu de la page ne passe pas sous la barre du bas */
+  #pg { padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px)); }
+}

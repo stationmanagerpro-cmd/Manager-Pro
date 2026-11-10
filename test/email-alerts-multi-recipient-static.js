@@ -1,0 +1,14 @@
+'use strict';
+const fs = require('fs');
+const assert = require('assert');
+const service = fs.readFileSync('services/emailService.js', 'utf8');
+const shifts = fs.readFileSync('src/shifts.js', 'utf8');
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+assert(/SMTP_HOST/.test(service) && /sendMail\(/.test(service), 'SMTP service exists');
+assert(/ADMIN_EMAIL/.test(service) && /parseRecipients/.test(service), 'multiple recipients supported');
+assert(/notifyQuartEvent/.test(service) && /notifyAnomalie/.test(service), 'requested alert helpers exist');
+assert(/notifyQuartEvent, 'ouverture'/.test(shifts), 'shift opening email wired');
+assert(/notifyQuartEvent, 'fermeture'/.test(shifts), 'shift closing email wired');
+assert(/notifyAnomalie/.test(shifts), 'anomaly emails wired');
+assert(pkg.dependencies.nodemailer, 'nodemailer dependency present');
+console.log('OK — 7 contrôles statiques des alertes e-mail');

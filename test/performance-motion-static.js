@@ -1,0 +1,27 @@
+'use strict';
+const fs = require('fs');
+const assert = require('assert');
+const css = fs.readFileSync('public/performance-motion.css', 'utf8');
+const html = fs.readFileSync('public/index.html', 'utf8');
+const sw = fs.readFileSync('public/sw.js', 'utf8');
+const core = fs.readFileSync('public/ext-core.js', 'utf8');
+const auth = fs.readFileSync('src/auth.js', 'utf8');
+const ux = fs.readFileSync('public/ext-ux-v2.js', 'utf8');
+const home = fs.readFileSync('public/ext-home.js', 'utf8');
+const design = fs.readFileSync('public/design-v2.css', 'utf8');
+const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+let n = 0;
+function check(name, fn) { fn(); n++; console.log(`✓ ${name}`); }
+check('trois niveaux d’animations sont définis', () => { for (const mode of ['off','subtle','full']) assert.ok(css.includes(`data-motion=\"${mode}\"`)); });
+check('effets limités à transform et box-shadow', () => assert.match(css, /transition: transform[^;]*box-shadow/i));
+check('pas de compteur animé ni de boucle d’animation JavaScript', () => assert.doesNotMatch(css, /@keyframes\s+.*counter|animation-iteration-count\s*:\s*infinite/i));
+check('la préférence système réduit les mouvements', () => assert.match(css, /prefers-reduced-motion:\s*reduce/));
+check('réglage persistant par utilisateur via user_preferences', () => { assert.match(auth, /key='motion'/); assert.match(auth, /key,value,updated_at,updated_by/); });
+check('le profil Ma fiche propose les préférences visuelles', () => { assert.match(ux, /Animations et effets visuels/); assert.match(ux, /saveMotionPreference/); });
+check('le client charge et applique la préférence enregistrée', () => { assert.match(core, /loadPersonalMotion/); assert.match(core, /smp-motion-user-/); });
+check('l’accueil utilise le moteur partagé home-core', () => { assert.match(home, /HomeCore\.render/); });
+check('la feuille est chargée après le design principal', () => assert.ok(html.indexOf('design-v2.css') < html.indexOf('performance-motion.css')));
+check('la feuille est incluse au précache PWA', () => assert.match(sw, /'\/performance-motion\.css'/));
+check('le cache PWA est incrémenté', () => assert.match(sw, /smp-static-b[0-9a-f]{10}/));
+check('le script de test est déclaré', () => assert.ok(pkg.scripts['test:performance-motion']));
+console.log(`${n}/12 contrôles réussis.`);
