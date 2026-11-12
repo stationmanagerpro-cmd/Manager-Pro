@@ -293,6 +293,7 @@
       d.billing ? ['Factures émises', money(d.billing.issued_total) + ' · ' + d.billing.issued_count, false] : null,
       d.billing ? ['Encaissé sur factures', money(d.billing.collected_total), false] : null,
       d.billing ? ['Factures à encaisser', money(d.billing.due_total) + ' · ' + d.billing.open_count, d.billing.overdue_count > 0] : null,
+      d.week_compare ? ['Ventes 7 j vs 7 j précédents', money(d.week_compare.current) + (d.week_compare.delta_pct == null ? '' : ' · ' + (d.week_compare.delta_pct > 0 ? '▲ +' : d.week_compare.delta_pct < 0 ? '▼ ' : '= ') + d.week_compare.delta_pct + ' %'), d.week_compare.delta_pct != null && d.week_compare.delta_pct < 0] : null,
       ['Quarts ouverts', String((d.open_shifts || []).length), false]
     ].filter(Boolean).map(([l, v, neg]) => `<div><small>${E(l)}</small><b class="${neg ? 'neg' : ''}">${v}</b></div>`).join('');
 
@@ -314,6 +315,7 @@
     }).join('')}</tbody></table></div>` : (today ? '<div class="dv2-empty">Aucune vente enregistrée pour le moment.</div>' : '<div class="dv2-empty">Aucune vente enregistrée sur cette période.</div>');
 
     const al = [];
+    (d.watch || []).slice(0, 4).forEach(x => al.push([x.level === 'critical' ? 'critical' : 'warning', x.level === 'critical' ? '⛔' : '⚠', x.message, x.sub || '']));
     ((jour && jour.low_stock) || []).slice(0, 4).forEach(x => al.push(['warning', '⚠', 'Niveau de stock bas — ' + x.name, 'Il reste ' + new Intl.NumberFormat(LOC(), { maximumFractionDigits: 0 }).format(N(x.quantity)) + ' (minimum ' + N(x.min_stock) + ')']));
     ((jour && jour.alerts) || []).filter(x => !(x.type === 'stock')).slice(0, 5).forEach(x => al.push([x.level === 'critical' ? 'critical' : x.level === 'warning' ? 'warning' : 'info', x.level === 'critical' ? '⛔' : x.level === 'warning' ? '⚠' : 'ℹ', x.message, x.due_date ? 'Échéance : ' + x.due_date : '']));
     const alerts = al.length ? al.slice(0, 5).map(([lv, ic, t, sub]) => `<div class="dv2-alert"><div class="dv2-ai ${lv}" aria-hidden="true">${ic}</div><div><b>${E(t)}</b>${sub ? `<span>${E(sub)}</span>` : ''}</div></div>`).join('') : '<div class="dv2-alert"><div class="dv2-ai ok" aria-hidden="true">✓</div><div><b>Aucune alerte</b><span>Tout est à jour pour cette station.</span></div></div>';

@@ -247,6 +247,8 @@ async function openQ() {
       if (d.odate < _today) ask('Ce quart sera enregistré à la date du ' + d.odate + ' (date antérieure) et replacé automatiquement dans l’ordre chronologique des quarts. Continuer ?', doOpen);
       else await doOpen();
     }, participants);
+  // Index initial : repris du dernier index connu, non modifiable (seul l'index final / nouveau est saisi)
+  cs.forEach((c, i) => { const el = document.getElementById('f_i' + i); if (el && c.current_index != null) { el.readOnly = true; el.style.background = 'var(--bg,#f1f1f1)'; el.style.cursor = 'not-allowed'; el.title = 'Index initial : repris automatiquement, non modifiable'; } });
   // Modale élargie + champ date borné à aujourd’hui + aide de placement chronologique
   const box = document.querySelector('#m > div'); if (box) box.classList.add('oq-wide');
   const fd = document.getElementById('f_odate'); if (fd) { fd.max = _today; fd.required = true; }
@@ -335,7 +337,7 @@ async function addFuel() {
   const [cl, em] = await Promise.all([G('/customers').catch(() => []), G('/employees').catch(() => [])]); FM = 'index';
   modal(`<h3>Vente de carburant</h3><div class="tabs" id="fm"><a data-m="index" class="on">Par index de compteur</a><a data-m="litres">En litres</a>${AP.fuel_amount_entry_allowed ? '<a data-m="montant">En montant</a>' : ''}</div>
   <div class="g"><label>Compteur<select id="fc">${cu.counters.map(c => `<option value="${c.counter_id}">${esc(c.pump)} · C${c.counter_number} · ${esc(c.product)}</option>`).join('')}</select></label>
-  <label class="fi">Ancien index<input id="fo" type="number" step="any"></label><label class="fi">Nouvel index<input id="fn" type="number" step="any"></label>
+  <label class="fi">Ancien index<input id="fo" type="number" step="any" readonly style="background:var(--bg,#f1f1f1);cursor:not-allowed" title="Index initial : repris automatiquement du dernier index connu, non modifiable"></label><label class="fi">Nouvel index<input id="fn" type="number" step="any"></label>
   <label class="fl" style="display:none">Quantité (litres)<input id="fq" type="number" step="any"></label><label class="fa" style="display:none">Montant (${CUR})<input id="fa" type="number" step="any"></label>
   <label>Paiement<select id="fp">${pmOpts().map(([c, l]) => `<option value="${c}">${esc(l)}</option>`).join('')}</select></label><label>Client (si crédit)<select id="fu"><option value="">Aucun</option>${cl.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></label>
   <label>Employé<select id="fe">${em.map(e => `<option value="${e.id}">${esc(e.first_name + ' ' + e.last_name)}</option>`).join('')}</select></label></div>

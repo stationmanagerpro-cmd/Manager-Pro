@@ -451,6 +451,7 @@ const visible = k => V[k] && (typeof canView === 'function' ? canView(k) : can(V
         <a role="menuitem" tabindex="0" onclick="closeUserMenu();pickMyPhoto()">📷 Changer ma photo</a>
         <a role="menuitem" tabindex="0" data-pwa-install hidden onclick="closeUserMenu();pwaInstall()">📲 Installer l'application</a>
         <a role="menuitem" tabindex="0" onclick="closeUserMenu();go('offlineq')">📡 File hors-ligne</a>
+        ${window.AndroidBridge && AndroidBridge.openSettings ? '<a role="menuitem" tabindex="0" onclick="closeUserMenu();AndroidBridge.openSettings()">⚙ Réglages de l\'application</a>' : ''}
         <a role="menuitem" tabindex="0" onclick="closeUserMenu();typeof personalThemeEditor==='function'&&personalThemeEditor()">🎨 Mon thème</a>
         <a role="menuitem" tabindex="0" onclick="closeUserMenu();typeof personalNavColorsEditor==='function'&&personalNavColorsEditor()">🎨 Couleurs du menu</a>
         <a role="menuitem" tabindex="0" onclick="closeUserMenu();typeof toggleDayNight==='function'&&toggleDayNight()">🌓 Jour / Nuit</a>

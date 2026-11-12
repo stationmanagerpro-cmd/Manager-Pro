@@ -46,6 +46,48 @@
   }
   VM.bcommande = vBonCommande;
 
+  const hdrs = () => Object.assign({ 'Content-Type': 'application/json' }, typeof TK !== 'undefined' && TK ? { Authorization: 'Bearer ' + TK } : {}, typeof SID !== 'undefined' && SID ? { 'X-Station-Id': String(SID) } : {});
+  const b64 = blob => new Promise((ok, ko) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1]); r.onerror = ko; r.readAsDataURL(blob); });
+  /** Photo → JPEG réduite (1600 px max) pour rester < 1,5 Mo ; les PDF sont envoyés tels quels. */
+  async function prepFile(file) {
+    if (!file) return null;
+    if (file.type === 'application/pdf') { if (file.size > 1.5 * 1024 * 1024) throw new Error('PDF trop volumineux (1,5 Mo maximum).'); return { filename: file.name, mime: file.type, data: await b64(file) }; }
+    if (!/^image\//.test(file.type)) throw new Error('Formats acceptés : photo ou PDF.');
+    const url = URL.createObjectURL(file);
+    try {
+      const img = await new Promise((ok, ko) => { const i = new Image(); i.onload = () => ok(i); i.onerror = () => ko(new Error('Image illisible')); i.src = url; });
+      const k = Math.min(1, 1600 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+      c.width = Math.round(img.width * k); c.height = Math.round(img.height * k); c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+      let blob = await new Promise(ok => c.toBlob(ok, 'image/jpeg', 0.72));
+      if (blob.size > 1.4 * 1024 * 1024) blob = await new Promise(ok => c.toBlob(ok, 'image/jpeg', 0.5));
+      return { filename: (file.name || 'photo').replace(/\.[^.]+$/, '') + '.jpg', mime: 'image/jpeg', data: await b64(blob) };
+    } finally { URL.revokeObjectURL(url); }
+  }
+  async function uploadAttachment(poId, file, receiptId) {
+    const f0 = await prepFile(file); if (!f0) return null;
+    return Po('/purchase-orders/' + poId + '/attachments', Object.assign(f0, receiptId ? { receipt_id: receiptId } : {}));
+  }
+  window.bcAttach = function (id) {
+    const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*,application/pdf';
+    inp.onchange = async () => { try { await uploadAttachment(id, inp.files[0]); toast('Pièce jointe ajoutée'); bcShow(id); } catch (e) { toast(e.message, 'error'); } };
+    inp.click();
+  };
+  window.bcViewAtt = async function (id, aid) {
+    try {
+      const r = await fetch('/api/purchase-orders/' + id + '/attachments/' + aid, { headers: hdrs() });
+      if (!r.ok) throw new Error('Pièce introuvable');
+      const u = URL.createObjectURL(await r.blob()); if (!window.open(u, '_blank')) location.href = u; setTimeout(() => URL.revokeObjectURL(u), 60000);
+    } catch (e) { toast(e.message, 'error'); }
+  };
+
+  /** Scan code-barres (application Android) : retrouve le produit par son code-barres. */
+  let _prodByCode = null;
+  async function productByCode(code) {
+    if (!_prodByCode) { _prodByCode = new Map(); try { (await G('/products')).forEach(p => { if (p.barcode) _prodByCode.set(String(p.barcode).trim(), p); }); } catch (_) { /* sans catalogue */ } }
+    return _prodByCode.get(String(code).trim());
+  }
+  const hasScanner = () => !!(window.AndroidBridge && AndroidBridge.scan);
+
   window.bcFilter = function (reset) {
     const v = id => (document.getElementById(id) || {}).value || '';
     Object.assign(F, reset ? { q: '', status: '', pay: '', supplier_id: '', from: '', to: '' }
@@ -87,7 +129,7 @@
       '<label>Livraison prévue<input type="date" id="bc_d" value="' + (po && po.expected_date ? String(po.expected_date).slice(0, 10) : '') + '"></label>' +
       '<label>Notes<input id="bc_n" value="' + esc(po && po.notes || '') + '"></label></div>' +
       '<div class="tw" style="max-height:40vh;overflow:auto"><table id="bc_t"><thead><tr><th>Produit</th><th>Qté</th><th>Coût unitaire</th><th>Montant</th><th></th></tr></thead><tbody></tbody></table></div>' +
-      '<p><button type="button" class="b2" id="bc_add">+ Ligne</button> <b>Total : <span id="bc_tot">0</span></b></p>' +
+      '<p><button type="button" class="b2" id="bc_add">+ Ligne</button> ' + (hasScanner() ? '<button type="button" class="b2" id="bc_scan">📷 Scanner un produit</button> ' : '') + '<b>Total : <span id="bc_tot">0</span></b></p>' +
       '<div class="r"><button class="b2" onclick="closeM()">Annuler</button><button class="b2" id="bc_save">Enregistrer en brouillon</button>' +
       '<button id="bc_val">Enregistrer et valider</button></div>');
     const tb = document.querySelector('#bc_t tbody');
@@ -101,6 +143,21 @@
     };
     (po ? po.lines : [null]).forEach(add); calc();
     document.getElementById('bc_add').onclick = () => add(null);
+    const sc = document.getElementById('bc_scan');
+    if (sc) {
+      const handler = async code => {
+        const p = await productByCode(code); if (!p) { toast('Code-barres inconnu : ' + code, 'error'); return; }
+        let tr = [...tb.querySelectorAll('tr')].find(x => +x.querySelector('.bc-p').value === Number(p.id));
+        if (tr) tr.querySelector('.bc-q').value = (+tr.querySelector('.bc-q').value || 0) + 1;
+        else {
+          const empty = [...tb.querySelectorAll('tr')].find(x => !x.querySelector('.bc-p').value);
+          if (empty) tr = empty; else { add(null); tr = tb.lastElementChild; }
+          tr.querySelector('.bc-p').value = p.id; tr.querySelector('.bc-q').value = 1; if (!(+tr.querySelector('.bc-c').value)) tr.querySelector('.bc-c').value = p.buy_price || 0;
+        }
+        calc(); toast(p.name + ' ajouté');
+      };
+      sc.onclick = () => { window.__mpScanHandler = c => { if (!document.getElementById('bc_scan')) return false; handler(c); return true; }; AndroidBridge.scan(); };
+    }
     const save = async validate => {
       const items = [...tb.querySelectorAll('tr')].map(tr => ({ product_id: +tr.querySelector('.bc-p').value, quantity: +tr.querySelector('.bc-q').value, unit_cost: +tr.querySelector('.bc-c').value }));
       if (items.some(i => !i.product_id || !(i.quantity > 0) || !(i.unit_cost > 0))) return toast('Chaque ligne doit avoir un produit, une quantité et un coût > 0', 'error');
@@ -132,9 +189,10 @@
       '<div class="g" style="grid-template-columns:repeat(auto-fit,minmax(140px,1fr))">' +
       [['Engagé', t.amount_committed], ['Reçu (valeur)', t.amount_received], ['Payé', t.amount_paid], ['Reste à payer', t.amount_remaining_to_pay], ['Reste à recevoir', t.amount_remaining_to_receive]].map(k => '<div class="card"><small>' + k[0] + '</small><br><b>' + m(k[1]) + '</b></div>').join('') + '</div>' +
       '<h4>Lignes</h4>' + lines + '<h4>Historique des réceptions</h4>' + rec + '<h4>Règlements</h4>' + pay +
+      '<h4>Pièces jointes</h4>' + ((d.attachments || []).length ? '<ul style="margin:0 0 8px;padding-left:18px">' + d.attachments.map(a => '<li><a href="#" onclick="bcViewAtt(' + d.id + ',' + a.id + ');return false">' + esc(a.filename) + '</a> <span class="muted">' + dt(a.created_at) + ' · ' + esc(a.user_login || '') + '</span></li>').join('') + '</ul>' : '<p class="muted">Aucune pièce jointe.</p>') +
       (d.notes ? '<p class="muted">Notes : ' + esc(d.notes) + '</p>' : '') +
       '<div class="r" style="flex-wrap:wrap;gap:6px"><button class="b2" onclick="closeM()">Fermer</button>' +
-      '<button class="b2" onclick="bcPdf(' + d.id + ')">PDF</button><button class="b2" onclick="bcPrint(' + d.id + ')">Imprimer</button>' +
+      '<button class="b2" onclick="bcPdf(' + d.id + ')">PDF</button><button class="b2" onclick="bcShare(' + d.id + ')">Partager</button>' + (canManage() && st !== 'annule' ? '<button class="b2" onclick="bcAttach(' + d.id + ')">📷 Joindre</button>' : '') + '<button class="b2" onclick="bcPrint(' + d.id + ')">Imprimer</button>' +
       (editable ? '<button class="b2" onclick="bcEdit(' + d.id + ')">Modifier</button>' : '') +
       (canManage() && st === 'brouillon' ? '<button onclick="bcValidate(' + d.id + ')">Valider</button>' : '') +
       (canManage() && (st === 'brouillon' || (st === 'valide' && !d.receipts.length)) ? '<button class="b2" onclick="bcCancel(' + d.id + ')">Annuler le bon</button>' : '') +
@@ -170,8 +228,21 @@
         '<div id="rc_imm" style="display:none;margin-top:6px"><div class="g"><label>Compte / mode de paiement' + sel + '</label>' +
         '<label>Montant payé<input id="rc_amt" type="number" min="0.01" step="0.01"></label></div></div>' : '<p class="muted">Le règlement immédiat nécessite la permission de payer les fournisseurs.</p>') +
       '</fieldset><label>Note<input id="rc_n"></label>' +
-      '<div class="r"><button class="b2" onclick="closeM()">Annuler</button><button id="rc_ok">Valider la réception</button></div>');
+      '<label>📷 Bon de livraison / facture fournisseur (photo ou PDF, facultatif)<input id="rc_f" type="file" accept="image/*,application/pdf"></label>' +
+      '<div class="r"><button class="b2" onclick="closeM()">Annuler</button>' + (hasScanner() ? '<button class="b2" onclick="AndroidBridge.scan()">📷 Scanner</button>' : '') + '<button id="rc_ok">Valider la réception</button></div>');
     const inputs = () => [...document.querySelectorAll('.rc-q')];
+    if (hasScanner()) {
+      const pid = {}; d.lines.forEach(l => { pid[l.id] = l.product_id; });
+      window.__mpScanHandler = code => {
+        if (!document.getElementById('rc_ok')) return false;     // dialogue fermé : laisser le scan au champ actif
+        (async () => {
+          const p = await productByCode(code); const inp = p && inputs().find(i => Number(pid[i.dataset.d]) === Number(p.id));
+          if (!inp) { toast(p ? p.name + ' : déjà entièrement reçu ou absent de ce bon' : 'Code-barres inconnu : ' + code, 'error'); return; }
+          inp.focus(); inp.select(); toast(p.name + ' — saisissez la quantité reçue');
+        })();
+        return true;
+      };
+    }
     const val = () => inputs().reduce((a, i) => a + (+i.value || 0) * (+i.dataset.c), 0);
     const upd = () => { const v = val(); document.getElementById('rc_val').textContent = m(v); const a = document.getElementById('rc_amt'); if (a && !a.dataset.t) a.value = Math.round(v * 100) / 100; };
     inputs().forEach(i => i.oninput = upd); upd();
@@ -191,7 +262,13 @@
         body.amount = +document.getElementById('rc_amt').value || undefined;
       }
       this.disabled = true;
-      try { await Po('/purchase-orders/' + id + '/receive', body); toast('Réception enregistrée'); closeM(); go('bcommande'); }
+      try {
+        const done = await Po('/purchase-orders/' + id + '/receive', body);
+        const file = (document.getElementById('rc_f') || {}).files && document.getElementById('rc_f').files[0];
+        let warn = '';
+        if (file) { try { await uploadAttachment(id, file, (done.receipts[done.receipts.length - 1] || {}).id); } catch (e) { warn = ' — pièce jointe non enregistrée : ' + e.message; } }
+        toast('Réception enregistrée' + warn, warn ? 'error' : undefined); closeM(); go('bcommande');
+      }
       catch (e) { toast(e.message, 'error'); this.disabled = false; }
     };
   };
@@ -227,13 +304,31 @@
       signatures: [{ label: 'Établi par' }, { label: 'Fournisseur' }]
     };
   }
+  /** Partage du bon en PDF : feuille de partage Android (WhatsApp, e-mail…) ; sur ordinateur, téléchargement + liens prêts. */
+  window.bcShare = async function (id) {
+    try {
+      const d = await G('/purchase-orders/' + id), o = pdfOpts(d);
+      const r = await fetch('/api/docs/render', { method: 'POST', headers: hdrs(), body: JSON.stringify(o) });
+      if (!r.ok) throw new Error('Génération du PDF impossible');
+      const blob = await r.blob(), name = (d.order_no || 'bon-de-commande') + '.pdf';
+      const text = 'Bon de commande ' + d.order_no + ' — ' + d.supplier + ' — ' + m(d.totals.amount_committed);
+      if (window.AndroidBridge && AndroidBridge.shareFile) { AndroidBridge.shareFile(await b64(blob), 'application/pdf', name, text); return; }
+      const file = new File([blob], name, { type: 'application/pdf' });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: d.order_no, text }); return; }
+      const u = URL.createObjectURL(blob), a = document.createElement('a'); a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 30000);
+      modal('<h3 style="margin-top:0">PDF téléchargé</h3><p>Joignez le fichier <b>' + esc(name) + '</b> puis envoyez-le :</p><div class="r" style="gap:8px">' +
+        '<a class="b2" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent(text) + '">WhatsApp</a>' +
+        '<a class="b2" href="mailto:?subject=' + encodeURIComponent('Bon de commande ' + d.order_no) + '&body=' + encodeURIComponent(text) + '">E-mail</a>' +
+        '<button class="b2" onclick="closeM()">Fermer</button></div>');
+    } catch (e) { if (e && e.name !== 'AbortError') toast(e.message, 'error'); }
+  };
   window.bcPdf = async function (id) { try { const d = await G('/purchase-orders/' + id); await brandedPdf(pdfOpts(d)); } catch (e) { toast(e.message, 'error'); } };
   window.bcPrint = async function (id) {
     try {
       const d = await G('/purchase-orders/' + id); const o = pdfOpts(d); const w = window.open('', '_blank'); if (!w) return toast('Fenêtre bloquée', 'error');
       w.document.write('<html><head><title>' + esc(o.title) + '</title><style>body{font:13px sans-serif;padding:20px}table{border-collapse:collapse;width:100%;margin-bottom:14px}td,th{border:1px solid #999;padding:4px 6px;text-align:left}</style></head><body><h2>' + esc(o.title) + '</h2><p>' + esc(o.subtitle) + '</p>' +
         o.sections.filter(s => s.type === 'table').map(s => '<h4>' + esc(s.title) + '</h4><table><tr>' + s.head.map(h => '<th>' + esc(h) + '</th>').join('') + '</tr>' + s.rows.map(r => '<tr>' + r.map(c => '<td>' + esc(c) + '</td>').join('') + '</tr>').join('') + '</table>').join('') + '</body></html>');
-      w.document.close(); w.focus(); w.print();
+      w.document.close(); if (!(window.ManageProNative && ManageProNative.available())) { w.focus(); w.print(); }
     } catch (e) { toast(e.message, 'error'); }
   };
 })();

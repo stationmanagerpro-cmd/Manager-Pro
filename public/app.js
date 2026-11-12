@@ -494,7 +494,7 @@ async function openQ() {
   const regOpts = (rg || []).map(x => `<option value="${Number(x.id)}">${esc(x.name)} (${fl(x.balance)})</option>`).join('');
   const counterRows = cs.map((c, i) =>
     `<label>${esc(c.pn)}, compteur ${esc(String(c.counter_number))} (${esc(c.product)}) : index initial
-      <input type="number" class="oq-idx" data-cid="${Number(c.id)}" value="${c.current_index != null ? c.current_index : ''}" step="0.001"></label>`).join('');
+      <input type="number" class="oq-idx" data-cid="${Number(c.id)}" value="${c.current_index != null ? c.current_index : ''}" step="0.001" ${c.current_index != null ? 'readonly style="background:var(--bg,#f1f1f1);cursor:not-allowed" title="Index initial repris du dernier index connu"' : ''}></label>`).join('');
 
   function partRow() {
     return `<div class="oq-part g" style="align-items:end;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--bd)">

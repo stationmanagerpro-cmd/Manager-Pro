@@ -120,7 +120,7 @@
             <label>Compteur<select id="fc"></select></label>
             <label>Employé<input id="fs_emp_label" type="text" readonly style="background:var(--bg, #f5f5f5)">
               <input type="hidden" id="fe"></label>
-            <label class="fi">Ancien index<input id="fo" type="number" step="any"></label>
+            <label class="fi">Ancien index<input id="fo" type="number" step="any" readonly style="background:var(--bg,#f1f1f1);cursor:not-allowed" title="Index initial : repris automatiquement du dernier index connu, non modifiable"></label>
             <label class="fi">Nouvel index<input id="fn" type="number" step="any"></label>
             <label class="fl" style="display:none">Quantité (litres)<input id="fq" type="number" step="any"></label>
             <label class="fa" style="display:none">Montant (${cur_})<input id="fa" type="number" step="any"></label>
