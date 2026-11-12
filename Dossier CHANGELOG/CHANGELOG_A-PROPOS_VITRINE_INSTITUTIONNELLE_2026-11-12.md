@@ -57,7 +57,7 @@ Vérifié dans le navigateur : ouverture de l'onglet ; 10 solutions ; 3 rubrique
 
 ## 5. Anomalies et réserves restantes
 
-1. **Liens Android et App Store non configurés** → les deux boutons affichent « Bientôt disponible » (AP-012, AP-013 : *Bloqué*).
+1. **Lien App Store non configuré** → bouton « Bientôt disponible » (AP-013 : *Bloqué*). Android : APK en place (AP-012 : *Terminé*), mais **installation non testée sur un vrai téléphone** et l'APK s'appelle « Ika Sô » : à confirmer que c'est l'application voulue (clé de signature de production ou de test ?).
 2. **Logos Android et Apple non inclus** (marques déposées soumises à directives) : illustration de smartphone en CSS et libellé à la place.
 3. **Libellé du menu tronqué** (« A propos de Manager P… ») sur le menu latéral standard.
 4. **Icônes en emoji** : le rendu varie selon l'appareil.
@@ -65,7 +65,9 @@ Vérifié dans le navigateur : ouverture de l'onglet ; 10 solutions ; 3 rubrique
 
 ## 6. Liens de téléchargement réellement configurés
 
-**Aucun.** Le Super Admin les renseigne dans *A propos de Manager PRO → Modifier la page → Téléchargement des applications mobiles*.
+- **Android** : `/telechargements/Ika-So.apk` (fichier `public/telechargements/Ika-So.apk`, fourni par le propriétaire, 15 611 791 octets, SHA-256 `b37cea585014ea27b0dd9d69b95b5ef6ba5f95c765e7bb2f90b2e085ff6b568c`, bloc de signature APK v2 présent). Servi en téléchargement forcé (`application/vnd.android.package-archive`). Lien interne autorisé uniquement sous `/telechargements/` ; tout autre chemin, `//…`, `..` est refusé.
+- **iOS** : aucun → « Bientôt disponible ».
+- Si la page a déjà été personnalisée en production, le lien Android doit être saisi une fois par le Super Admin (le modèle par défaut ne s'applique qu'à une page non personnalisée) : dans *A propos de Manager PRO → Modifier la page → Téléchargement des applications mobiles*.
 
 ## 7. Décisions à prendre par le propriétaire
 

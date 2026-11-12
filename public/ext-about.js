@@ -51,7 +51,7 @@
     const name = android ? 'Android' : 'iPhone et iPad';
     const heading = url ? (android ? 'Disponible sur Android' : 'Disponible sur iPhone et iPad') : (android ? 'Application Android' : 'Application iPhone et iPad');
     const btn = url
-      ? `<a class="ab-dl-btn" href="${E(url)}" target="_blank" rel="noopener noreferrer">${android ? 'TÉLÉCHARGER SUR ANDROID' : 'TÉLÉCHARGER SUR L’APP STORE'}</a>`
+      ? `<a class="ab-dl-btn" href="${E(url)}" ${url.charAt(0) === '/' ? 'download' : 'target="_blank" rel="noopener noreferrer"'}>${android ? 'TÉLÉCHARGER SUR ANDROID' : 'TÉLÉCHARGER SUR L’APP STORE'}</a>`
       : '<span class="ab-dl-btn is-soon" role="status">BIENTÔT DISPONIBLE</span>';
     return `<article class="ab-dl-card" data-os="${kind}">
       ${phone(kind)}
@@ -232,7 +232,7 @@
     if (content.solutions.some(s => !s.name.trim())) return toast('Chaque solution doit avoir un nom', 'error');
     if (content.approach.commitments.some(k => !k.title.trim())) return toast('Chaque engagement doit avoir un titre', 'error');
     for (const [v, l] of [[content.downloads.android_url, 'Android'], [content.downloads.ios_url, 'App Store']]) {
-      if (v && !/^https:\/\/[^\s]+$/i.test(v)) return toast('Lien ' + l + ' : l’adresse doit commencer par https://', 'error');
+      if (v && !/^https:\/\/[^\s]+$/i.test(v) && !/^\/telechargements\/[A-Za-z0-9._-]+$/.test(v)) return toast('Lien ' + l + ' : l’adresse doit commencer par https://', 'error');
     }
     try {
       await api('PUT', '/admin/about', { content });

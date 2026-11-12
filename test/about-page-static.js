@@ -21,9 +21,13 @@ check('modèle par défaut valide et stable après validation (10 solutions, 3 r
   d.solutions.forEach(s => { assert(s.objective && s.features.length >= 7 && s.benefits.length >= 5, s.name + ' : Objectif, Solutions et Avantages renseignés'); });
   assert.strictEqual(d.approach.commitments.length, 4); assert.strictEqual(d.why.items.length, 7);
 });
-check('téléchargement : aucun lien par défaut (jamais de faux lien), seul https:// accepté', () => {
-  const d = About.defaultDoc(); assert.strictEqual(d.downloads.android_url, ''); assert.strictEqual(d.downloads.ios_url, '');
-  assert(!/play\.google|apps\.apple|\.apk/i.test(JSON.stringify(d)), 'aucune adresse de store dans le modèle');
+check('téléchargement : Android = APK hébergé (fichier réel), iOS vide, aucune adresse de store inventée, seul https:// ou /telechargements/ accepté', () => {
+  const d = About.defaultDoc(); assert.strictEqual(d.downloads.android_url, '/telechargements/Ika-So.apk'); assert.strictEqual(d.downloads.ios_url, '');
+  assert(fs.existsSync('public/telechargements/Ika-So.apk') && fs.statSync('public/telechargements/Ika-So.apk').size > 1e6, 'le fichier APK existe');
+  assert(!/play\.google|apps\.apple/i.test(JSON.stringify(d)), 'aucune adresse de store dans le modèle');
+  assert.throws(() => About.sanitize({ header: { title: 'x' }, downloads: { android_url: '/autre/a.apk' } }), /https/);
+  assert.throws(() => About.sanitize({ header: { title: 'x' }, downloads: { android_url: '/telechargements/../src/server.js' } }), /https/);
+  assert.throws(() => About.sanitize({ header: { title: 'x' }, downloads: { android_url: '//evil.ml/a.apk' } }), /https/);
   assert.throws(() => About.sanitize({ header: { title: 'x' }, downloads: { android_url: 'http://x.ml/a.apk' } }), /https/);
   assert.throws(() => About.sanitize({ header: { title: 'x' }, downloads: { ios_url: 'javascript:alert(1)' } }), /https/);
   assert.throws(() => About.sanitize({ header: { title: 'x' }, downloads: { ios_url: 'data:text/html,<b>' } }), /https/);
@@ -31,7 +35,7 @@ check('téléchargement : aucun lien par défaut (jamais de faux lien), seul htt
 });
 check('compatibilité : contenu enregistré en v1 (ancienne page) reste valide, nouveaux blocs repris du modèle', () => {
   const m = About.sanitize({ v: 1, header: { title: 'T', tagline: '', intro: '' }, sections: [{ id: 'abcd', title: 'X', body: 'y' }], contact: {} });
-  assert.strictEqual(m.v, 2); assert.strictEqual(m.solutions.length, 10); assert.strictEqual(m.sections.length, 1); assert.strictEqual(m.downloads.android_url, '');
+  assert.strictEqual(m.v, 2); assert.strictEqual(m.solutions.length, 10); assert.strictEqual(m.sections.length, 1); assert.strictEqual(m.downloads.android_url, '/telechargements/Ika-So.apk');
 });
 check('solutions : statut contrôlé, listes et limites vérifiées', () => {
   assert.throws(() => About.sanitize({ header: { title: 'x' }, solutions: [{ name: 'a', status: 'zzz' }] }), /Statut/);

@@ -42,6 +42,11 @@ app.use(require('./phone').phoneMiddleware);   // téléphones : format internat
 
 app.use(express.static(path.join(__dirname, '..', 'public'), {
   setHeaders(res, filePath) {
+    if (filePath.endsWith('.apk')) {   // application Android téléchargeable (page « A propos »)
+      res.setHeader('Content-Type', 'application/vnd.android.package-archive');
+      res.setHeader('Content-Disposition', 'attachment; filename="' + path.basename(filePath) + '"');
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+    }
     if (filePath.endsWith('sw.js')) {
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.setHeader('Service-Worker-Allowed', '/');

@@ -96,7 +96,7 @@ const VIEWPORTS = [['mobile', 390, 844], ['tablette', 820, 1180], ['ordinateur',
     const lastId = await page.evaluate(() => document.querySelector('#ab-root').lastElementChild.id);
     ok(lastId === 'ab-download', 'section téléchargement = TOUT DERNIER bloc de la page');
     ok(await page.locator('.ab-dl-card').count() === 2 && await page.locator('.ab-phone').count() === 2, 'deux cartes (Android, iOS) avec smartphone');
-    ok(await page.locator('.ab-dl-btn.is-soon', { hasText: 'BIENTÔT DISPONIBLE' }).count() === 2 && await page.locator('a.ab-dl-btn').count() === 0, 'sans lien configuré : « Bientôt disponible », aucun faux bouton');
+    ok(await page.locator('.ab-dl-card[data-os="android"] a.ab-dl-btn[href="/telechargements/Ika-So.apk"][download]').count() === 1 && await page.locator('.ab-dl-card[data-os="ios"] .ab-dl-btn.is-soon', { hasText: 'BIENTÔT DISPONIBLE' }).count() === 1 && await page.locator('a.ab-dl-btn').count() === 1, 'Android : bouton de téléchargement de l’APK hébergé ; iOS sans lien : « Bientôt disponible », aucun faux bouton');
     ok(!(await page.textContent('#ab-root')).match(/play\.google|apps\.apple/), 'aucun lien de store inventé');
     ok(await page.locator('.ab-edit-btn').count() === 0, 'compte client : pas de bouton « Modifier la page »');
     const ov = await page.evaluate(() => ({ doc: document.documentElement.scrollWidth - window.innerWidth, root: document.getElementById('ab-root').scrollWidth - document.getElementById('ab-root').clientWidth }));
@@ -150,7 +150,7 @@ const VIEWPORTS = [['mobile', 390, 844], ['tablette', 820, 1180], ['ordinateur',
   await page.click('.ab-edit-btn'); await page.waitForSelector('.ab-editing'); await page.click('button:has-text("Rétablir le modèle d’origine")');
   await page.click('#yes'); await page.waitForFunction(() => document.querySelectorAll('.ab-sol').length === 10 && !document.querySelector('.ab-editing'));
   ok(stored === null && (await page.textContent('.ab-hero h2')).trim() === 'A propos de Manager PRO', 'modèle d’origine rétabli (10 solutions, titre d’origine)');
-  ok((await page.textContent('.ab-dl-card[data-os="android"]')).includes('BIENTÔT DISPONIBLE'), 'après retour au modèle : plus aucun lien configuré');
+  ok(await page.locator('.ab-dl-card[data-os="android"] a.ab-dl-btn[href="/telechargements/Ika-So.apk"]').count() === 1, 'après retour au modèle : lien Android par défaut (APK hébergé) rétabli');
   await ctx.close(); await br.close(); srv.close();
   ok(errs.length === 0, 'aucune erreur JavaScript (' + errs.length + ')');
   console.log(fails ? '\n' + fails + ' ÉCHEC(S)' : '\nTOUS LES TESTS UI « A PROPOS » PASSENT'); process.exit(fails ? 1 : 0);
