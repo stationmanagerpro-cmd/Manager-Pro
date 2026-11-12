@@ -42,6 +42,7 @@ function lit(v) {
   if (v instanceof Date) return `'${v.toISOString()}'`;
   if (typeof v === 'number') return String(v);
   if (typeof v === 'boolean') return v ? 'TRUE' : 'FALSE';
+  if (Buffer.isBuffer(v)) return `'\\x${v.toString('hex')}'::bytea`;
   if (Array.isArray(v)) return `ARRAY[${v.map(lit).join(',')}]`;
   if (typeof v === 'object') return `'${JSON.stringify(v).replace(/'/g, "''")}'`;
   return `'${String(v).replace(/'/g, "''")}'`;
@@ -185,6 +186,14 @@ const q1 = async (s, p) => (await auto.query(s, p)).rows[0];
     assert.strictEqual(e.data.total, 3000);
     const c = await call('POST', `/purchase-orders/${r.data.id}/cancel`, { reason: 'erreur de saisie' });
     assert.strictEqual(c.data.reception_status, 'annule'); assert.strictEqual(await stock(), 100);
+  });
+
+  await check('8. Pièce jointe : photo du bon de livraison enregistrée, contrôlée (type réel) et listée', async () => {
+    const jpeg = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0xe0]), Buffer.alloc(200, 1)]).toString('base64');
+    const r = await call('POST', `/purchase-orders/${po.id}/attachments`, { filename: 'bl fournisseur.jpg', mime: 'image/jpeg', data: jpeg });
+    assert.strictEqual(r.status, 201); assert.strictEqual(r.data.attachments.length, 1); assert.strictEqual(r.data.attachments[0].size, 204);
+    await rejects(() => call('POST', `/purchase-orders/${po.id}/attachments`, { filename: 'faux.pdf', mime: 'application/pdf', data: jpeg }), 400, /ne correspond pas/);
+    const row = await q1('SELECT length(data) AS n FROM purchase_attachments WHERE purchase_id = $1', [po.id]); assert.strictEqual(Number(row.n), 204);
   });
 
   console.log(`\n${passed} vérifications réussies`);
