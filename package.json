@@ -49,6 +49,8 @@
     "build:sw": "node scripts/build-sw.js",
     "test:sw-coherence": "node test/sw-coherence-static.js",
     "test:about": "node test/about-page-static.js",
+    "test:about-http": "node test/about-page-http.js",
+    "test:about-ui": "node test/about-page-ui.test.js",
     "test:cost-confidentiality": "node test/cost-confidentiality-static.js",
     "test:stock-movement-validation": "node test/stock-movement-validation-unit.js",
     "test:session-policy": "node test/session-policy-unit.js",

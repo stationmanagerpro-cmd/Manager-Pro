@@ -1,44 +1,147 @@
-/* ext-about.css — page « A propos de Manager PRO » (couleurs et ombres reprises du thème de l'application). */
-.ab { display: flex; flex-direction: column; gap: 16px; max-width: 1100px; margin: 0 auto; }
-.ab-hero { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; padding: 26px 24px; border-radius: 18px; color: #fff;
-  background: linear-gradient(135deg, var(--p, #0d7a6b), color-mix(in srgb, var(--p, #0d7a6b) 55%, #0b1b3a)); box-shadow: var(--shadow, 0 4px 16px rgba(0,0,0,.12)); }
+/* ext-about.css — page « A propos de Manager PRO » : vitrine institutionnelle.
+   Fond clair, sections bleues, cartes arrondies à ombre légère. Aucune image lourde ni animation coûteuse
+   (seuls opacity/transform, désactivés si « réduire les animations » est demandé). Les cartes reprennent --c / --bd / --m du thème. */
+.ab { --ab-navy: #0b1f4d; --ab-blue: #1d4ed8; --ab-blue2: #2563eb; --ab-sky: #e8f0ff; --ab-ok: #15803d;
+  display: flex; flex-direction: column; gap: 22px; max-width: 1180px; margin: 0 auto; padding-bottom: 8px; }
+.ab * { box-sizing: border-box; }
+.ab h2, .ab h3, .ab h4, .ab p { overflow-wrap: anywhere; }
+
+/* ---- En-tête ---- */
+.ab-hero { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; padding: 30px 26px; border-radius: 20px; color: #fff;
+  background: linear-gradient(135deg, var(--ab-navy), var(--ab-blue)); box-shadow: 0 8px 24px rgba(11, 31, 77, .22); }
 .ab-hero-text { flex: 1 1 320px; min-width: 0; }
-.ab-hero h2 { margin: 0 0 4px; font-size: clamp(1.4rem, 3.4vw, 2rem); color: #fff; overflow-wrap: anywhere; }
-.ab-tag { margin: 0 0 10px; font-size: 1.05rem; font-weight: 600; opacity: .95; }
-.ab-intro { margin: 0; max-width: 70ch; line-height: 1.55; opacity: .92; white-space: pre-line; overflow-wrap: anywhere; }
-.ab-edit-btn { background: rgba(255,255,255,.18); color: #fff; border: 1px solid rgba(255,255,255,.55); }
-.ab-edit-btn:hover { background: rgba(255,255,255,.3); }
-.ab-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
-.ab-card { background: var(--c, #fff); border: 1px solid var(--bd, #dfe5ec); border-radius: 18px; padding: 20px; box-shadow: var(--shadow, 0 2px 10px rgba(0,0,0,.06)); min-width: 0; }
-.ab-card h3 { margin: 0 0 10px; font-size: 1.05rem; display: flex; align-items: center; gap: 10px; overflow-wrap: anywhere; }
+.ab-hero h2 { margin: 0 0 6px; font-size: clamp(1.5rem, 3.6vw, 2.2rem); color: #fff; letter-spacing: .2px; }
+.ab-tag { margin: 0 0 12px; font-size: 1.08rem; font-weight: 600; color: #cfe0ff; }
+.ab-intro { margin: 0; max-width: 72ch; line-height: 1.6; color: #e6eeff; }
+.ab-edit-btn { background: rgba(255, 255, 255, .16); color: #fff; border: 1px solid rgba(255, 255, 255, .55); }
+.ab-edit-btn:hover { background: rgba(255, 255, 255, .3); }
+
+/* ---- Cartes génériques ---- */
+.ab-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; }
+.ab-card { background: var(--c, #fff); border: 1px solid var(--bd, #dfe5ec); border-radius: 18px; padding: 20px; box-shadow: 0 2px 10px rgba(15, 23, 42, .06); min-width: 0; }
+.ab-card h3 { margin: 0 0 10px; font-size: 1.05rem; display: flex; align-items: center; gap: 10px; }
 .ab-card h3 small { font-weight: 400; color: var(--m, #66727f); font-size: .8rem; }
-.ab-ic { display: inline-grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius: 10px; font-size: 1.15rem; background: color-mix(in srgb, var(--p, #0d7a6b) 14%, transparent); }
-.ab-body p { margin: 0 0 8px; line-height: 1.55; overflow-wrap: anywhere; }
-.ab-body ul { margin: 0 0 8px; padding-left: 20px; line-height: 1.6; }
+.ab-ic { display: inline-grid; place-items: center; width: 38px; height: 38px; flex: none; border-radius: 11px; font-size: 1.2rem; background: var(--ab-sky); }
+.ab-body p { margin: 0 0 8px; line-height: 1.6; }
 .ab-body > :last-child { margin-bottom: 0; }
+.ab-ul { margin: 0; padding-left: 20px; line-height: 1.55; }
+.ab-ul li { margin: 0 0 4px; }
+.ab-ul.ab-ok { list-style: none; padding-left: 0; }
+.ab-ul.ab-ok li { position: relative; padding-left: 24px; }
+.ab-ul.ab-ok li::before { content: "✓"; position: absolute; left: 0; top: 0; color: var(--ab-ok); font-weight: 700; }
+.ab-h { margin: 0 0 16px; font-size: clamp(1.15rem, 2.6vw, 1.5rem); letter-spacing: .4px; color: var(--ab-navy); }
+.ab-block { display: block; }
+
+/* ---- Solutions : carte Objectif / Solutions / Avantages ---- */
+.ab-sol-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); gap: 18px; align-items: start; }
+.ab-sol { background: var(--c, #fff); border: 1px solid var(--bd, #dfe5ec); border-radius: 18px; overflow: hidden; box-shadow: 0 3px 14px rgba(15, 23, 42, .07); min-width: 0; animation: abIn .4s ease both; }
+.ab-sol-head { display: flex; align-items: center; gap: 12px; padding: 16px 18px; background: linear-gradient(135deg, var(--ab-navy), var(--ab-blue)); color: #fff; flex-wrap: wrap; }
+.ab-sol-ic { display: grid; place-items: center; width: 46px; height: 46px; flex: none; border-radius: 13px; font-size: 1.5rem; background: rgba(255, 255, 255, .95); }
+.ab-sol-t { flex: 1 1 140px; min-width: 0; }
+.ab-sol-t h3 { margin: 0; font-size: 1rem; letter-spacing: .3px; color: #fff; }
+.ab-sol-t p { margin: 2px 0 0; font-size: .84rem; color: #d6e4ff; }
+.ab-badge { font-size: .7rem; font-weight: 700; padding: 4px 9px; border-radius: 999px; white-space: nowrap; letter-spacing: .3px; }
+.ab-badge.ab-ok { background: #dcfce7; color: #166534; }
+.ab-badge.ab-soon { background: #fef3c7; color: #92400e; }
+.ab-badge.ab-dev { background: #e0e7ff; color: #3730a3; }
+.ab-blk { padding: 14px 18px; border-top: 1px solid var(--bd, #e5eaf1); }
+.ab-blk:first-of-type { border-top: 0; }
+.ab-blk h4 { margin: 0 0 8px; font-size: .76rem; text-transform: uppercase; letter-spacing: 1px; color: var(--ab-blue); }
+.ab-blk p { margin: 0; line-height: 1.55; }
+.ab-obj { background: var(--ab-sky); }
+.ab-upcoming { margin-top: 18px; display: flex; gap: 16px; align-items: flex-start; padding: 22px; border-radius: 18px; border: 2px dashed var(--ab-blue2); background: var(--c, #fff); animation: abIn .4s ease both; }
+.ab-up-ic { display: grid; place-items: center; width: 52px; height: 52px; flex: none; border-radius: 14px; font-size: 1.6rem; background: var(--ab-sky); }
+.ab-upcoming h3 { margin: 0 0 8px; color: var(--ab-navy); font-size: 1.1rem; }
+.ab-upcoming .ab-body p { color: var(--m, #4b5563); }
+
+/* ---- Notre approche (bande bleue) ---- */
+.ab-approach { padding: 28px 24px; border-radius: 20px; color: #fff; background: linear-gradient(135deg, var(--ab-blue), var(--ab-navy)); box-shadow: 0 8px 24px rgba(11, 31, 77, .2); }
+.ab-approach .ab-h { color: #fff; }
+.ab-approach-text { max-width: 80ch; }
+.ab-approach-text p { margin: 0 0 10px; line-height: 1.65; color: #e6eeff; }
+.ab-commit { list-style: none; margin: 18px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 14px; }
+.ab-commit li { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: 14px; background: rgba(255, 255, 255, .1); border: 1px solid rgba(255, 255, 255, .22); }
+.ab-num { display: grid; place-items: center; flex: none; width: 32px; height: 32px; border-radius: 50%; background: #fff; color: var(--ab-navy); font-weight: 800; }
+.ab-commit b { display: block; margin-bottom: 2px; }
+.ab-commit p { margin: 0; font-size: .9rem; line-height: 1.5; color: #d6e4ff; }
+
+/* ---- Pourquoi choisir ---- */
+.ab-why-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 12px; }
+.ab-why-grid li { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--c, #fff); border: 1px solid var(--bd, #dfe5ec); border-radius: 14px; box-shadow: 0 2px 8px rgba(15, 23, 42, .05); line-height: 1.45; }
+.ab-why-ic { display: grid; place-items: center; flex: none; width: 38px; height: 38px; border-radius: 11px; background: var(--ab-sky); font-size: 1.15rem; }
+
+/* ---- Contact ---- */
 .ab-clist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
 .ab-clist li { display: flex; gap: 12px; flex-wrap: wrap; }
 .ab-clist li > span { min-width: 90px; color: var(--m, #66727f); }
-.ab-clist a { color: var(--p, #0d7a6b); overflow-wrap: anywhere; }
+.ab-clist a { color: var(--ab-blue); overflow-wrap: anywhere; }
+
+/* ---- Téléchargement (TOUT EN BAS) ---- */
+.ab-dl { padding: 34px 24px 24px; border-radius: 22px; color: #fff; text-align: center; background: radial-gradient(120% 140% at 50% 0, var(--ab-blue2), var(--ab-navy) 70%); box-shadow: 0 10px 30px rgba(11, 31, 77, .28); }
+.ab-dl h2 { margin: 0 0 8px; font-size: clamp(1.3rem, 3.4vw, 2rem); color: #fff; letter-spacing: .4px; }
+.ab-dl-sub { margin: 0 auto 24px; max-width: 64ch; line-height: 1.6; color: #d6e4ff; }
+.ab-dl-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 18px; text-align: left; }
+.ab-dl-card { display: flex; align-items: center; gap: 20px; padding: 22px; border-radius: 20px; background: rgba(255, 255, 255, .1); border: 1px solid rgba(255, 255, 255, .28); min-width: 0; }
+.ab-dl-info { flex: 1 1 auto; min-width: 0; }
+.ab-os { display: inline-block; font-size: .72rem; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; padding: 4px 10px; border-radius: 999px; background: rgba(255, 255, 255, .18); color: #fff; }
+.ab-dl-info h3 { margin: 10px 0 14px; font-size: 1.2rem; color: #fff; }
+.ab-dl-btn { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: 12px 20px; border-radius: 12px; font-weight: 800; font-size: .9rem; letter-spacing: .4px; text-decoration: none; text-align: center;
+  background: #fff; color: var(--ab-navy); box-shadow: 0 4px 14px rgba(0, 0, 0, .22); transition: transform .15s ease; }
+a.ab-dl-btn:hover, a.ab-dl-btn:focus-visible { transform: translateY(-2px); outline: 3px solid rgba(255, 255, 255, .6); outline-offset: 2px; }
+.ab-dl-btn.is-soon { background: rgba(255, 255, 255, .16); color: #e6eeff; border: 1px dashed rgba(255, 255, 255, .6); box-shadow: none; cursor: default; }
+/* illustration de smartphone en CSS pur (aucune image lourde) */
+.ab-phone { position: relative; flex: none; width: 96px; height: 190px; border-radius: 22px; padding: 5px; background: #0f172a; box-shadow: 0 10px 22px rgba(0, 0, 0, .35); }
+.ab-phone::before { content: ""; position: absolute; z-index: 2; top: 9px; left: 50%; transform: translateX(-50%); background: #0f172a; }
+.ab-phone-android::before { width: 9px; height: 9px; border-radius: 50%; top: 10px; }
+.ab-phone-ios::before { width: 38px; height: 10px; border-radius: 8px; }
+.ab-phone-ios { border-radius: 26px; }
+.ab-phone-screen { height: 100%; border-radius: 17px; display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 26px 8px 8px; background: linear-gradient(170deg, #eaf1ff, #fff); color: var(--ab-navy); overflow: hidden; }
+.ab-phone-screen img { width: 36px; height: 36px; border-radius: 10px; object-fit: cover; }
+.ab-phone-screen b { font-size: 8px; letter-spacing: .5px; }
+.ab-phone-screen i { display: block; width: 82%; height: 8px; border-radius: 5px; background: #cfe0ff; }
+.ab-phone-screen i.s { width: 58%; }
+.ab-sign { margin-top: 26px; padding-top: 18px; border-top: 1px solid rgba(255, 255, 255, .25); display: flex; flex-direction: column; gap: 4px; align-items: center; text-align: center; }
+.ab-sign b { font-size: 1.1rem; letter-spacing: 1.5px; }
+.ab-sign span { color: #d6e4ff; }
+.ab-sign em { font-style: italic; color: #fff; }
+.ab-sign small { margin-top: 8px; color: #a9c3f5; font-size: .76rem; }
+
 .ab-empty, .ab-hint { color: var(--m, #66727f); font-size: .9rem; }
-.ab-foot { text-align: center; color: var(--m, #66727f); font-size: .8rem; margin: 4px 0 0; }
-/* édition */
-.ab-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+
+/* ---- Édition Super Admin ---- */
+.ab-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 12px; }
 .ab-form label { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; color: var(--m, #66727f); }
 .ab-form .ab-wide { grid-column: 1 / -1; }
-.ab-form input, .ab-form textarea, .ab-sec input.ab-t, .ab-sec input.ab-i, .ab-sec textarea { width: 100%; box-sizing: border-box; }
+.ab-form input, .ab-form textarea, .ab-form select, .ab-sec input.ab-t, .ab-sec input.ab-i, .ab-sec input.c-x, .ab-sec textarea { width: 100%; }
 .ab-sec { border: 1px solid var(--bd, #dfe5ec); border-radius: 14px; padding: 12px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
+.ab-sole > summary { cursor: pointer; font-weight: 700; padding: 2px 0; }
+.ab-sub { margin: 16px 0 8px; font-size: .95rem; }
 .ab-sec-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 .ab-sec-head .ab-i { width: 64px; text-align: center; flex: none; }
 .ab-sec-head .ab-t { flex: 1 1 200px; min-width: 0; width: auto; }
-.ab-vis { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; white-space: nowrap; }
+.ab-vis { display: inline-flex; flex-direction: row !important; align-items: center; gap: 6px; font-size: .85rem; white-space: nowrap; }
 .ab-vis input { width: auto; }
 .ab-acts { display: inline-flex; gap: 6px; }
 .ab-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.ab-save { position: sticky; bottom: 0; padding: 12px 0; background: linear-gradient(to top, var(--bg, #f6f8fb) 70%, transparent); }
+.ab-save { position: sticky; bottom: 0; padding: 12px 0; background: linear-gradient(to top, var(--bg, #f6f8fb) 70%, transparent); z-index: 3; }
 .ab-spacer { flex: 1; }
-@media (max-width: 560px) {
-  .ab-hero { padding: 20px 16px; }
+
+@keyframes abIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .ab-sol, .ab-upcoming { animation: none; } .ab-dl-btn { transition: none; } }
+
+/* ---- Tablettes / téléphones ---- */
+@media (max-width: 760px) {
+  .ab { gap: 18px; }
+  .ab-hero { padding: 22px 18px; }
+  .ab-approach { padding: 22px 16px; }
+  .ab-dl { padding: 26px 14px 18px; }
+  .ab-upcoming { flex-direction: column; padding: 18px; }
+}
+@media (max-width: 520px) {
   .ab-card { padding: 16px; }
   .ab-edit-btn { width: 100%; }
+  .ab-dl-card { flex-direction: column; text-align: center; padding: 20px 16px; }
+  .ab-dl-btn { width: 100%; }
+  .ab-sol-head { padding: 14px; }
+  .ab-blk { padding: 12px 14px; }
 }

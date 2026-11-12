@@ -14,9 +14,30 @@ check('serveur : lecture ouverte à tout compte connecté (/me/about), écriture
   assert.match(page, /req\.user && req\.user\.is_global/);
   assert(srv.indexOf("require('./about_page')") > srv.indexOf("app.use('/api', auth)"), 'monté après l’authentification');
 });
-check('modèle par défaut valide et stable après validation', () => {
+check('modèle par défaut valide et stable après validation (10 solutions, 3 rubriques chacune)', () => {
   const d = About.defaultDoc(); assert.deepStrictEqual(About.sanitize(d), d);
-  const t = d.sections.map(s => s.title.toLowerCase()).join('|'); assert.match(t, /vision/); assert.match(t, /mission/); assert.match(t, /objectifs/);
+  assert.strictEqual(d.solutions.length, 10);
+  assert.deepStrictEqual(d.solutions.map(s => s.name), ['STATION MANAGER PRO', 'SCHOOL MANAGER PRO', 'IKA SÔ MANAGER PRO', 'PHARMA MANAGER PRO', 'FACTURE MANAGER PRO', 'PRESSING MANAGER PRO', 'GESTOCK MANAGER PRO', 'COMMERCE MANAGER PRO', 'COUTURE MANAGER PRO', 'E-COMMERCE MANAGER PRO']);
+  d.solutions.forEach(s => { assert(s.objective && s.features.length >= 7 && s.benefits.length >= 5, s.name + ' : Objectif, Solutions et Avantages renseignés'); });
+  assert.strictEqual(d.approach.commitments.length, 4); assert.strictEqual(d.why.items.length, 7);
+});
+check('téléchargement : aucun lien par défaut (jamais de faux lien), seul https:// accepté', () => {
+  const d = About.defaultDoc(); assert.strictEqual(d.downloads.android_url, ''); assert.strictEqual(d.downloads.ios_url, '');
+  assert(!/play\.google|apps\.apple|\.apk/i.test(JSON.stringify(d)), 'aucune adresse de store dans le modèle');
+  assert.throws(() => About.sanitize({ header: { title: 'x' }, downloads: { android_url: 'http://x.ml/a.apk' } }), /https/);
+  assert.throws(() => About.sanitize({ header: { title: 'x' }, downloads: { ios_url: 'javascript:alert(1)' } }), /https/);
+  assert.throws(() => About.sanitize({ header: { title: 'x' }, downloads: { ios_url: 'data:text/html,<b>' } }), /https/);
+  assert.strictEqual(About.sanitize({ header: { title: 'x' }, downloads: { android_url: 'https://exemple.ml/a' } }).downloads.android_url, 'https://exemple.ml/a');
+});
+check('compatibilité : contenu enregistré en v1 (ancienne page) reste valide, nouveaux blocs repris du modèle', () => {
+  const m = About.sanitize({ v: 1, header: { title: 'T', tagline: '', intro: '' }, sections: [{ id: 'abcd', title: 'X', body: 'y' }], contact: {} });
+  assert.strictEqual(m.v, 2); assert.strictEqual(m.solutions.length, 10); assert.strictEqual(m.sections.length, 1); assert.strictEqual(m.downloads.android_url, '');
+});
+check('solutions : statut contrôlé, listes et limites vérifiées', () => {
+  assert.throws(() => About.sanitize({ header: { title: 'x' }, solutions: [{ name: 'a', status: 'zzz' }] }), /Statut/);
+  assert.throws(() => About.sanitize({ header: { title: 'x' }, solutions: [{ name: 'a', features: 'non' }] }), /liste/);
+  assert.throws(() => About.sanitize({ header: { title: 'x' }, solutions: Array.from({ length: 21 }, () => ({ name: 'n' })) }), /Maximum 20/);
+  assert.throws(() => About.sanitize({ header: { title: 'x' }, solutions: [{ name: '' }] }), /obligatoire/);
 });
 check('validation : titre obligatoire, limites, e-mail / téléphone / site contrôlés', () => {
   assert.throws(() => About.sanitize({ header: { title: ' ' } }), /obligatoire/);
@@ -55,9 +76,10 @@ function load(meta) {
   sb.window.addEventListener = () => {}; sb.window.scrollTo = () => {};
   vm.runInNewContext(js, sb); return sb;
 }
-const evil = { v: 1, header: { title: '<img src=x onerror=alert(1)>', tagline: '"><script>x</script>', intro: '' },
+const evilRaw = { v: 1, header: { title: '<img src=x onerror=alert(1)>', tagline: '"><script>x</script>', intro: '' },
   sections: [{ id: 'aaaa1', icon: '🎯', title: '<b>T</b>', visible: true, body: '- <i>a</i>\n- b\ntexte & suite' }, { id: 'aaaa2', icon: '', title: 'Cachée', visible: false, body: 'secret' }],
   contact: { email: 'a@b.ml', phone: '+223 70 00 00 00', website: 'https://exemple.ml', address: '' } };
+const evil = About.sanitize(evilRaw);   // le serveur renvoie toujours un contenu validé et complet
 const later = [];
 const checkA = (l, f) => later.push([l, f]);
 checkA('vue enregistrée : visible par Super Admin et comptes clients, sans permission particulière', () => {
@@ -67,7 +89,7 @@ checkA('vue enregistrée : visible par Super Admin et comptes clients, sans perm
 checkA('affichage : texte échappé, rubrique masquée absente, puces rendues, pas de bouton Modifier pour un client', async () => {
   const sb = load({ content: evil, editable: false, app_version: '1.2.3' });
   const html = await sb.VM.apropos();
-  assert(!/<img|<script|<b>T|<i>a/.test(html), 'aucune balise injectée'); assert.match(html, /&lt;b&gt;T&lt;\/b&gt;/);
+  assert(!/<img src=x|<script|<b>T|<i>a/.test(html), 'aucune balise injectée'); assert.match(html, /&lt;b&gt;T&lt;\/b&gt;/);
   assert.match(html, /<li>&lt;i&gt;a&lt;\/i&gt;<\/li><li>b<\/li>/); assert.match(html, /texte &amp; suite/);
   assert(!/secret|Cachée/.test(html)); assert(!/abEdit\(\)/.test(html)); assert.match(html, /version 1\.2\.3/);
   assert.match(html, /href="https:\/\/exemple\.ml" target="_blank" rel="noopener noreferrer"/); assert.match(html, /href="tel:\+223/);

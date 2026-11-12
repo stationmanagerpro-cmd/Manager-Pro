@@ -3,7 +3,7 @@
  * - /api/** → network-only (jamais de cache : auth JWT, données métier)
  * - Navigation HTML → network-first, fallback cache index si offline total
  */
-const CACHE = 'smp-static-bb3d22fbf28';
+const CACHE = 'smp-static-ba92b0bdbe5';
 
 /* PRECACHE:BEGIN (généré par scripts/build-sw.js — ne pas modifier à la main) */
 const PRECACHE = [
@@ -158,7 +158,6 @@ self.addEventListener('fetch', (event) => {
   let url;
   try { url = new URL(req.url); } catch (_) { return; }
   if (url.origin !== self.location.origin) return;
-  if (url.pathname.startsWith('/c/')) return;   // espace client : page publique à lien privé, jamais mise en cache ni confondue avec l'application
 
   // Critique : aucune mise en cache des API (JWT, sessions, données stations)
   if (isApi(url)) {
