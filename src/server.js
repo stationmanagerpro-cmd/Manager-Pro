@@ -200,6 +200,7 @@ app.use('/api', require('./hr_v2')); // RH V2 (extension non destructive)
 app.use('/api', require('./payroll_activation')); // Activation AMO/INPS/ITS avec formulaire taux
 app.use('/api', require('./contracts').r); // Contrats clients
 app.use('/api', require('./ops_plus')); // Dashboard jour J, déclarations, notif, audit
+app.use('/api', require('./mobile_alerts')); // Alertes pour les notifications de l'application mobile
 app.use('/api', require('./exports')); // Hub exports P9
 app.use('/api', require('./docs_render')); // Rendu PDF commun (identité station) pour Comptabilité, Trésorerie, Vendeurs…
 app.use('/api', require('./imports')); // Imports Excel par lot

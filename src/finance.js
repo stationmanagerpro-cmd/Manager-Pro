@@ -2,7 +2,7 @@
 const express = require('express');
 const { swallow } = require('./safe');
 const { z } = require('zod');
-const { pool, tx, fl, HttpError, wrap, body, need, audit, cashMove, defaultReg, recordFinancialEvent, settle } = require('./core');
+const { pool, tx, fl, f3, HttpError, wrap, body, need, audit, cashMove, defaultReg, recordFinancialEvent, settle } = require('./core');
 const { getSetting } = require('./admin');
 const docs = require('./docs');
 const { individualMessage } = require('./shift_message');
@@ -531,6 +531,27 @@ async function shiftReport(sid, shiftId, opts = {}) {
   if (!Array.isArray(c.shop_sales)) {
     c.shop_sales = (await pool.query(`SELECT pr.id AS product_id, pr.name AS product, pr.unit, SUM(d.quantity) AS quantity, SUM(d.amount) AS amount FROM sale_details d JOIN sales sa ON sa.id = d.sale_id JOIN products pr ON pr.id = d.product_id WHERE sa.shift_id = $1 AND sa.status = 'valide' AND sa.kind = 'produits' GROUP BY pr.id, pr.name, pr.unit ORDER BY pr.name`, [s.id])).rows.map(x => ({ product: x.product, unit: x.unit, quantity: Number(x.quantity), amount: fl(x.amount) }));
   }
+  // Stock des produits vendus pour les quarts clôturés avant l'inventaire détaillé : stock de début/fin reconstitué depuis les mouvements
+  if (!Array.isArray(c.stock) || !c.stock.length) {
+    const { rows: st } = await pool.query(
+      `SELECT pr.name AS product, COALESCE(sk.quantity, 0) AS current,
+              COALESCE(SUM(m.quantity) FILTER (WHERE m.created_at > $3), 0) AS after,
+              COALESCE(SUM(m.quantity) FILTER (WHERE m.created_at >= $2 AND m.created_at <= $3), 0) AS during
+         FROM products pr LEFT JOIN stock sk ON sk.product_id = pr.id
+         LEFT JOIN stock_movements m ON m.product_id = pr.id AND m.station_id = pr.station_id
+        WHERE pr.station_id = $4 AND pr.id IN (SELECT d.product_id FROM sale_details d JOIN sales sa ON sa.id = d.sale_id WHERE sa.shift_id = $1 AND sa.status = 'valide' AND sa.kind = 'produits')
+        GROUP BY pr.id, pr.name, sk.quantity ORDER BY pr.name`, [s.id, s.opened_at, s.closed_at || new Date(), sid]).catch(swallow('finance:shift-stock-reconstitue', { rows: [] }));
+    c.stock = st.map(x => { const closing = f3(Number(x.current) - Number(x.after)); return { product: x.product, opening: f3(closing - Number(x.during)), theoretical: closing, physical: null, gap: null }; });
+    c.stock_reconstituted = c.stock.length > 0;
+  }
+  // Récapitulatif des ventes par employé (carburant + produits, ventes validées du quart)
+  if (!Array.isArray(c.sales_by_employee)) {
+    const { rows: se } = await pool.query(
+      `SELECT COALESCE(e.last_name || ' ' || e.first_name, 'Non attribué') AS employee, COUNT(*)::int AS ops,
+              COALESCE(SUM(sa.total) FILTER (WHERE sa.kind = 'produits'), 0) AS shop, COALESCE(SUM(sa.total) FILTER (WHERE sa.kind <> 'produits'), 0) AS fuel, COALESCE(SUM(sa.total), 0) AS total
+         FROM sales sa LEFT JOIN employees e ON e.id = sa.employee_id WHERE sa.shift_id = $1 AND sa.status = 'valide' GROUP BY 1 ORDER BY 1`, [s.id]).catch(swallow('finance:shift-ventes-employe', { rows: [] }));
+    c.sales_by_employee = se.map(x => ({ employee: x.employee, ops: x.ops, shop: fl(x.shop), fuel: fl(x.fuel), total: fl(x.total) }));
+  }
   const fuelRows = (c.counters || []).filter(x => Number(x.liters) !== 0 || Number(x.amount) !== 0);
   if (mine) {
     // Version individuelle : uniquement SES pompes, SES ventes, SES écarts et SES anomalies (rien sur les collègues)
@@ -558,7 +579,10 @@ async function shiftReport(sid, shiftId, opts = {}) {
     { type: 'table', title: 'Produits vendus (boutique)', head: ['Produit', 'Quantité', 'Montant'], rows: c.shop_sales.length ? c.shop_sales.map(x => [x.product, `${docs.cellText(x.quantity)}${x.unit ? ' ' + x.unit : ''}`, x.amount]) : [['Aucun produit vendu sur ce quart', '', 0]], totals: ['Total produits', '', c.shop_sales.reduce((a, x) => a + x.amount, 0)] },
     { type: 'table', title: 'Ventes et moyens de paiement', head: ['Poste', 'Montant'], rows: [['Carburant (compteurs)', m(c.fuel_total)], ...(c.fuel_declared ? [['  dont déclaré à la saisie', m(c.fuel_declared.total)], ['  dont non déclaré (compté en espèces)', m(c.fuel_declared.undeclared)]] : []), ['Autres produits', m(c.other_sales.total)], ...c.other_sales.by_method.map(x => ['  ' + x.method, m(x.amount)]), ['Carburant en espèces', m(c.fuel_payments.especes)], ['Carburant mobile money', m(c.fuel_payments.mobile_money)], ['Carburant carte', m(c.fuel_payments.carte)], ['Carburant crédit', m(c.fuel_payments.credit)], ...(c.fuel_payments.autres ? [['Carburant autres moyens (déclarés)', m(c.fuel_payments.autres)]] : [])] },
     { type: 'table', title: 'Caisse', head: ['Initiale', 'Théorique', 'Comptée', 'Écart'], rows: [[c.cash.opening, c.cash.theoretical, c.cash.counted, c.cash.gap]] },
-    { type: 'table', title: 'Stock', head: ['Produit', 'Théorique', 'Physique', 'Écart'], rows: c.stock.map(x => [x.product, x.theoretical, x.physical ?? 'non inventorié', x.gap ?? 'n/d']) },
+    { type: 'table', title: 'Stock', head: ['Produit', 'Stock début', 'Théorique fin', 'Physique', 'Écart'], rows: c.stock.map(x => [x.product, x.opening ?? '', x.theoretical, x.physical ?? 'non inventorié', x.gap ?? 'n/d']),
+      ...(c.stock_reconstituted ? { notes: ['Quart clôturé sans inventaire détaillé : stocks de début et de fin reconstitués à partir des mouvements de stock.'] } : {}) },
+    { type: 'table', title: 'Récapitulatif des ventes par employé', head: ['Employé', 'Opérations', 'Carburant', 'Produits', 'Total'], rows: c.sales_by_employee.length ? c.sales_by_employee.map(x => [x.employee, x.ops, x.fuel, x.shop, x.total]) : [['Aucune vente', 0, 0, 0, 0]],
+      ...(c.sales_by_employee.length ? { totals: ['Total', c.sales_by_employee.reduce((a, x) => a + x.ops, 0), c.sales_by_employee.reduce((a, x) => a + x.fuel, 0), c.sales_by_employee.reduce((a, x) => a + x.shop, 0), c.sales_by_employee.reduce((a, x) => a + x.total, 0)] } : {}) },
     ...(shared ? [{ type: 'table', title: 'Situation par employé (chacun pour ses pompes, ses ventes et ses espèces remises)', head: ['Employé', 'Pompes', 'Litres', 'Compteurs', 'Espèces attendues', 'Espèces remises', 'Écart de caisse', 'Écarts de stock'],
       rows: [...c.employees.map(e => [e.name, (e.pumps || []).join(', ') || '-', e.fuel_liters, m(e.fuel_amount), e.expected_cash == null ? 'n/d' : m(e.expected_cash), e.counted_cash == null ? 'n/d' : m(e.counted_cash), e.cash_gap == null ? 'n/d' : m(e.cash_gap), stockTxt(e.stock_gaps)]),
         ...(c.unassigned && ((c.unassigned.cash_gap && Math.abs(c.unassigned.cash_gap) > 0.004) || (c.unassigned.stock_gaps || []).length) ? [['Non attribué à un employé', '-', '', '', '', '', c.unassigned.cash_gap ? m(c.unassigned.cash_gap) : '-', stockTxt(c.unassigned.stock_gaps)]] : [])] }] : []),

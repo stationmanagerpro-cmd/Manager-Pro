@@ -207,7 +207,27 @@ r.get('/dashboard', need('report.view', 'finance.view'), wrap(async (req, res) =
 
   recent.sort((a, b) => new Date(b.at) - new Date(a.at));
 
+  // Comparaison 7 derniers jours / 7 jours précédents + alertes automatiques (écart de caisse, écart ou stock anormal)
+  const SQ = (sql) => pool.query(sql, [req.sid]).then(x => x.rows).catch(swallow('reports:dashboard-watch', []));
+  const [wk] = await SQ(`SELECT COALESCE(SUM(total) FILTER (WHERE sold_at >= date_trunc('day', now()) - interval '6 days'), 0) AS cur,
+                                COALESCE(SUM(total) FILTER (WHERE sold_at >= date_trunc('day', now()) - interval '13 days' AND sold_at < date_trunc('day', now()) - interval '6 days'), 0) AS prev
+                           FROM sales WHERE station_id = $1 AND status = 'valide' AND sold_at >= date_trunc('day', now()) - interval '13 days'`);
+  const wkCur = Number(wk?.cur || 0), wkPrev = Number(wk?.prev || 0);
+  const weekCompare = { current: wkCur, previous: wkPrev, delta: wkCur - wkPrev, delta_pct: wkPrev > 0 ? Math.round((wkCur - wkPrev) / wkPrev * 1000) / 10 : null };
+  const [gaps, negStock, stockGaps] = await Promise.all([
+    SQ(`SELECT number, cash_gap FROM shifts WHERE station_id = $1 AND closed_at IS NOT NULL AND closed_at >= now() - interval '7 days' AND ABS(COALESCE(cash_gap, 0)) > 0.5 ORDER BY closed_at DESC LIMIT 3`),
+    SQ(`SELECT pr.name, sk.quantity FROM stock sk JOIN products pr ON pr.id = sk.product_id WHERE pr.station_id = $1 AND sk.quantity < 0 ORDER BY sk.quantity LIMIT 3`),
+    SQ(`SELECT pr.name, c.gap, sh.number FROM shift_stock_counts c JOIN shifts sh ON sh.id = c.shift_id JOIN products pr ON pr.id = c.product_id
+         WHERE sh.station_id = $1 AND sh.closed_at >= now() - interval '7 days' AND ABS(COALESCE(c.gap, 0)) > 0 ORDER BY sh.closed_at DESC LIMIT 3`)
+  ]);
+  const watch = [
+    ...gaps.map(x => ({ level: 'critical', message: `Écart de caisse au quart ${String(x.number).padStart(6, '0')}`, sub: `${Number(x.cash_gap) > 0 ? '+' : ''}${Number(x.cash_gap)} (7 derniers jours)` })),
+    ...stockGaps.map(x => ({ level: 'warning', message: `Écart de stock — ${x.name}`, sub: `${Number(x.gap) > 0 ? '+' : ''}${Number(x.gap)} au quart ${String(x.number).padStart(6, '0')}` })),
+    ...negStock.map(x => ({ level: 'critical', message: `Stock négatif — ${x.name}`, sub: `Quantité : ${Number(x.quantity)}` }))
+  ];
+
   res.json({
+    week_compare: weekCompare, watch,
     period: { from, to },
     revenue: revenue + invoiceRevenue,
     invoice_revenue: invoiceRevenue,

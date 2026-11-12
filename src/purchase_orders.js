@@ -6,6 +6,7 @@
 const express = require('express');
 const { z } = require('zod');
 const { pool, tx, fl, f3, HttpError, wrap, body, need, audit, stockMove, settle } = require('./core');
+const { swallow } = require('./safe');
 const { recordPriceChange } = require('./product_profile');
 const r = express.Router();
 const VIEW = ['purchase.manage', 'purchase.pay', 'finance.view', 'stock.adjust'];
@@ -70,7 +71,7 @@ async function loadDetail(q, sid, id) {
        LEFT JOIN users cu ON cu.id = pu.created_by LEFT JOIN users vu ON vu.id = pu.validated_by
       WHERE pu.id = $1 AND pu.station_id = $2 AND pu.flow = 'bc'`, [id, sid]);
   if (!p) throw new HttpError(404, 'Bon de commande introuvable');
-  const [d, rc, rl, pay] = await Promise.all([
+  const [d, rc, rl, pay, att] = await Promise.all([
     q.query(`SELECT d.id, d.product_id, pr.name AS product, pr.unit, d.qty_ordered, d.qty_received, d.unit_cost, d.tax_rate,
                     d.qty_ordered - d.qty_received AS qty_remaining
                FROM purchase_details d JOIN products pr ON pr.id = d.product_id WHERE d.purchase_id = $1 ORDER BY d.id`, [p.id]),
@@ -79,7 +80,9 @@ async function loadDetail(q, sid, id) {
     q.query(`SELECT l.*, pr.name AS product FROM purchase_receipt_lines l JOIN products pr ON pr.id = l.product_id
               WHERE l.receipt_id IN (SELECT id FROM purchase_receipts WHERE purchase_id = $1) ORDER BY l.id`, [p.id]),
     q.query(`SELECT sp.*, u.login AS user_login FROM supplier_payments sp LEFT JOIN users u ON u.id = sp.created_by
-              WHERE sp.purchase_id = $1 ORDER BY sp.id`, [p.id])
+              WHERE sp.purchase_id = $1 ORDER BY sp.id`, [p.id]),
+    q.query(`SELECT a.id, a.filename, a.mime, a.size, a.receipt_id, a.note, a.created_at, u.login AS user_login FROM purchase_attachments a
+               LEFT JOIN users u ON u.id = a.created_by WHERE a.purchase_id = $1 ORDER BY a.id`, [p.id]).catch(swallow('purchase_orders:attachments', { rows: [] }))
   ]);
   const lines = d.rows.map(x => ({
     ...x, qty_ordered: Number(x.qty_ordered), qty_received: Number(x.qty_received), qty_remaining: Number(x.qty_remaining),
@@ -92,7 +95,7 @@ async function loadDetail(q, sid, id) {
   }));
   const po = decorate(p);
   return {
-    ...po, lines, receipts, payments: pay.rows.map(x => ({ ...x, amount: Number(x.amount) })),
+    ...po, lines, receipts, attachments: att.rows, payments: pay.rows.map(x => ({ ...x, amount: Number(x.amount) })),
     totals: {
       qty_ordered: f3(lines.reduce((a, x) => a + x.qty_ordered, 0)),
       qty_received: f3(lines.reduce((a, x) => a + x.qty_received, 0)),
@@ -319,6 +322,50 @@ r.post('/purchase-orders/:id/pay', need('purchase.pay'), body(z.object({
   });
   const replay = Boolean(out._idempotent_replay); delete out._idempotent_replay;
   res.status(replay ? 200 : 201).json(out);
+}));
+
+
+// ---------- Pièces jointes : photo du bon de livraison / de la facture fournisseur ----------
+const MAX_ATTACH = 1.5 * 1024 * 1024, MAX_PER_PO = 12;
+r.post('/purchase-orders/:id/attachments', need('purchase.manage'), body(z.object({
+  filename: z.string().trim().min(1).max(120),
+  mime: z.enum(['image/jpeg', 'image/png', 'image/webp', 'application/pdf']),
+  data: z.string().min(8).max(2200000),
+  receipt_id: z.number().int().optional().nullable(),
+  note: z.string().max(300).optional().nullable()
+})), wrap(async (req, res) => {
+  const b = req.body;
+  const bytes = Buffer.from(b.data.replace(/^data:[^,]+,/, ''), 'base64');
+  if (!bytes.length) throw new HttpError(400, 'Fichier vide');
+  if (bytes.length > MAX_ATTACH) throw new HttpError(413, 'Fichier trop volumineux (1,5 Mo maximum) : réduisez la photo.');
+  const magic = bytes.subarray(0, 4).toString('hex');
+  const okMagic = (b.mime === 'image/jpeg' && magic.startsWith('ffd8ff')) || (b.mime === 'image/png' && magic === '89504e47') ||
+    (b.mime === 'image/webp' && bytes.subarray(0, 4).toString() === 'RIFF') || (b.mime === 'application/pdf' && bytes.subarray(0, 4).toString() === '%PDF');
+  if (!okMagic) throw new HttpError(400, 'Le contenu du fichier ne correspond pas à son type.');
+  const out = await tx(async c => {
+    const { rows: [p] } = await c.query("SELECT id, status FROM purchases WHERE id = $1 AND station_id = $2 AND flow = 'bc' FOR UPDATE", [req.params.id, req.sid]);
+    if (!p) throw new HttpError(404, 'Bon de commande introuvable');
+    if (p.status === 'annule') throw new HttpError(409, 'Bon annulé : pièce jointe impossible.');
+    const { rows: [n] } = await c.query('SELECT COUNT(*)::int AS n FROM purchase_attachments WHERE purchase_id = $1', [p.id]);
+    if (n.n >= MAX_PER_PO) throw new HttpError(409, `Maximum ${MAX_PER_PO} pièces jointes par bon.`);
+    if (b.receipt_id) {
+      const { rows: [rc] } = await c.query('SELECT 1 FROM purchase_receipts WHERE id = $1 AND purchase_id = $2', [b.receipt_id, p.id]);
+      if (!rc) throw new HttpError(400, 'Réception inconnue pour ce bon.');
+    }
+    const name = b.filename.replace(/[^\w.\- ]+/g, '_');
+    await c.query('INSERT INTO purchase_attachments(station_id, purchase_id, receipt_id, filename, mime, size, data, note, created_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)',
+      [req.sid, p.id, b.receipt_id || null, name, b.mime, bytes.length, bytes, b.note || null, req.user.id]);
+    await audit(c, req, 'achats', 'Pièce jointe ajoutée au bon ' + p.id, 'purchases', p.id, null, { fichier: name, taille: bytes.length });
+    return loadDetail(c, req.sid, p.id);
+  });
+  res.status(201).json(out);
+}));
+r.get('/purchase-orders/:id/attachments/:aid', need(...VIEW), wrap(async (req, res) => {
+  const { rows: [a] } = await pool.query(
+    "SELECT a.filename, a.mime, a.data FROM purchase_attachments a JOIN purchases p ON p.id = a.purchase_id WHERE a.id = $1 AND a.purchase_id = $2 AND p.station_id = $3 AND p.flow = 'bc'",
+    [req.params.aid, req.params.id, req.sid]);
+  if (!a) throw new HttpError(404, 'Pièce jointe introuvable');
+  res.set('Content-Type', a.mime).set('Content-Disposition', `inline; filename="${a.filename.replace(/[^\w.-]/g, '_')}"`).set('X-Content-Type-Options', 'nosniff').send(a.data);
 }));
 
 r._internals = { decorate, payStatus };
