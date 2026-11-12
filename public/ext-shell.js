@@ -46,6 +46,8 @@
     { label: 'Administration', icon: 'settings', keys: ['roles', 'homeadmin', 'accesskeys'] }
   ];
   const treeFor = () => (ME && ME.is_global ? SA_TREE : TREE);
+  // Dernier onglet du menu, pour tous les comptes (vue enregistrée par ext-about.js ; texte modifiable par le Superadmin).
+  const ABOUT_NODE = { label: 'A propos de Manager PRO', icon: 'ℹ️', keys: ['apropos'] };
 
   // Icônes SVG locales : cohérentes, nettes en mode clair/sombre et sans dépendance externe.
   const SVG_PATHS = {
@@ -58,11 +60,12 @@
     accesskeys: '<circle cx="8" cy="15" r="4"/><path d="m10.8 12.2 8.7-8.7 2 2-2 2 2 2-2 2-2-2-4 4"/>',
     packs: '<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/>',
     admin: '<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6M9 13h6M9 17h3"/>',
-    messagerie: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12Z"/><path d="M8.5 11h7M8.5 14h4"/>'
+    messagerie: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.4A8 8 0 1 1 21 12Z"/><path d="M8.5 11h7M8.5 14h4"/>',
+    apropos: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5"/><circle cx="12" cy="7.8" r=".6"/>'
   };
   const svgIcon = name => SVG_PATHS[name] ? `<svg class="nav-svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${SVG_PATHS[name]}</svg>` : '';
   const ico = k => {
-    const saIcons = { admin: 'admin', clients: 'clients', packs: 'packs', pfin: 'finance', roles: 'roles', homeadmin: 'homeadmin', accesskeys: 'accesskeys', msg: 'messagerie' };
+    const saIcons = { admin: 'admin', clients: 'clients', packs: 'packs', pfin: 'finance', roles: 'roles', homeadmin: 'homeadmin', accesskeys: 'accesskeys', msg: 'messagerie', apropos: 'apropos' };
     if (ME && ME.is_global && saIcons[k]) return svgIcon(saIcons[k]);
     return (typeof NAV_ICONS !== 'undefined' && NAV_ICONS[k]) || '•';
   };
@@ -98,9 +101,12 @@ const visible = k => V[k] && (typeof canView === 'function' ? canView(k) : can(V
     if (!nav) return;
     const used = new Set();
     const parts = treeFor().map(g => node(g, on, used, 1)).filter(Boolean).map(x => x.html);
+    // « A propos de Manager PRO » : construit avant le filet de sécurité pour ne pas tomber dans « Autres », puis placé TOUT EN BAS du menu.
+    const tail = node(ABOUT_NODE, on, used, 1);
     // Filet de sécurité : toute vue accessible non classée reste atteignable (rien ne disparaît du menu)
     const rest = Object.keys(V).filter(k => !used.has(k) && visible(k));
     if (rest.length) { const o = node({ label: 'Autres', icon: '📁', keys: rest }, on, used, 1); if (o) parts.push(o.html); }
+    if (tail) parts.push(tail.html);
     nav.classList.add('nav2');
     nav.classList.toggle('collapsed', collapsed && !isMobile());
     nav.classList.toggle('user-hidden', navHidden);

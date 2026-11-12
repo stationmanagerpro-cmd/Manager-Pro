@@ -217,6 +217,7 @@ app.use('/api', require('./platform')); // Finance et rapports de la plateforme 
 app.use('/api', require('./branding').admin);   // identité de l'application : administration
 app.use('/api', require('./access_keys').admin);   // gestion des clés d'accès : Super Admin uniquement
 app.use('/api', require('./home_page').admin);     // personnalisation de la page d'accueil : Super Admin uniquement
+app.use('/api', require('./about_page').r);        // « A propos de Manager PRO » : lecture pour tous, édition Super Admin uniquement
 app.use('/api', require('./treasury').r);   // Trésorerie + Créances & dettes (agrégats)
 app.use('/api', require('./fleet').r);      // Cartes carburant / flottes
 app.use('/api', require('./tanks').r);      // Cuves : jauges et réconciliation du stock en cuve

@@ -1,0 +1,44 @@
+/* ext-about.css — page « A propos de Manager PRO » (couleurs et ombres reprises du thème de l'application). */
+.ab { display: flex; flex-direction: column; gap: 16px; max-width: 1100px; margin: 0 auto; }
+.ab-hero { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; padding: 26px 24px; border-radius: 18px; color: #fff;
+  background: linear-gradient(135deg, var(--p, #0d7a6b), color-mix(in srgb, var(--p, #0d7a6b) 55%, #0b1b3a)); box-shadow: var(--shadow, 0 4px 16px rgba(0,0,0,.12)); }
+.ab-hero-text { flex: 1 1 320px; min-width: 0; }
+.ab-hero h2 { margin: 0 0 4px; font-size: clamp(1.4rem, 3.4vw, 2rem); color: #fff; overflow-wrap: anywhere; }
+.ab-tag { margin: 0 0 10px; font-size: 1.05rem; font-weight: 600; opacity: .95; }
+.ab-intro { margin: 0; max-width: 70ch; line-height: 1.55; opacity: .92; white-space: pre-line; overflow-wrap: anywhere; }
+.ab-edit-btn { background: rgba(255,255,255,.18); color: #fff; border: 1px solid rgba(255,255,255,.55); }
+.ab-edit-btn:hover { background: rgba(255,255,255,.3); }
+.ab-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+.ab-card { background: var(--c, #fff); border: 1px solid var(--bd, #dfe5ec); border-radius: 18px; padding: 20px; box-shadow: var(--shadow, 0 2px 10px rgba(0,0,0,.06)); min-width: 0; }
+.ab-card h3 { margin: 0 0 10px; font-size: 1.05rem; display: flex; align-items: center; gap: 10px; overflow-wrap: anywhere; }
+.ab-card h3 small { font-weight: 400; color: var(--m, #66727f); font-size: .8rem; }
+.ab-ic { display: inline-grid; place-items: center; width: 36px; height: 36px; flex: none; border-radius: 10px; font-size: 1.15rem; background: color-mix(in srgb, var(--p, #0d7a6b) 14%, transparent); }
+.ab-body p { margin: 0 0 8px; line-height: 1.55; overflow-wrap: anywhere; }
+.ab-body ul { margin: 0 0 8px; padding-left: 20px; line-height: 1.6; }
+.ab-body > :last-child { margin-bottom: 0; }
+.ab-clist { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.ab-clist li { display: flex; gap: 12px; flex-wrap: wrap; }
+.ab-clist li > span { min-width: 90px; color: var(--m, #66727f); }
+.ab-clist a { color: var(--p, #0d7a6b); overflow-wrap: anywhere; }
+.ab-empty, .ab-hint { color: var(--m, #66727f); font-size: .9rem; }
+.ab-foot { text-align: center; color: var(--m, #66727f); font-size: .8rem; margin: 4px 0 0; }
+/* édition */
+.ab-form { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.ab-form label { display: flex; flex-direction: column; gap: 4px; font-size: .85rem; color: var(--m, #66727f); }
+.ab-form .ab-wide { grid-column: 1 / -1; }
+.ab-form input, .ab-form textarea, .ab-sec input.ab-t, .ab-sec input.ab-i, .ab-sec textarea { width: 100%; box-sizing: border-box; }
+.ab-sec { border: 1px solid var(--bd, #dfe5ec); border-radius: 14px; padding: 12px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
+.ab-sec-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.ab-sec-head .ab-i { width: 64px; text-align: center; flex: none; }
+.ab-sec-head .ab-t { flex: 1 1 200px; min-width: 0; width: auto; }
+.ab-vis { display: inline-flex; align-items: center; gap: 6px; font-size: .85rem; white-space: nowrap; }
+.ab-vis input { width: auto; }
+.ab-acts { display: inline-flex; gap: 6px; }
+.ab-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.ab-save { position: sticky; bottom: 0; padding: 12px 0; background: linear-gradient(to top, var(--bg, #f6f8fb) 70%, transparent); }
+.ab-spacer { flex: 1; }
+@media (max-width: 560px) {
+  .ab-hero { padding: 20px 16px; }
+  .ab-card { padding: 16px; }
+  .ab-edit-btn { width: 100%; }
+}
