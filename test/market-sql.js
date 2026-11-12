@@ -53,6 +53,7 @@ const chain = () => new Proxy(function () {}, { get: (_, k) => k === 'safeParse'
 const orig = Module._load;
 Module._load = function (req, parent, ...rest) {
   if (req === 'pg') return { Pool: function () { return pool; }, types: { setTypeParser() {} } };
+  if (req === './premium') return { requireModule: () => (_q, _s, n) => n() };
   if (req === 'express-rate-limit') return () => (_q, _s, n) => n();
   if (req === 'dotenv') return { config() {} };
   if (req === 'jsonwebtoken') return {};
@@ -195,6 +196,23 @@ const ins = async (s, p) => (await auto.query(s + ' RETURNING id', p)).rows[0].i
     const l2 = (await call('POST', '/portal/links', { customer_id: cu }, undefined, portal)).data, t2 = l2.url.split('/c/')[1];
     await call('POST', '/portal/links/' + l2.id + '/revoke', {}, undefined, portal); await rejects(() => pubCall(t2), 404);
     const list = (await call('GET', '/portal/links', null, undefined, portal)).data; assert.strictEqual(list.filter(x => x.active).length, 0);
+  });
+
+  await check('G. Liens vente → fidélité et mode Orange personnalisé', async () => {
+    const mm = await q1("SELECT count(*)::int AS n FROM payment_methods WHERE station_id=$1 AND kind='mobile_money'", [ctx.sid]);
+    await auto.query("INSERT INTO payment_methods(station_id, code, label, kind) VALUES ($1,'orange_pay','Orange Pay','mobile_money'),($1,'mobile_money','Mobile Money','mobile_money')", [ctx.sid]);
+    const sh2 = await mkShift(2, dayMinus(1));
+    const sOm = await ins("INSERT INTO sales(station_id, shift_id, employee_id, invoice_no, total, status, kind, sold_at) VALUES ($1,$2,$3,'F9',3000,'valide','carburant', now() - interval '1 day')", [ctx.sid, sh2, e1]);
+    await auto.query('INSERT INTO sale_details(sale_id, product_id, quantity, unit_price, amount) VALUES ($1,$2,3,1000,3000)', [sOm, fuel]);
+    await auto.query("INSERT INTO payments(station_id, sale_id, shift_id, method, amount, paid_at) VALUES ($1,$2,$3,'orange_pay',3000, now() - interval '1 day')", [ctx.sid, sOm, sh2]);
+    await auto.query("UPDATE shifts SET status='ferme', closed_at=now() WHERE id=$1", [sh2]);
+    const r = (await call('GET', `/money/sales-reconcile?account_id=${acc}&from=${dayMinus(3)}&to=${dayMinus(0)}`)).data;
+    assert.ok(r.methods.includes('orange_pay'), 'méthodes ' + r.methods); assert.strictEqual(r.summary.declared, 25000, 'inclut le mode personnalisé');
+    const ok = await router.afterSale({ sid: ctx.sid, user: { id: ctx.uid } }, sOm, { phone: '76 00 11 22', plate: 'zz-9-zz' });
+    assert.strictEqual(ok.points_earned, 3); assert.strictEqual(ok.account.plate, 'ZZ9ZZ');
+    assert.strictEqual(await router.afterSale({ sid: ctx.sid, user: { id: ctx.uid } }, sOm, { phone: '' }), null, 'sans données : rien');
+    await auto.query("UPDATE loyalty_settings SET enabled = FALSE WHERE station_id = $1", [ctx.sid]);
+    assert.strictEqual(await router.afterSale({ sid: ctx.sid, user: { id: ctx.uid } }, sOm, { phone: '76001122' }), null, 'programme désactivé : la vente n’est jamais bloquée');
   });
 
   console.log(`\n${passed} scénarios OK`); auto.end(); process.exit(0);

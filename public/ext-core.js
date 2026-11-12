@@ -307,7 +307,7 @@ async function addS() {
 }
 /** Vente produit hors carburant. */
 async function addProductSale() {
-  const [pr, cl, em] = await Promise.all([G('/products'), G('/customers').catch(() => []), G('/employees').catch(() => [])]);
+  const [pr, cl, em, loy] = await Promise.all([G('/products'), G('/customers').catch(() => []), G('/employees').catch(() => []), G('/loyalty/settings').catch(() => null)]);
   const ps = pr.filter(p => p.category != 'CARBURANT' && p.active !== false && p.active !== 0);
   if (!ps.length) return toast('Aucun produit hors carburant disponible', 'error');
   form('Vente de produit', [
@@ -316,13 +316,14 @@ async function addProductSale() {
     ['pay', 'Paiement', 's', pmOpts()],
     ['c', 'Client (si crédit)', 's', [['', 'Aucun'], ...cl.map(c => [c.id, c.name])]],
     ['e', 'Employé', 's', em.map(e => [e.id, e.first_name + ' ' + e.last_name])]
-  ], { q: 1 }, async d => {
+  ].concat(loy && loy.enabled && !loy.fuel_only ? [['yp', 'Fidélité · téléphone (facultatif)', 'text'], ['yl', 'Fidélité · plaque (facultatif)', 'text']] : []), { q: 1 }, async d => {
     const p = ps.find(x => x.id == d.p); if (!p) throw new Error('Aucun produit disponible');
     await Po('/sales', {
       items: [{ product_id: p.id, quantity: d.q }],
       payments: [{ method: d.pay, amount: fl(d.q * p.sell_price) }],
       customer_id: d.c ? +d.c : undefined,
-      employee_id: d.e ? +d.e : undefined
+      employee_id: d.e ? +d.e : undefined,
+      loyalty: (d.yp || d.yl) ? { phone: d.yp || null, plate: d.yl || null } : undefined
     });
     closeM(); toast('Vente produit enregistrée', 'success'); go(cur === 'quart' ? 'quart' : 'ventes');
   });
@@ -334,13 +335,14 @@ window.addS = addS;
 let FM = 'index', FX = {};
 async function addFuel() {
   const cu = await G('/shifts/current'); if (!cu) return toast('Ouvrez un quart pour saisir des ventes');
-  const [cl, em] = await Promise.all([G('/customers').catch(() => []), G('/employees').catch(() => [])]); FM = 'index';
+  const [cl, em, loy] = await Promise.all([G('/customers').catch(() => []), G('/employees').catch(() => []), G('/loyalty/settings').catch(() => null)]); FM = 'index';
+  const loyHtml = loy && loy.enabled ? `<label>Fidélité · téléphone (facultatif)<input id="fyp" inputmode="tel" placeholder="Ex. 70 11 22 33"></label><label>Fidélité · plaque (facultatif)<input id="fyl" placeholder="Ex. AB-123-CD"></label>` : '';
   modal(`<h3>Vente de carburant</h3><div class="tabs" id="fm"><a data-m="index" class="on">Par index de compteur</a><a data-m="litres">En litres</a>${AP.fuel_amount_entry_allowed ? '<a data-m="montant">En montant</a>' : ''}</div>
   <div class="g"><label>Compteur<select id="fc">${cu.counters.map(c => `<option value="${c.counter_id}">${esc(c.pump)} · C${c.counter_number} · ${esc(c.product)}</option>`).join('')}</select></label>
   <label class="fi">Ancien index<input id="fo" type="number" step="any" readonly style="background:var(--bg,#f1f1f1);cursor:not-allowed" title="Index initial : repris automatiquement du dernier index connu, non modifiable"></label><label class="fi">Nouvel index<input id="fn" type="number" step="any"></label>
   <label class="fl" style="display:none">Quantité (litres)<input id="fq" type="number" step="any"></label><label class="fa" style="display:none">Montant (${CUR})<input id="fa" type="number" step="any"></label>
   <label>Paiement<select id="fp">${pmOpts().map(([c, l]) => `<option value="${c}">${esc(l)}</option>`).join('')}</select></label><label>Client (si crédit)<select id="fu"><option value="">Aucun</option>${cl.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></label>
-  <label>Employé<select id="fe">${em.map(e => `<option value="${e.id}">${esc(e.first_name + ' ' + e.last_name)}</option>`).join('')}</select></label></div>
+  <label>Employé<select id="fe">${em.map(e => `<option value="${e.id}">${esc(e.first_name + ' ' + e.last_name)}</option>`).join('')}</select></label>${loyHtml}</div>
   <div class="card" id="fsum" style="margin-top:10px"></div><div class="r"><button class="b2" onclick="closeM()">Annuler</button><button id="fok">Enregistrer</button></div>`);
   document.querySelectorAll('#fm a').forEach(a => a.onclick = () => { FM = a.dataset.m; document.querySelectorAll('#fm a').forEach(x => x.classList.toggle('on', x == a)); document.querySelectorAll('.fi').forEach(x => x.style.display = FM == 'index' ? '' : 'none'); document.querySelectorAll('.fl').forEach(x => x.style.display = FM == 'litres' ? '' : 'none'); document.querySelectorAll('.fa').forEach(x => x.style.display = FM == 'montant' ? '' : 'none'); calcF(); });
   ['fo', 'fn', 'fq', 'fa'].forEach(i => $('#' + i).oninput = calcF); $('#fc').onchange = loadF; $('#fok').onclick = () => sendF(false);
@@ -361,9 +363,10 @@ async function sendF(confirm, saved) {
     const n = id => parseFloat($('#' + id).value); b = { mode: FM, counter_id: +$('#fc').value, employee_id: +$('#fe').value || undefined, customer_id: $('#fu').value ? +$('#fu').value : undefined };
     if (FM == 'index') { b.index_old = n('fo'); b.index_new = n('fn'); } else if (FM == 'litres') b.liters = n('fq'); else b.amount = n('fa');
     const amount = FM == 'montant' ? n('fa') : FM == 'litres' ? fl(n('fq') * FX.price) : fl((n('fn') - n('fo')) * FX.price); b.payments = [{ method: $('#fp').value, amount }];
+    const yp = $('#fyp'), yl = $('#fyl'); if (yp && yl && (yp.value.trim() || yl.value.trim())) b.loyalty = { phone: yp.value.trim() || null, plate: yl.value.trim() || null };
   }
   b = { ...b, confirm };
-  try { const r = await Po('/sales/fuel', b); closeM(); toast(`Vente enregistrée : ${r.liters} L, ${f(r.amount)}`); go(cur === 'quart' ? 'quart' : 'ventes'); }
+  try { const r = await Po('/sales/fuel', b); closeM(); toast(`Vente enregistrée : ${r.liters} L, ${f(r.amount)}` + (r.loyalty && r.loyalty.points_earned ? ` · +${r.loyalty.points_earned} point(s) fidélité` : '')); go(cur === 'quart' ? 'quart' : 'ventes'); }
   catch (e) { if (e.message == 'Confirmation requise') ask('<b>Incohérences détectées :</b><br>' + (e.details || []).map(esc).join('<br>') + '<br><br>Enregistrer quand même ?', () => sendF(true, b)); else toast(errMsg(e)); }
 }
 

@@ -11,3 +11,10 @@ Migration **105_fonctions_marche.sql** (tables loyalty_settings, loyalty_account
 
 Tests : `test/market-sql.js` (6 scénarios sur vrai PostgreSQL), `test/market-ui-dom.js` (rendu Chromium).
 Non fait : alertes mobiles de rupture, champ téléphone/plaque dans le formulaire de vente (crédit depuis l'écran Fidélité).
+
+## Audit des liens sources → fonctions (2026-11-12, suite)
+- **Fidélité reliée à la vente** : les formulaires « Vente de carburant » (et « Vente de produit » si les points ne sont pas limités au carburant) proposent téléphone / plaque quand le programme est actif ; les points sont crédités automatiquement dans `POST /sales/fuel` et `POST /sales` (champ `loyalty`, jamais bloquant). « Créditer une vente » reste pour corriger après coup.
+- **Rapprochement** : par défaut tous les modes de paiement de type Mobile Money de la station (Orange, Moov, Wave…), plus seulement le code `mobile_money`.
+- **Prix du jour** : exige maintenant le module licence « Historique des prix », comme l'écran existant.
+- **Alerte mobile** : produits en risque de rupture avant livraison (même calcul que l'écran de prévision).
+- Test SQL : scénario G (vente → fidélité, mode Orange personnalisé, programme désactivé).

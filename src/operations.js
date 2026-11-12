@@ -79,6 +79,7 @@ const saleSchema = z.object({
   items: z.array(z.object({ product_id: z.number().int(), quantity: z.number().positive() })).min(1),
   payments: z.array(z.object({ method: z.string().min(1), amount: z.number().positive(), reference: z.string().optional() })).min(1),
   customer_id: z.number().int().optional(),
+  loyalty: z.object({ phone: z.string().max(30).optional().nullable(), plate: z.string().max(20).optional().nullable(), name: z.string().trim().max(120).optional().nullable() }).optional(),
   employee_id: z.number().int().optional(),
   pump_id: z.number().int().optional(),
   // Clé stable fournie par le client pour rendre les reprises réseau idempotentes.
@@ -183,7 +184,8 @@ r.post('/sales', need('sale.create'), body(saleSchema), wrap(async (req, res) =>
   });
   const replay = Boolean(out?._idempotent_replay);
   if (replay) delete out._idempotent_replay;
-  if (!replay) await require('./employee_actions').afterSale(req, out.id);   // dette client / vente faite au nom d'un employé : journal + messagerie
+  if (!replay) await require('./employee_actions').afterSale(req, out.id);
+  if (!replay && req.body.loyalty) out.loyalty = await require('./market').afterSale(req, out.id, req.body.loyalty);   // points de fidélité (jamais bloquant)   // dette client / vente faite au nom d'un employé : journal + messagerie
   res.status(replay ? 200 : 201).json(out);
 }));
 

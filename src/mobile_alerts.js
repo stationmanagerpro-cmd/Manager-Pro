@@ -28,6 +28,13 @@ r.get('/mobile/alerts', need('report.view', 'finance.view', 'stock.adjust', 'pur
     alerts.push({ key: `fisc:${d.id}:${late ? 'late' : 'soon'}`, type: 'fiscal', level: late ? 'critical' : 'warning', title: (late ? 'Échéance fiscale dépassée : ' : 'Échéance fiscale proche : ') + d.title, body: 'Date limite ' + String(d.due_date).slice(0, 10) });
   }
   for (const s of shifts) alerts.push({ key: 'shift:' + s.id, type: 'quart', level: 'critical', title: `Quart ${String(s.number).padStart(6, '0')} toujours ouvert`, body: `Ouvert depuis plus de ${OPEN_SHIFT_HOURS} h : pensez à le clôturer.` });
+  // Prévision de rupture (même calcul que l'écran « Prévision de rupture ») : produits dont l'autonomie est inférieure au délai de livraison.
+  if (can('report.view', 'stock.adjust', 'purchase.manage')) {
+    try {
+      const crit = (await require('./market').forecastRows(sid)).filter(x => x.status === 'calcule' && x.level === 'critique');
+      if (crit.length) alerts.push({ key: `rupture:${today}:${crit.map(x => x.id).join(',')}`, type: 'stock', level: 'critical', title: `${crit.length} produit(s) en risque de rupture avant livraison`, body: crit.slice(0, 4).map(x => `${x.name} (${Math.max(0, Math.round(x.days_left))} j)`).join(', ') + (crit.length > 4 ? '…' : '') });
+    } catch (e) { swallow('mobile_alerts', null)(e); }
+  }
   res.json({ at: new Date().toISOString(), alerts });
 }));
 module.exports = r;

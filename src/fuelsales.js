@@ -37,6 +37,7 @@ const schema = z.object({
   mode: z.enum(['index', 'litres', 'montant']), counter_id: z.number().int(),
   index_old: z.number().min(0).optional(), index_new: z.number().min(0).optional(), liters: z.number().positive().optional(), amount: z.number().positive().optional(),
   payments: z.array(z.object({ method: z.string().min(1), amount: z.number().positive(), reference: z.string().optional() })).optional(),
+  loyalty: z.object({ phone: z.string().max(30).optional().nullable(), plate: z.string().max(20).optional().nullable(), name: z.string().trim().max(120).optional().nullable() }).optional(), // fidélité : téléphone / plaque du client (facultatif)
   customer_id: z.number().int().optional(), employee_id: z.number().int().optional(), confirm: z.boolean().default(false),
   client_ref: z.string().trim().min(1).max(128).optional().nullable(),
   // Vente saisie hors ligne (CORR-043) : heure réelle sur l'appareil, contrôlée par resolveOfflineSale.
@@ -209,6 +210,7 @@ r.post('/sales/fuel', need('sale.create'), body(schema), wrap(async (req, res) =
   const replay = Boolean(out?._idempotent_replay);
   if (replay) delete out._idempotent_replay;
   if (!replay) await require('./employee_actions').afterSale(req, out.id);
+  if (!replay && req.body.loyalty) out.loyalty = await require('./market').afterSale(req, out.id, req.body.loyalty);   // points de fidélité (jamais bloquant)
   res.status(replay ? 200 : 201).json(out);
 }));
 

@@ -33,7 +33,11 @@ r.get('/money/sales-reconcile', need('money.manage', 'finance.view', 'finance.re
   const [acc] = await q('SELECT id, name FROM money_accounts WHERE id=$1 AND station_id=$2', [accountId, req.sid]);
   if (!acc) throw new HttpError(404, 'Compte introuvable');
   const { from, to } = range(req);
-  const methods = String(req.query.methods || 'mobile_money').split(',').map(s => s.trim()).filter(Boolean).slice(0, 6);
+  let methods = String(req.query.methods || '').split(',').map(s => s.trim()).filter(Boolean).slice(0, 12);
+  if (!methods.length) {   // par défaut : tous les modes de paiement de la station dont le type est Mobile Money (Orange, Moov, Wave… selon la configuration)
+    methods = (await q("SELECT code FROM payment_methods WHERE station_id=$1 AND kind='mobile_money'", [req.sid])).map(x => x.code);
+    if (!methods.length) methods = ['mobile_money'];
+  }
   const [lines, pays] = await Promise.all([
     q(`SELECT id, to_char(line_date,'YYYY-MM-DD') AS line_date, amount::float8 AS amount, reference, label FROM money_statement_lines
         WHERE station_id=$1 AND account_id=$2 AND amount > 0 AND status <> 'ignoree' AND line_date BETWEEN $3::date - 1 AND $4::date + 1`, [req.sid, accountId, from, to]),
@@ -117,15 +121,12 @@ r.get('/loyalty/accounts/:id', need(...LOY_VIEW), wrap(async (req, res) => {
   res.json({ account: loyAnswer(a, s), events });
 }));
 
-r.post('/loyalty/earn', need('sale.create'), body(z.object({
-  sale_id: z.number().int().positive(), phone: z.string().max(30).optional().nullable(), plate: z.string().max(20).optional().nullable(), name: z.string().trim().max(120).optional().nullable()
-}).strict()), wrap(async (req, res) => {
-  const phone = cleanPhone(req.body.phone), plate = cleanPlate(req.body.plate);
-  if (!phone && !plate) throw new HttpError(400, 'Indiquez un téléphone ou une plaque');
-  const out = await tx(async c => {
-    const s = await loyaltySettings(c, req.sid);
+/** Crédite les points d'une vente (dans la transaction `c`). Idempotent : une vente ne donne des points qu'une fois. */
+async function earnCore(c, { sid, uid, saleId, phone, plate, name }) {
+
+    const s = await loyaltySettings(c, sid);
     if (!s.enabled) throw new HttpError(409, 'Le programme de fidélité est désactivé (Réglages › Fidélité)');
-    const { rows: [sale] } = await c.query('SELECT id, total::float8 AS total, status FROM sales WHERE id=$1 AND station_id=$2', [req.body.sale_id, req.sid]);
+    const { rows: [sale] } = await c.query('SELECT id, total::float8 AS total, status FROM sales WHERE id=$1 AND station_id=$2', [saleId, sid]);
     if (!sale) throw new HttpError(404, 'Vente introuvable');
     if (sale.status !== 'valide') throw new HttpError(409, 'Cette vente est annulée : aucun point');
     const { rows: [done] } = await c.query(`SELECT a.* FROM loyalty_events e JOIN loyalty_accounts a ON a.id = e.account_id WHERE e.sale_id=$1 AND e.kind='gain'`, [sale.id]);
@@ -133,24 +134,43 @@ r.post('/loyalty/earn', need('sale.create'), body(z.object({
     const { rows: [m] } = await c.query(`SELECT COALESCE(SUM(d.amount) FILTER (WHERE cat.has_meter),0)::float8 AS fuel, COALESCE(SUM(d.amount),0)::float8 AS tot
       FROM sale_details d JOIN products p ON p.id=d.product_id JOIN categories cat ON cat.id=p.category_id WHERE d.sale_id=$1`, [sale.id]);
     const basis = s.fuel_only ? m.fuel : (m.tot || sale.total), points = Math.floor(basis / s.earn_per_amount);
-    let a = await findAccount(c, req.sid, phone, plate, true);
+    let a = await findAccount(c, sid, phone, plate, true);
     if (!a) {
-      const ins = await c.query(`INSERT INTO loyalty_accounts(station_id, phone, plate, name) VALUES ($1,$2,$3,$4) RETURNING *`, [req.sid, phone, plate, req.body.name || null]);
+      const ins = await c.query(`INSERT INTO loyalty_accounts(station_id, phone, plate, name) VALUES ($1,$2,$3,$4) RETURNING *`, [sid, phone, plate, name || null]);
       a = ins.rows[0];
     } else {   // complète la fiche (téléphone ou plaque manquants, nom) sans écraser
       const up = await c.query(`UPDATE loyalty_accounts SET phone = COALESCE(phone, $2), plate = COALESCE(plate, $3), name = COALESCE(name, $4), updated_at = now() WHERE id=$1 RETURNING *`,
-        [a.id, phone && !(await findAccount(c, req.sid, phone, null, false)) ? phone : null, plate && !(await findAccount(c, req.sid, null, plate, false)) ? plate : null, req.body.name || null]);
+        [a.id, phone && !(await findAccount(c, sid, phone, null, false)) ? phone : null, plate && !(await findAccount(c, sid, null, plate, false)) ? plate : null, name || null]);
       a = up.rows[0];
     }
     if (points > 0) {
       const ev = await c.query(`INSERT INTO loyalty_events(station_id, account_id, kind, points, amount, sale_id, created_by) VALUES ($1,$2,'gain',$3,$4,$5,$6) ON CONFLICT DO NOTHING RETURNING id`,
-        [req.sid, a.id, points, basis, sale.id, req.user.id]);
+        [sid, a.id, points, basis, sale.id, uid]);
       if (ev.rowCount) a = (await c.query('UPDATE loyalty_accounts SET points = points + $2, lifetime_points = lifetime_points + $2, updated_at = now() WHERE id=$1 RETURNING *', [a.id, points])).rows[0];
     }
     return { already: false, points_earned: points, basis: r2(basis), account: loyAnswer(a, s) };
-  });
+}
+
+r.post('/loyalty/earn', need('sale.create'), body(z.object({
+  sale_id: z.number().int().positive(), phone: z.string().max(30).optional().nullable(), plate: z.string().max(20).optional().nullable(), name: z.string().trim().max(120).optional().nullable()
+}).strict()), wrap(async (req, res) => {
+  const phone = cleanPhone(req.body.phone), plate = cleanPlate(req.body.plate);
+  if (!phone && !plate) throw new HttpError(400, 'Indiquez un téléphone ou une plaque');
+  const out = await tx(c => earnCore(c, { sid: req.sid, uid: req.user.id, saleId: req.body.sale_id, phone, plate, name: req.body.name }));
   res.status(201).json(out);
 }));
+
+/** Appelé juste après l'enregistrement d'une vente (carburant ou produit) qui porte un téléphone / une plaque.
+ *  Ne bloque jamais la vente : programme désactivé, données absentes ou erreur → on ignore. */
+async function afterSale(req, saleId, loyalty) {
+  try {
+    if (!loyalty) return null;
+    const phone = cleanPhone(loyalty.phone), plate = cleanPlate(loyalty.plate);
+    if (!phone && !plate) return null;
+    if (!(await loyaltySettings(pool, req.sid)).enabled) return null;
+    return await tx(c => earnCore(c, { sid: req.sid, uid: req.user.id, saleId, phone, plate, name: loyalty.name || null }));
+  } catch (e) { swallow('market:fidelite', null)(e); return null; }
+}
 
 r.post('/loyalty/accounts/:id/redeem', need('sale.create'), body(z.object({ points: z.number().int().positive().max(1e7), note: z.string().trim().max(200).optional().nullable() }).strict()), wrap(async (req, res) => {
   const out = await tx(async c => {
@@ -251,7 +271,7 @@ r.get('/prices/board', need('price.edit', 'report.view', 'sale.create'), wrap(as
       ...(cost ? { buy_price: p.buy_price, margin, margin_pct: margin != null && p.sell_price > 0 ? r2(margin / p.sell_price * 100) : null, margin_7d: margin != null ? r2(margin * p.qty_7d) : null } : {}) };
   }) });
 }));
-r.post('/prices/board', need('price.edit'), body(z.object({
+r.post('/prices/board', need('price.edit'), require('./premium').requireModule('price_history'), body(z.object({
   changes: z.array(z.object({ product_id: z.number().int().positive(), price: z.number().min(0).max(1e9) })).min(1).max(20),
   note: z.string().trim().max(300).optional().nullable()
 }).strict()), wrap(async (req, res) => {
@@ -277,3 +297,4 @@ r.post('/prices/board', need('price.edit'), body(z.object({
 
 module.exports = r;
 module.exports.forecastRows = forecastRows;
+module.exports.afterSale = afterSale;
