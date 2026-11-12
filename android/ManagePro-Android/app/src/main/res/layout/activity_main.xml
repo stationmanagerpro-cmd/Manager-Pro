@@ -39,10 +39,12 @@
         android:id="@+id/scan"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="bottom|start"
-        android:layout_marginStart="16dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="12dp"
         android:layout_marginBottom="88dp"
-        android:text="📷 Scanner"
+        android:alpha="0.92"
+        android:contentDescription="@string/scan"
+        android:text="📷"
         android:visibility="gone" />
 
 

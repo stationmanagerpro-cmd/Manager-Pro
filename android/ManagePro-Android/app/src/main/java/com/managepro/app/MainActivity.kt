@@ -369,7 +369,9 @@ class MainActivity : AppCompatActivity() {
               return wo.call(window,u,n,f);
             };
           }
-          function isText(t){return t&&/^(INPUT|TEXTAREA)${'$'}/.test(t.tagName)&&!/^(checkbox|radio|file|date|month|time|button|submit|hidden|password|range|color)${'$'}/.test(t.type||'')}
+          /* pas de bouton Scanner sur la connexion (ni dans un formulaire à mot de passe) : il masquait les champs de saisie */
+          function isLogin(t){try{return t.id==='lu'||(t.form&&t.form.querySelector('input[type=password]'))||!!t.closest('.login,#login,#lg')}catch(x){return false}}
+          function isText(t){return t&&/^(INPUT|TEXTAREA)${'$'}/.test(t.tagName)&&!/^(checkbox|radio|file|date|month|time|button|submit|hidden|password|range|color)${'$'}/.test(t.type||'')&&!isLogin(t)}
           document.addEventListener('focusin',function(e){if(isText(e.target)){window.__mpLast=e.target;try{AndroidBridge.focusChanged(true)}catch(x){}}},true);
           document.addEventListener('focusout',function(){setTimeout(function(){if(!isText(document.activeElement)){try{AndroidBridge.focusChanged(false)}catch(x){}}},250)},true);
           window.__mpScan=function(code){
