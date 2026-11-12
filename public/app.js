@@ -265,7 +265,9 @@ const contractAllowsView = k => {
   if (k === 'stock' || k === 'prod') return modOn('stock', true);
   if (k === 'bcommande') return modOn('suppliers', true) && modOn('purchases', true);
   if (k === 'four' || k === 'achats') return modOn('suppliers', true) && modOn('purchases', true);
-  if (k === 'cli') return modOn('customers', true);
+  if (k === 'cli' || k === 'fidelite' || k === 'espaceclient') return modOn('customers', true);
+  if (k === 'prixjour' || k === 'previsions') return modOn('stock', true);
+  if (k === 'risque') return flagOn('can_view_reports', true);
   // Ventes / quarts / pompes / employés / vendeurs & commissions
   if (k === 'ventes') return modOn('sales', true);
   if (k === 'vendeurs') {

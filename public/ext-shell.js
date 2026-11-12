@@ -20,8 +20,8 @@
   /* ---------- Arbre de navigation : regroupe les vues existantes (clés de V) ---------- */
   const TREE = [
     { label: 'Tableau de bord', icon: '📊', keys: ['direction', 'dash', 'consolidee', 'parstation', 'eod', 'reconcile'] },
-    { label: 'Exploitation', icon: '⛽', keys: ['jour', 'quart', 'ventes', 'factures', 'bcommande', 'prod', 'stock', 'pompes', 'cuves', 'caisse', 'periodlock', 'alert'] },
-    { label: 'Gestion commerciale', icon: '🤝', keys: ['cli', 'flotte', 'four', 'achats', 'vendeurs'] },
+    { label: 'Exploitation', icon: '⛽', keys: ['jour', 'quart', 'ventes', 'prixjour', 'factures', 'bcommande', 'prod', 'stock', 'previsions', 'pompes', 'cuves', 'risque', 'caisse', 'periodlock', 'alert'] },
+    { label: 'Gestion commerciale', icon: '🤝', keys: ['cli', 'flotte', 'fidelite', 'espaceclient', 'four', 'achats', 'vendeurs'] },
     {
       label: 'Ressources humaines', icon: '👥', keys: ['emp'], children: [
         { label: 'Pilotage RH', icon: '📋', keys: ['rhdash', 'rh', 'rhalerts', 'rhr', 'audrh'] },

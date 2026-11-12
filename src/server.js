@@ -83,6 +83,8 @@ app.use('/api/auth', pub);          // connexion
 app.use('/api/branding', require('./branding').pub);   // identité de l'application (nom, slogan, logo) : lecture publique pour l'écran de connexion
 app.use('/api/public', require('./access_keys').pub);   // clé d'accès à l'écran de connexion : visiteur non connecté
 app.use('/api/public', require('./home_page').pub);    // page d'accueil publique (contenu publié uniquement)
+app.use('/api/public', require('./client_portal').pub); // espace client : lien privé en lecture seule (jeton haché, révocable)
+app.get('/c/:token', (req, res) => { res.setHeader('Cache-Control', 'no-store'); res.setHeader('X-Robots-Tag', 'noindex, nofollow'); res.sendFile(path.join(__dirname, '..', 'public', 'espace-client.html')); });
 app.use('/api', auth);              // tout ce qui suit exige un jeton valide
 if (envInt('RATE_LIMIT_USER_MAX', 400) > 0) {   // D2 : plafond par utilisateur connecté (défaut 400/minute)
   app.use('/api', rateLimit({ windowMs: 60 * 1000, max: envInt('RATE_LIMIT_USER_MAX', 400), standardHeaders: true, legacyHeaders: false, message: limitMsg,
@@ -218,6 +220,8 @@ app.use('/api', require('./branding').admin);   // identité de l'application : 
 app.use('/api', require('./access_keys').admin);   // gestion des clés d'accès : Super Admin uniquement
 app.use('/api', require('./home_page').admin);     // personnalisation de la page d'accueil : Super Admin uniquement
 app.use('/api', require('./about_page').r);        // « A propos de Manager PRO » : lecture pour tous, édition Super Admin uniquement
+app.use('/api', require('./market'));          // rapprochement Mobile Money ↔ ventes, fidélité, score de risque, prévision de rupture, prix du jour
+app.use('/api', require('./client_portal'));   // liens d'espace client (gestion)
 app.use('/api', require('./treasury').r);   // Trésorerie + Créances & dettes (agrégats)
 app.use('/api', require('./fleet').r);      // Cartes carburant / flottes
 app.use('/api', require('./tanks').r);      // Cuves : jauges et réconciliation du stock en cuve

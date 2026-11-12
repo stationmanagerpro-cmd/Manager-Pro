@@ -12,3 +12,4 @@ check-*.js
 fix-*.cjs
 forms_report.json
 shot-*.png
+android/

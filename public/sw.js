@@ -3,7 +3,7 @@
  * - /api/** → network-only (jamais de cache : auth JWT, données métier)
  * - Navigation HTML → network-first, fallback cache index si offline total
  */
-const CACHE = 'smp-static-bb00626fe0e';
+const CACHE = 'smp-static-bb502c03ead';
 
 /* PRECACHE:BEGIN (généré par scripts/build-sw.js — ne pas modifier à la main) */
 const PRECACHE = [
@@ -51,6 +51,7 @@ const PRECACHE = [
   '/ext-license-ticker.js?v=1',
   '/ext-magasins.js?v=2',
   '/ext-map.js?v=2',
+  '/ext-market.js?v=1',
   '/ext-messaging.js?v=3',
   '/ext-modern-pack.js?v=2',
   '/ext-money-match.js?v=1',
@@ -157,6 +158,7 @@ self.addEventListener('fetch', (event) => {
   let url;
   try { url = new URL(req.url); } catch (_) { return; }
   if (url.origin !== self.location.origin) return;
+  if (url.pathname.startsWith('/c/')) return;   // espace client : page publique à lien privé, jamais mise en cache ni confondue avec l'application
 
   // Critique : aucune mise en cache des API (JWT, sessions, données stations)
   if (isApi(url)) {

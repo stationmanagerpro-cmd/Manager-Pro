@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#1d4ed8">
+<title>Mon espace client</title>
+<style>
+  :root{--bg:#f4f6fb;--card:#fff;--ink:#0f172a;--mut:#64748b;--br:#e2e8f0;--ac:#1d4ed8;--ok:#047857;--bad:#b91c1c}
+  *{box-sizing:border-box}body{margin:0;font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+  header{background:var(--ac);color:#fff;padding:18px 16px 26px}header h1{margin:0;font-size:18px}header p{margin:2px 0 0;opacity:.85;font-size:13px}
+  main{max-width:760px;margin:-14px auto 24px;padding:0 12px}
+  .card{background:var(--card);border:1px solid var(--br);border-radius:14px;padding:14px;margin:0 0 12px;box-shadow:0 1px 2px rgba(15,23,42,.04)}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.kpi small{display:block;color:var(--mut);font-size:12px}.kpi b{font-size:20px}
+  h2{margin:0 0 8px;font-size:15px}.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:7px 6px;border-bottom:1px solid var(--br);text-align:left;white-space:nowrap}th{color:var(--mut);font-weight:600}td.n,th.n{text-align:right}
+  .tag{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11px;background:#e2e8f0}.tag.payee{background:#d1fae5;color:var(--ok)}.tag.partielle,.tag.emise{background:#fef3c7;color:#92400e}
+  .due{color:var(--bad);font-weight:600}.ok{color:var(--ok)}.mut{color:var(--mut)}.err{text-align:center;padding:48px 16px}
+  details summary{cursor:pointer}details ul{margin:6px 0 0 16px;padding:0;color:var(--mut);font-size:13px}
+  footer{text-align:center;color:var(--mut);font-size:12px;padding:0 12px 24px}
+</style>
+</head>
+<body>
+<header><h1 id="who">Mon espace client</h1><p id="st"></p></header>
+<main id="app"><div class="card err mut">Chargement…</div></main>
+<footer id="foot"></footer>
+<script src="/espace-client.js"></script>
+</body>
+</html>
