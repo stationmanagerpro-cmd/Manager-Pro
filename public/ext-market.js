@@ -24,7 +24,7 @@
     pb = await G('/prices/board');
     var edit = can_('price.edit');
     var rows = pb.items.map(function (p) {
-      return [esc(p.name), f(p.sell_price), p.previous_price != null ? f(p.previous_price) : '—', p.changed_at ? esc(p.changed_at) : '—',
+      return [esc(p.name) + ' <button class="b2" type="button" onclick="mkPriceHist(' + p.id + ')">Historique</button>', f(p.sell_price), p.previous_price != null ? f(p.previous_price) : '—', p.changed_at ? esc(p.changed_at) : '—',
         edit ? '<input type="number" min="0" step="any" data-pb="' + p.id + '" data-cur="' + p.sell_price + '" placeholder="' + p.sell_price + '" style="width:110px">' : '',
         pb.can_cost ? (p.margin != null ? f(p.margin) + ' (' + num(p.margin_pct, 1) + ' %)' : '—') : '',
         pb.can_cost ? (p.margin_7d != null ? f(p.margin_7d) : '—') : ''];
@@ -36,6 +36,12 @@
       (pb.open_shift ? '<p class="warn">Le quart n° ' + esc(pb.open_shift) + ' est ouvert : le nouveau prix s’applique aux ventes saisies à partir de maintenant.</p>' : '') +
       tbl(heads.slice(0, cut), rows.map(function (r) { return r.slice(0, cut); }), pb.can_cost ? [1, 2, 5, 6] : [1, 2]) +
       (edit ? '<div class="bar" style="margin-top:10px"><input id="pb-note" placeholder="Motif (ex. hausse fournisseur)" style="min-width:240px"><button type="button" onclick="mkPriceSave()">Appliquer les nouveaux prix</button></div>' : '');
+  };
+  window.mkPriceHist = async function (id) {
+    try {
+      var h = await G('/products/' + id + '/price-history');
+      modal('<h3>Historique des prix</h3>' + tbl(['Du', 'Au', 'Type', 'Ancien', 'Nouveau', 'Par'], h.map(function (x) { return [fd(x.effective_from), x.effective_to ? fd(x.effective_to) : 'en vigueur', esc(x.price_type), x.old_price == null ? '—' : f(x.old_price), f(x.price), esc(x.login || '')]; }), [3, 4]) + '<div class="r"><button class="b2" type="button" onclick="closeM()">Fermer</button></div>');
+    } catch (e) { err(e); }
   };
   window.mkPriceSave = function () {
     var ch = [].slice.call(document.querySelectorAll('[data-pb]')).map(function (i) { return { product_id: Number(i.getAttribute('data-pb')), price: i.value === '' ? null : Number(i.value), cur: Number(i.getAttribute('data-cur')) }; })

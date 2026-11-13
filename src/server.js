@@ -226,6 +226,7 @@ app.use('/api', require('./access_keys').admin);   // gestion des clés d'accès
 app.use('/api', require('./home_page').admin);     // personnalisation de la page d'accueil : Super Admin uniquement
 app.use('/api', require('./about_page').r);        // « A propos de Manager PRO » : lecture pour tous, édition Super Admin uniquement
 app.use('/api', require('./market'));          // rapprochement Mobile Money ↔ ventes, fidélité, score de risque, prévision de rupture, prix du jour
+app.use('/api', require('./gaps'));            // transferts de stock, historique compteurs, prêts, SMTP, licences, préférences dashboard
 app.use('/api', require('./client_portal'));   // liens d'espace client (gestion)
 app.use('/api', require('./treasury').r);   // Trésorerie + Créances & dettes (agrégats)
 app.use('/api', require('./fleet').r);      // Cartes carburant / flottes

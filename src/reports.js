@@ -508,6 +508,9 @@ r.get('/dashboard/config', wrap(async (req, res) => {
         shortcuts: cfg.shortcuts || []
       };
 
+  // Préférences personnelles : l'utilisateur peut masquer des éléments, jamais en ajouter.
+  const mine = await require('./gaps').userDashboardPrefs(req.user.id, req.sid);
+  if (mine) for (const g of ['cards', 'charts', 'sections']) for (const [k, v] of Object.entries(mine[g] || {})) if (v === false && effective[g]) effective[g] = { ...effective[g], [k]: false };
   res.json({
     role,
     is_global: !!req.user.is_global,

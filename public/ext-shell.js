@@ -19,21 +19,21 @@
 
   /* ---------- Arbre de navigation : regroupe les vues existantes (clés de V) ---------- */
   const TREE = [
-    { label: 'Tableau de bord', icon: '📊', keys: ['direction', 'dash', 'consolidee', 'parstation', 'eod', 'reconcile'] },
-    { label: 'Exploitation', icon: '⛽', keys: ['jour', 'quart', 'ventes', 'prixjour', 'factures', 'bcommande', 'prod', 'stock', 'previsions', 'pompes', 'cuves', 'risque', 'caisse', 'periodlock', 'alert'] },
+    { label: 'Tableau de bord', icon: '📊', keys: ['direction', 'dash', 'moidash', 'consolidee', 'parstation', 'eod', 'reconcile'] },
+    { label: 'Exploitation', icon: '⛽', keys: ['jour', 'quart', 'ventes', 'prixjour', 'factures', 'bcommande', 'prod', 'stock', 'previsions', 'transferts', 'pompes', 'cuves', 'histcompteurs', 'risque', 'caisse', 'periodlock', 'alert'] },
     { label: 'Gestion commerciale', icon: '🤝', keys: ['cli', 'flotte', 'fidelite', 'espaceclient', 'four', 'achats', 'vendeurs'] },
     {
       label: 'Ressources humaines', icon: '👥', keys: ['emp'], children: [
-        { label: 'Pilotage RH', icon: '📋', keys: ['rhdash', 'rh', 'rhalerts', 'rhr', 'audrh'] },
-        { label: 'Suivi du personnel', icon: '🗓️', keys: ['rhatt', 'rhleaves', 'rhot', 'rhsched', 'rhcontracts', 'rhdocs'] },
-        { label: 'Paie', icon: '💵', keys: ['rhctl', 'rhperiods', 'declarations', 'act'] }
+        { label: 'Pilotage RH', icon: '📋', keys: ['rhdash', 'rh', 'rhalerts', 'rhr', 'audrh', 'rhme'] },
+        { label: 'Suivi du personnel', icon: '🗓️', keys: ['rhatt', 'rhleaves', 'rhot', 'rhsched', 'rhteams', 'rhcontracts', 'rhdocs', 'rhskills', 'rhtrain', 'rheval', 'rhdisc'] },
+        { label: 'Paie', icon: '💵', keys: ['rhctl', 'rhperiods', 'rhrules', 'declarations', 'act'] }
       ]
     },
     { label: 'Finance & rapports', icon: '📈', keys: ['treso', 'dettes', 'profit', 'rapports', 'fin', 'mmcomm', 'finevents', 'reconcile', 'exports', 'archive', 'imports'] },
     { label: 'Comptabilité', icon: '📒', keys: ['compta'] },
-    { label: 'La Fiscalité', icon: '⚖️', keys: ['fiscalhub', 'fiscal', 'fiscal2', 'fiscal3', 'fiscaldash', 'fiscaldl', 'fiscalcheck', 'fiscalaudit', 'fiscalrulesview', 'fiscalstorage', 'fiscalscore', 'fiscalactivity', 'fiscalyear'] },
+    { label: 'La Fiscalité', icon: '⚖️', keys: ['fiscalhub', 'fiscal', 'fiscalest', 'fiscal2', 'fiscal3', 'fiscaldash', 'fiscaldl', 'fiscalcheck', 'fiscalaudit', 'fiscalrulesview', 'fiscalstorage', 'fiscalscore', 'fiscalactivity', 'fiscalyear'] },
     { label: 'Communication', icon: '💬', keys: ['msg'] },
-    { label: 'Administration', icon: '🛡️', keys: ['admin', 'stations', 'carte', 'param', 'teamroles', 'roles', 'dashcfg', 'settings_hub', 'rhsettings', 'audit', 'auditx', 'packs'] },
+    { label: 'Administration', icon: '🛡️', keys: ['admin', 'stations', 'carte', 'param', 'teamroles', 'roles', 'dashcfg', 'settings_hub', 'rhsettings', 'licence', 'audit', 'auditx', 'packs'] },
     { label: 'Mon profil & aide', icon: '🙋', keys: ['moi', 'clients', 'onboard', 'aide'] }
   ];
 

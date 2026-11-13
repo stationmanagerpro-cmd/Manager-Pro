@@ -83,6 +83,7 @@ async function scanStation(station) {
             AND end_date >= CURRENT_DATE AND end_date <= CURRENT_DATE + $2::int`,
         [station.client_id, days]
       );
+      for (const c of rows) await require('./gaps').logLicenseWarning(station.client_id, Math.ceil((new Date(c.end_date) - new Date()) / 86400000));
       for (const c of rows) await fire('license_expiring', {
         body: `Le contrat du compte client arrive à échéance le ${String(c.end_date).slice(0, 10)} (dans ${Math.max(0, Math.ceil((new Date(c.end_date) - new Date()) / 86400000))} jour(s)).`,
         refTable: 'client_contracts', refId: c.id

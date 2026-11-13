@@ -266,6 +266,8 @@ r.patch('/pumps/:pumpId/counters/:n/index', need('settings.edit'), body(z.object
       "SELECT number FROM shifts WHERE station_id = $1 AND status = 'ouvert'", [req.sid]
     );
     await c.query('UPDATE pump_counters SET current_index = $2 WHERE id = $1', [k.id, current_index]);
+    await c.query(`INSERT INTO counter_events(counter_id, station_id, event_type, index_before, index_after, reason, performed_by, metadata) VALUES ($1,$2,'correction',$3,$4,$5,$6,$7::jsonb)`,
+      [k.id, req.sid, oldIndex, current_index, reason, req.user.id, JSON.stringify({ open_shift: open ? open.number : null })]);
     await audit(c, req, 'pompes',
       `Correction index compteur ${k.counter_number} (${k.pump_name}) : ${oldIndex} → ${current_index}` +
       (open ? ` [quart ouvert N° ${open.number}]` : ''),

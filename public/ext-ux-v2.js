@@ -265,8 +265,9 @@
             esc(l.borrower_name), f(l.amount), f(l.repaid_amount || 0), f(bal),
             l.due_date ? esc(l.due_date) : '—',
             '<span class="tag' + (l.status === 'open' || l.status === 'partial' ? ' x' : '') + '">' + esc(l.status) + '</span>',
-            (l.status === 'open' || l.status === 'partial')
-              ? '<button class="b2" onclick="repayPersonalLoan(' + l.id + ',' + bal + ')">Rembourser</button>' : ''
+            ((l.status === 'open' || l.status === 'partial')
+              ? '<button class="b2" onclick="repayPersonalLoan(' + l.id + ',' + bal + ')">Rembourser</button> ' : '') +
+              (Number(l.repaid_amount || 0) > 0 ? '<button class="b2" onclick="loanPayments(' + l.id + ')">Historique</button>' : '')
           ];
         })) +
       '</div>';

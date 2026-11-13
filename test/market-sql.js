@@ -54,6 +54,7 @@ const orig = Module._load;
 Module._load = function (req, parent, ...rest) {
   if (req === 'pg') return { Pool: function () { return pool; }, types: { setTypeParser() {} } };
   if (req === './premium') return { requireModule: () => (_q, _s, n) => n() };
+  if (req === './mailer') return { sendMail: async () => ({ ok: true }) };
   if (req === 'express-rate-limit') return () => (_q, _s, n) => n();
   if (req === 'dotenv') return { config() {} };
   if (req === 'jsonwebtoken') return {};
@@ -70,6 +71,7 @@ Module._load = function (req, parent, ...rest) {
 const core = require('../src/core');
 const router = require('../src/market');
 const portal = require('../src/client_portal');
+const gaps = require('../src/gaps');
 async function call(method, path, bodyData, perms = ['money.manage', 'finance.view', 'report.view', 'sale.create', 'customer.view', 'customer.edit', 'settings.edit', 'price.edit', 'cost.view'], rt = router) {
   const route = rt.routes.find(r => r.m === method.toLowerCase() && matches(r.path, path));
   if (!route) throw new Error('route ?' + method + path);
@@ -213,6 +215,48 @@ const ins = async (s, p) => (await auto.query(s + ' RETURNING id', p)).rows[0].i
     assert.strictEqual(await router.afterSale({ sid: ctx.sid, user: { id: ctx.uid } }, sOm, { phone: '' }), null, 'sans données : rien');
     await auto.query("UPDATE loyalty_settings SET enabled = FALSE WHERE station_id = $1", [ctx.sid]);
     assert.strictEqual(await router.afterSale({ sid: ctx.sid, user: { id: ctx.uid } }, sOm, { phone: '76001122' }), null, 'programme désactivé : la vente n’est jamais bloquée');
+  });
+
+  await check('H. Transferts de stock entre stations : envoi, réception, annulation', async () => {
+    const cl = await q1("INSERT INTO clients(name) VALUES ('Client transferts') RETURNING id").catch(() => null);
+    const st2 = await q1("INSERT INTO stations(name) VALUES ('MK-DEST') RETURNING id");
+    if (cl) await auto.query('UPDATE stations SET client_id = $1 WHERE id IN ($2,$3)', [cl.id, ctx.sid, st2.id]);
+    await auto.query('INSERT INTO user_stations(user_id, station_id) VALUES ($1,$2),($1,$3) ON CONFLICT DO NOTHING', [ctx.uid, ctx.sid, st2.id]);
+    const pd = await ins("INSERT INTO products(station_id, category_id, name, buy_price, sell_price, active) VALUES ($1,3,'Huile',1000,2000,TRUE)", [st2.id]);
+    await auto.query('INSERT INTO stock(product_id, station_id, quantity) VALUES ($1,$2,5)', [pd, st2.id]);
+    await auto.query('UPDATE stock SET quantity = 50 WHERE product_id = $1', [oil]);
+    const P = ['transfer.manage', 'stock.adjust', 'report.view'];
+    const dests = (await call('GET', '/stock/transfers/stations', null, P, gaps)).data; assert.ok(dests.some(d => d.id === st2.id));
+    await rejects(() => call('POST', '/stock/transfers', { to_station_id: st2.id, items: [{ product_id: oil, quantity: 999 }] }, P, gaps), 409, /insuffisant/);
+    const t = (await call('POST', '/stock/transfers', { to_station_id: st2.id, items: [{ product_id: oil, quantity: 20 }], comment: 'test' }, P, gaps)).data;
+    assert.strictEqual(Number((await q1('SELECT quantity FROM stock WHERE product_id=$1', [oil])).quantity), 30);
+    const t2 = (await call('POST', '/stock/transfers', { to_station_id: st2.id, items: [{ product_id: oil, quantity: 5 }] }, P, gaps)).data;
+    await call('POST', `/stock/transfers/${t2.id}/cancel`, {}, P, gaps);
+    assert.strictEqual(Number((await q1('SELECT quantity FROM stock WHERE product_id=$1', [oil])).quantity), 30, 'annulation restitue');
+    await rejects(() => call('POST', `/stock/transfers/${t.id}/receive`, {}, P, gaps), 404);   // mauvaise station (la source ne reçoit pas)
+    ctx.sid = st2.id; await call('POST', `/stock/transfers/${t.id}/receive`, {}, P, gaps);
+    assert.strictEqual(Number((await q1('SELECT quantity FROM stock WHERE product_id=$1', [pd])).quantity), 25);
+    await rejects(() => call('POST', `/stock/transfers/${t.id}/receive`, {}, P, gaps), 409);
+    const lst = (await call('GET', '/stock/transfers', null, P, gaps)).data; assert.strictEqual(lst.find(x => x.id === t.id).items[0].quantity, 20);
+    ctx.sid = (await q1('SELECT id FROM stations WHERE name LIKE $1 ORDER BY id DESC LIMIT 1 OFFSET 1', ['MK-TEST%'])).id;
+  });
+
+  await check('I. Prêts, SMTP, licence, préférences dashboard, compétences', async () => {
+    const loan = await ins("INSERT INTO personal_loans(station_id, borrower_name, amount, loan_date) VALUES ($1,'Ali',1000, CURRENT_DATE)", [ctx.sid]);
+    await auto.query("INSERT INTO personal_loan_payments(loan_id, amount, method) VALUES ($1,400,'especes')", [loan]);
+    const lp = (await call('GET', `/finance/loans/${loan}/payments`, null, undefined, gaps)).data; assert.strictEqual(lp[0].amount, 400);
+    const sm = (await call('POST', '/admin/smtp/test', { to: 'a@b.co' }, undefined, gaps)).data; assert.strictEqual(sm.success, false, 'sans SMTP_HOST : échec expliqué'); assert.match(sm.diagnostic, /SMTP/);
+    assert.strictEqual((await call('GET', '/admin/smtp/diagnostics', null, undefined, gaps)).data.length, 1);
+    const cl = await q1('SELECT client_id FROM stations WHERE id=$1', [ctx.sid]);
+    if (cl.client_id) { assert.strictEqual(await gaps.logLicenseWarning(cl.client_id, 6), true); assert.strictEqual(await gaps.logLicenseWarning(cl.client_id, 6), false, 'pas de doublon'); }
+    await call('PUT', '/dashboard/my-prefs', { cards: { revenue: false, fuel: true }, sections: { shifts: false } }, undefined, gaps);
+    const pf = (await call('GET', '/dashboard/my-prefs', null, undefined, gaps)).data; assert.deepStrictEqual(pf.cards, { revenue: false }, 'seuls les masquages sont gardés');
+    const sk = (await call('POST', '/hr/v2/skills', { label: 'Conduite sécurisée' }, ['hr.manage'], gaps)).data; assert.ok(sk.id);
+    const pump = await ins("INSERT INTO pumps(station_id, number, name) VALUES ($1,1,'P1')", [ctx.sid]);
+    const ev = await q1("INSERT INTO pump_counters(pump_id, counter_number, product_id, current_index) VALUES ($1,1,$2,0) RETURNING id", [pump, fuel]);
+    await auto.query("INSERT INTO pump_counter_history(counter_id, product_id) VALUES ($1,$2)", [ev.id, fuel]);
+    if (ev) { await auto.query("INSERT INTO counter_events(counter_id, station_id, event_type, index_before, index_after, reason) VALUES ($1,$2,'correction',10,12,'erreur')", [ev.id, ctx.sid]);
+      const h = (await call('GET', '/pumps/counter-history', null, undefined, gaps)).data; assert.ok(h.some(x => x.kind === 'correction' && x.index_after === 12) && h.some(x => x.kind === 'produit')); }
   });
 
   console.log(`\n${passed} scénarios OK`); auto.end(); process.exit(0);

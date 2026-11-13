@@ -18,3 +18,15 @@ Non fait : alertes mobiles de rupture, champ téléphone/plaque dans le formulai
 - **Prix du jour** : exige maintenant le module licence « Historique des prix », comme l'écran existant.
 - **Alerte mobile** : produits en risque de rupture avant livraison (même calcul que l'écran de prévision).
 - Test SQL : scénario G (vente → fidélité, mode Orange personnalisé, programme désactivé).
+
+## Branchement des écrans manquants (2026-11-13)
+Chaque route ou table du serveur qui n'avait aucun écran en a maintenant un (`public/ext-gaps.js`, `src/gaps.js`). Les écrans RH ne fonctionnent que si leur module est activé dans « Modules RH » : sinon un message explique comment l'activer.
+- **RH** : Équipes, Compétences (+ catalogue), Formations (+ participants et résultats), Évaluations (modèles), Sanctions & récompenses, Mon espace RH ; dans les écrans existants : demande de congé + types, correction de présence, heures approuvées, réouverture de période, envoi des bulletins par e-mail + journal, modèle d'e-mail, test SMTP (table `smtp_diagnostics`).
+- **Règles de paie** (ITS, INPS, AMO, charges patronales) : confirmation juridique, activation, désactivation, activation dans les bulletins.
+- **Transferts de stock entre stations** (`stock_transfers`) : envoi, réception, annulation avec restitution.
+- **Historique des compteurs** : changements de produit (`pump_counter_history`) + corrections d'index (`counter_events`, écrites par la correction d'index).
+- **Prêts** : historique des remboursements (`personal_loan_payments`) depuis la Caisse.
+- **Licence & modules** : quotas, catalogue des modules, journal des avertissements d'échéance (`license_warning_log`, alimenté par le planificateur d'alertes).
+- **Mon tableau de bord** : masquer des cartes à titre personnel (`dashboard_widget_prefs`).
+- **Estimation fiscale** et **historique des prix** (bouton dans Prix du jour).
+Tests : `test/market-sql.js` (scénarios H et I), `test/gaps-ui-dom.js`.

@@ -247,7 +247,7 @@ const contractAllowsView = k => {
     return flagOn('can_access_finance', true) && modOn('finance', true);
   }
   // RH
-  if (['rhdash','rh','rhalerts','rhr','audrh','rhatt','rhleaves','rhot','rhsched','rhcontracts','rhdocs','rhctl','rhperiods','declarations','act','rhsettings','empf'].includes(k)) {
+  if (['rhdash','rh','rhalerts','rhr','audrh','rhatt','rhleaves','rhot','rhsched','rhcontracts','rhdocs','rhctl','rhperiods','declarations','act','rhsettings','rhme','rhteams','rhskills','rhtrain','rheval','rhdisc','rhrules','empf'].includes(k)) {
     return featTruthy(f.can_access_hr) || featTruthy(mods.hr) || flagOn('can_access_hr', true);
   }
   // Rapports / exports
@@ -280,7 +280,8 @@ const contractAllowsView = k => {
     return portalOn && typeof can === 'function' && can('commission.own');
   }
   if (k === 'quart' || k === 'clot' || k === 'rapq') return modOn('shifts', true);
-  if (k === 'pompes') return modOn('pumps', true);
+  if (k === 'pompes' || k === 'histcompteurs') return modOn('pumps', true);
+  if (k === 'transferts') return modOn('stock', true);
   if (k === 'emp') return modOn('employees', true);
   // Imports
   if (k === 'imports') return modOn('imports', true);
