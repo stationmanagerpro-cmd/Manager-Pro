@@ -40,6 +40,26 @@
     syncPub();
   }
 
+  // Place insuffisante : la ZONE INFOS ne doit jamais masquer les sous-onglets. Elle n'est affichée que si, une fois le menu
+  // (sous-menus ouverts compris) placé, il reste assez de hauteur ; sinon elle est masquée et la bannière compacte du haut prend le relais.
+  let pubH = 0;
+  function fitPub() {
+    const z = document.getElementById('nav-pub'), nav = document.getElementById('nav'); if (!z || !nav) return;
+    const scroll = nav.querySelector('.nav-scroll'); if (!scroll) return;
+    const off = z.classList.contains('nav-pub-off');
+    if (!off && z.offsetHeight) { const cs = getComputedStyle(z); pubH = z.offsetHeight + (parseFloat(cs.marginTop) || 0) + (parseFloat(cs.marginBottom) || 0); }
+    const need = pubH || 260;
+    let others = 0; Array.from(nav.children).forEach(c => { if (c !== scroll && c !== z && getComputedStyle(c).position !== 'absolute') others += c.offsetHeight; });
+    const cs2 = getComputedStyle(scroll);
+    const content = Array.from(scroll.children).reduce((h, c) => h + c.offsetHeight, 0) + (parseFloat(cs2.paddingTop) || 0) + (parseFloat(cs2.paddingBottom) || 0);
+    const top = Math.max(0, nav.getBoundingClientRect().top);
+    const free = (window.innerHeight || nav.clientHeight) - top - others;   // le tiroir peut être « à hauteur du contenu » : on borne par l'écran
+    const fits = content + need + 8 <= free;
+    if (fits === !off) return;
+    z.classList.toggle('nav-pub-off', !fits);
+    syncPub();
+  }
+
   // La bannière n'apparaît que si la « ZONE INFOS » du menu n'est pas visible (menu masqué, réduit, téléphone, écran peu haut).
   function syncPub() {
     const m = document.getElementById('pub-mobile'); if (!m) return;
@@ -59,6 +79,7 @@
     z.querySelector('.nav-pub-btn').onclick = () => { const s = z.querySelector('.nav-pub-img').src; if (s) openPopup(s); };
     show(idx);
     syncPub();
+    setTimeout(fitPub, 50);
   }
 
   function openPopup(src) {
@@ -100,8 +121,9 @@
   // Le menu est reconstruit par l'application : on remet la zone en place sans refaire de requête.
   function watchNav() {
     const nav = document.getElementById('nav'); if (!nav) return setTimeout(watchNav, 400);
-    new MutationObserver(() => { if (urls.length && !document.getElementById('nav-pub')) ensureZone(); syncPub(); }).observe(nav, { childList: true, attributes: true, attributeFilter: ['class', 'style'] });
-    window.addEventListener('resize', syncPub);
+    new MutationObserver(() => { if (urls.length && !document.getElementById('nav-pub')) ensureZone(); syncPub(); fitPub(); }).observe(nav, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
+    nav.addEventListener('click', () => { setTimeout(fitPub, 60); setTimeout(fitPub, 300); });
+    window.addEventListener('resize', () => { syncPub(); fitPub(); });
   }
   watchNav();
 

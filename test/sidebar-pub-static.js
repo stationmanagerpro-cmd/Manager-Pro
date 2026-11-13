@@ -24,4 +24,8 @@ check('tableau de bord : plus d\'images (texte seulement) ; aide Super Admin mis
   assert(!dsg.includes("'<!--PUB_ZONE-->' + imageZone")); assert.match(det, /tout en bas du menu de gauche/);
 });
 check('script chargé', () => assert.match(idx, /ext-sidebar-pub\.js/));
-console.log(`\n${n}/8 contrôles réussis.`);
+check('place insuffisante : la zone s\'efface pour laisser les sous-onglets (fitPub), jamais de masquage du menu', () => {
+  assert.match(js, /function fitPub\(\)/); assert.match(js, /nav-pub-off/); assert.match(css, /\.nav-pub\.nav-pub-off \{ display: none !important/);
+  assert.match(js, /subtree: true/);
+});
+console.log(`\n${n}/9 contrôles réussis.`);

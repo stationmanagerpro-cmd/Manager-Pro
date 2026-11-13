@@ -93,7 +93,8 @@ html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
    premiers sous-onglets) était caché sous l'en-tête.
    ============================================================ */
 @media (max-width: 860px) {
-  #nav.nav2 { z-index: 130; }
+  #nav.nav2 { z-index: 130; max-height: 100dvh; }   /* jamais plus haut que l'écran : sinon les sous-onglets du bas sont coupés */
+  #nav.nav2 .nav-scroll { min-height: 0; }
   #nav-overlay { z-index: 120; }
   #nav.nav2 .nav-head { padding-top: calc(10px + env(safe-area-inset-top, 0px)); }
   #nav.nav2 .nav-scroll {
