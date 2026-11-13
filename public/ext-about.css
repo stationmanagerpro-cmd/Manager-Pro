@@ -145,3 +145,12 @@ a.ab-dl-btn:hover, a.ab-dl-btn:focus-visible { transform: translateY(-2px); outl
   .ab-sol-head { padding: 14px; }
   .ab-blk { padding: 12px 14px; }
 }
+
+/* Boutons de l'éditeur « À propos » : couleurs du thème du compte (principale / secondaire), plus de gris ou rouge plein figés */
+.ab-editing button.b2:not(.bd) { background: color-mix(in srgb, var(--p) 12%, var(--c, #fff)) !important; color: var(--p) !important; border: 1px solid color-mix(in srgb, var(--p) 45%, transparent) !important; font-weight: 700; }
+.ab-editing button.b2:not(.bd):hover:not(:disabled) { background: color-mix(in srgb, var(--p) 22%, var(--c, #fff)) !important; }
+.ab-editing button.b2.bd { background: transparent !important; color: var(--r, #dc2626) !important; border: 1px solid color-mix(in srgb, var(--r, #dc2626) 55%, transparent) !important; font-weight: 700; }
+.ab-editing button.b2.bd:hover:not(:disabled) { background: color-mix(in srgb, var(--r, #dc2626) 12%, transparent) !important; }
+.ab-editing button:not(.b2) { background: var(--p) !important; color: var(--on-p, #fff) !important; border: 1px solid var(--p) !important; font-weight: 700; }
+.ab-editing button:disabled { opacity: .45; }
+.ab-editing .ab-hint, .ab-editing small { color: var(--m); }

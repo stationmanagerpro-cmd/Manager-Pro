@@ -132,7 +132,8 @@ window.savePersonalTheme = async function (themeValue) {
     await api('PUT', '/me/preferences/theme', { theme: themeValue });
     toast('Thème personnel enregistré', 'success');
   } catch (e) {
-    toast(typeof errMsg === 'function' ? errMsg(e) : (e.message || 'Thème appliqué localement'), 'error');
+    /* Le thème est déjà appliqué et gardé sur cet appareil ; seule la synchronisation serveur a échoué. */
+    toast('Thème appliqué sur cet appareil. Synchronisation serveur impossible pour le moment (' + (typeof errMsg === 'function' ? errMsg(e) : e.message) + ').', 'error');
   }
 };
 function chgPwd() { form('Changer mon mot de passe', [['current', 'Mot de passe actuel', 'password'], ['next', 'Nouveau mot de passe (8 caractères min.)', 'password'], ['again', 'Confirmer le nouveau mot de passe', 'password']], {}, async d => { if (d.next !== d.again) throw new Error('Les deux mots de passe ne correspondent pas'); await Po('/auth/password', { current: d.current, next: d.next }); closeM(); toast('Mot de passe modifié'); }); }

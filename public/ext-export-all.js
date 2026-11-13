@@ -3,6 +3,8 @@
    Les écrans qui ont déjà leurs propres exports (PDF / Excel / Exporter) ne reçoivent pas de doublon. */
 (function () {
   'use strict';
+  /* Écrans du Super Admin ayant un vrai rapport de plateforme (données clients/licences/factures de la plateforme). */
+  const PLATFORM_EXPORT = { clients: 'licences' };
   const SKIP = new Set(['login', 'caisse', 'vente', 'sale', 'pos']);   // écrans de saisie, pas de rapport
   const clean = s => String(s == null ? '' : s).replace(/\s+/g, ' ').trim();
   const num = t => {
@@ -52,6 +54,7 @@
       landscape: sections.some(s => s.head.length > 6), sections: sections.slice(0, 60), signatures: [{ label: 'Établi par' }, { label: 'Responsable' }] };
   }
   async function run(kind, btn) {
+    if (typeof ME !== 'undefined' && ME && ME.is_global) return toast('Export non disponible ici pour le Super Admin : utilisez les rapports de « Finance plateforme ».', 'error');
     const payload = build(); if (!payload) return toast('Rien à exporter sur cet écran', 'error');
     btn.disabled = true;
     try {
@@ -72,6 +75,23 @@
     let view = ''; try { view = typeof cur !== 'undefined' ? cur : ''; } catch (_) { /* vue inconnue */ }
     const bar = pg.querySelector('[data-export-all]');
     if (SKIP.has(String(view))) { if (bar) bar.remove(); return; }
+    /* Super Admin : jamais l'export générique (rendu avec l'identité d'une station et rattaché aux données des administrateurs locaux).
+       Seuls les écrans qui portent des données de PLATEFORME reçoivent un export, branché sur les rapports plateforme (/admin/platform/reports). */
+    if (typeof ME !== 'undefined' && ME && ME.is_global) {
+      const key = PLATFORM_EXPORT[String(view)];
+      if (!key) { if (bar) bar.remove(); return; }
+      if (bar) return;
+      if (hasOwnExport(pg) || !tablesOf(pg).length) return;
+      const d = document.createElement('div');
+      d.setAttribute('data-export-all', '1'); d.setAttribute('data-no-export', '1'); d.className = 'noprint';
+      d.style.cssText = 'display:flex;gap:8px;justify-content:flex-end;margin:0 0 8px';
+      d.innerHTML = '<button type="button" class="b2" title="Rapport plateforme en PDF">⬇ PDF</button><button type="button" class="b2" title="Rapport plateforme en Excel">⬇ Excel</button>';
+      const [bp, bx] = d.querySelectorAll('button');
+      bp.onclick = () => (typeof pfPdf === 'function' ? pfPdf(key) : toast('Export indisponible', 'error'));
+      bx.onclick = () => (typeof pfXlsx === 'function' ? pfXlsx(key) : toast('Export indisponible', 'error'));
+      pg.insertBefore(d, pg.firstChild);
+      return;
+    }
     if (bar) return;
     if (hasOwnExport(pg)) return;
     if (!tablesOf(pg).length) return;

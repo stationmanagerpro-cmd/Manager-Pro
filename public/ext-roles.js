@@ -5,28 +5,25 @@
   async function vRoles() {
     const canManage = can('user.manage');
     if (!canManage) return '';
+    /* Séparation des pouvoirs : l'écran « Rôles » du Super Admin ne porte que le rôle Administrateur local (et le sien, en lecture).
+       Les rôles des employés (gérant, caissier, pompiste…) sont créés et attribués par l'administrateur local, dans « Rôles de mon équipe ». */
+    if (!(typeof ME !== 'undefined' && ME && ME.is_global)) return typeof VM.teamroles === 'function' ? VM.teamroles() : '';
     const [roles, perms] = await Promise.all([
       G('/admin/roles').catch(() => []),
       G('/admin/permissions').catch(() => [])
     ]);
-    const isPrincipal = typeof ME !== 'undefined' && ME && ME.is_global;
-    return `<h2 style="margin-top:0">Rôles & permissions</h2>
-      <div class="bar" style="flex-wrap:wrap;gap:8px">
-        ${isPrincipal ? '<button onclick="roleNew()">Nouveau rôle</button>' : ''}
-        <button class="b2" onclick="typeof showRolePresets==='function'&&showRolePresets()">Modèles métier (Pompiste, Caissier…)</button>
-        <button class="b2" onclick="go('param')">Utilisateurs</button>
-      </div>
-      ${isPrincipal ? '' : '<p style="font-size:12px;color:var(--m)">Consultation : seuls les administrateurs principaux modifient le détail des permissions. Les modèles métier guident le choix de rôle à l’octroi d’accès.</p>'}
-      ${T(['Code', 'Libellé', 'Utilisateurs', 'Permissions', ''], (roles || []).map(r => [
-        esc(r.role), esc(r.label), r.users_count || 0,
+    const mine = (roles || []).filter(r => r.role === 'ADMIN' || r.role === 'SUPERADMIN');
+    return `<h2 style="margin-top:0">Rôle Administrateur local</h2>
+      <p style="font-size:13px;color:var(--m)">Vous définissez ici les droits maximaux de l'<b>Administrateur local</b> de chaque compte client. Les rôles des employés (gérant, comptable, caissier, pompiste…) ne relèvent pas de la plateforme : chaque administrateur local les crée et les attribue lui-même, individuellement ou en groupe, dans son écran « Rôles de mon équipe ».</p>
+      ${T(['Code', 'Utilisateurs', 'Permissions', ''], mine.map(r => [
+        esc(r.label || r.role), r.users_count || 0,
         (r.permissions || []).length + ' perm.',
-        isPrincipal
+        r.role === 'ADMIN'
           ? `<button class="b2" onclick='roleEditPerms(${JSON.stringify(r.role)},${JSON.stringify(r.permissions || [])})'>Permissions</button>`
-          : ''
+          : '<small>Rôle de plateforme</small>'
       ]))}
       <h3>Catalogue des permissions</h3>
-      ${T(['Code', 'Libellé'], (perms || []).map(p => [esc(p.code), esc(p.label)]))}
-      <div class="bar"><button class="b2" onclick="go('param')">Retour paramètres</button></div>`;
+      ${T(['Code', 'Libellé'], (perms || []).map(p => [esc(p.code), esc(p.label)]))}`;
   }
 
   window.roleNew = safe(async () => {

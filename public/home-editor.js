@@ -173,9 +173,9 @@
             <button type="button" data-top="import">Importer une page (JSON)</button>
           </div></div>
       </header>
-      <aside class="hbe-left" id="hbe-left"></aside>
+      <aside class="hbe-left" id="hbe-left"></aside><button type="button" class="hbe-x hbe-xl" data-top="left" title="Fermer le panneau" aria-label="Fermer le panneau Éléments">✕</button>
       <main class="hbe-stage" id="hbe-stage"><div class="hbe-framebox" id="hbe-framebox"></div><nav class="hbe-crumbs" id="hbe-crumbs" aria-label="Chemin de l’élément"></nav></main>
-      <aside class="hbe-right" id="hbe-right"></aside>`;
+      <aside class="hbe-right" id="hbe-right"></aside><button type="button" class="hbe-x hbe-xr" data-top="right" title="Fermer le panneau" aria-label="Fermer le panneau Propriétés">✕</button>`;
     document.body.appendChild(el);
     el.addEventListener('click', onTop);
     el.addEventListener('change', e => { if (e.target.id === 'hbe-auto') { S.auto = e.target.checked; if (S.auto) scheduleSave(); } });
@@ -185,6 +185,7 @@
     right.addEventListener('input', onRightInput); right.addEventListener('change', onRightChange); right.addEventListener('click', onRightClick);
     right.addEventListener('toggle', e => { const g = e.target && e.target.dataset && e.target.dataset.g; if (g) S.open[g] = e.target.open; }, true);
     q('#hbe-crumbs').addEventListener('click', e => { const b = e.target.closest('[data-id]'); if (b) select(b.dataset.id === '__page' ? null : b.dataset.id, true); });
+    q('#hbe-stage').addEventListener('click', () => { if (window.innerWidth <= 900) { left.classList.remove('open'); right.classList.remove('open'); } });
     document.addEventListener('keydown', onKey);
     window.addEventListener('beforeunload', onUnload);
     return el;

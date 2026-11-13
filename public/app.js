@@ -185,7 +185,14 @@ async function api(m, p, b) {
   const method = String(m || 'GET').toUpperCase();
   // A8 — Mode démonstration : données d'exemple locales, écritures simulées (voir ext-aide-demo.js). Aucun appel réseau pour les données.
   if (window.SMP_DEMO && window.SMP_DEMO.state.active) return window.SMP_DEMO.handle(method, p, b);
-  const r = await fetch('/api' + p, { method, headers: { 'Content-Type': 'application/json', ...(TK && { Authorization: 'Bearer ' + TK }), ...(requestSid && { 'X-Station-Id': requestSid }) }, body: b ? JSON.stringify(b) : undefined });
+  const doFetch = () => fetch('/api' + p, { method, headers: { 'Content-Type': 'application/json', ...(TK && { Authorization: 'Bearer ' + TK }), ...(requestSid && { 'X-Station-Id': requestSid }) }, body: b ? JSON.stringify(b) : undefined });
+  let r = await doFetch();
+  /* 429 (trop de requêtes) : une nouvelle tentative automatique après la pause demandée (lectures et écritures idempotentes) */
+  if (r.status === 429 && method !== 'POST') {
+    const ra = Number(r.headers.get('Retry-After')) || 2;
+    await new Promise(ok => setTimeout(ok, Math.min(Math.max(ra, 1), 5) * 1000));
+    r = await doFetch();
+  }
   const j = await r.json().catch(() => null);
   // Les lectures en cours pour l'ancienne station ne doivent jamais alimenter la nouvelle vue.
   if (method === 'GET' && requestStationEpoch !== STATION_EPOCH) {
@@ -201,7 +208,7 @@ async function api(m, p, b) {
     if (r.status === 403 && j && j.code === 'LICENSE_EXPIRED' && typeof window.__onLicenseExpired === 'function') {
       try { window.__onLicenseExpired(j); } catch (_) {}
     }
-    throw Object.assign(new Error((j && j.error) || 'Erreur ' + r.status), { details: j && j.details, status: r.status, code: j && j.code });
+    throw Object.assign(new Error((j && j.error) || (r.status === 429 ? 'Trop de requêtes : patientez quelques secondes puis réessayez.' : 'Erreur ' + r.status)), { details: j && j.details, status: r.status, code: j && j.code });
   }
   return j;
 }

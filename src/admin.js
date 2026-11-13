@@ -662,6 +662,8 @@ r.post('/admin/roles', need('user.manage'), body(z.object({
     });
     return res.status(201).json(out);
   }
+  // Séparation des pouvoirs : les rôles des employés sont définis par l'administrateur local de chaque compte, jamais par le Super Admin.
+  throw new HttpError(403, "Le Super Admin ne définit pas les rôles des employés : chaque administrateur local crée et attribue les rôles de son organisation.");
   if (!req.body.code) throw new HttpError(400, 'Le code du rôle est requis.');
   if (['ADMIN', 'SUPERADMIN'].includes(req.body.code)) throw new HttpError(400, 'Ce rôle est réservé.');
   const out = await tx(async c => {
@@ -679,11 +681,38 @@ r.post('/admin/roles', need('user.manage'), body(z.object({
   res.status(201).json(out);
 }));
 
+/** Attribution en groupe : un même rôle donné à plusieurs employés du compte (administrateur local uniquement). */
+r.post('/admin/roles/:code/assign', need('role.assign', 'user.manage'), body(z.object({
+  user_ids: z.array(z.coerce.number().int().positive()).min(1).max(100)
+})), wrap(async (req, res) => {
+  if (req.user.is_global) throw new HttpError(403, "L'attribution des rôles aux employés relève de l'administrateur local de chaque compte.");
+  const RSx = require('./roles_scope'), code = req.params.code;
+  await RSx.assertAssignableRole(req, code);
+  const mine = await RSx.myClientId(req.user.id);
+  const { rows: [role] } = await pool.query('SELECT id FROM roles WHERE code = $1', [code]);
+  const done = [], skipped = [];
+  for (const uid of [...new Set(req.body.user_ids)]) {
+    try {
+      if (uid === req.user.id) throw new Error('votre propre compte');
+      const { rows: [t] } = await pool.query('SELECT u.id, u.login, u.is_global, u.client_id, r.code AS role, r.personal_user_id FROM users u JOIN roles r ON r.id = u.role_id WHERE u.id = $1 AND u.deleted_at IS NULL', [uid]);
+      if (!t) throw new Error('introuvable');
+      if (t.is_global || String(t.client_id) !== String(mine)) throw new Error('hors de votre organisation');
+      if (t.role === 'ADMIN' && req.user.role !== 'ADMIN') throw new Error('administrateur local');
+      await pool.query('UPDATE users SET role_id = $2 WHERE id = $1', [uid, role.id]);
+      await audit(pool, req, 'utilisateurs', `Rôle de ${t.login} : ${t.role} → ${code} (attribution en groupe)`, 'users', uid, { role: t.role }, { role: code });
+      await require('./role_sync').syncFromUser(pool, req, uid, code).catch(() => {});
+      done.push(uid);
+    } catch (e) { skipped.push({ id: uid, reason: e.message }); }
+  }
+  res.json({ role: code, updated: done.length, skipped });
+}));
+
 r.put('/admin/roles/:code/permissions', need('user.manage'), body(z.object({
   permissions: z.array(z.string())
 })), wrap(async (req, res) => {
   const code = req.params.code;
   if (['ADMIN', 'SUPERADMIN'].includes(code) && !req.user.is_global) throw new HttpError(403, 'Impossible de modifier les permissions de ce rôle.');
+  if (req.user.is_global && code !== 'ADMIN') throw new HttpError(403, "Le Super Admin ne définit que le rôle Administrateur local : les rôles des employés relèvent de l'administrateur local de chaque compte.");
   if (!req.user.is_global) {
     // Compte client : uniquement ses propres rôles personnalisés, et seulement avec ses propres permissions.
     const mine = await RS.myClientId(req.user.id);
@@ -721,6 +750,7 @@ r.put('/admin/roles/:code/permissions', need('user.manage'), body(z.object({
 r.patch('/admin/roles/:code', need('user.manage'), body(z.object({
   label: z.string().min(2).max(80)
 })), wrap(async (req, res) => {
+  if (req.user.is_global && req.params.code !== 'ADMIN') throw new HttpError(403, "Le Super Admin ne gère que le rôle Administrateur local.");
   if (!req.user.is_global) {
     const mine = await RS.myClientId(req.user.id);
     const { rows: [own] } = await pool.query('SELECT client_id FROM roles WHERE code = $1', [req.params.code]);
@@ -736,6 +766,7 @@ r.patch('/admin/roles/:code', need('user.manage'), body(z.object({
 
 
 r.delete('/admin/roles/:code', need('user.manage'), wrap(async (req, res) => {
+  if (req.user.is_global) throw new HttpError(403, "Les rôles des employés sont supprimés par l'administrateur local de leur organisation.");
   const { rows: [role] } = await pool.query('SELECT id, code, client_id FROM roles WHERE code = $1', [req.params.code]);
   if (!role) throw new HttpError(404, 'Rôle introuvable');
   if (role.client_id == null) throw new HttpError(403, 'Les rôles communs de la plateforme ne peuvent pas être supprimés.');

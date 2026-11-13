@@ -190,3 +190,11 @@
 #hbe .hbe-wact button{background:#fff!important;border:1px solid #cfd3df!important;color:#1c2333!important;border-radius:8px;padding:5px 10px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
 #hbe .hbe-wact button:hover:not(:disabled){background:#eef0f5!important}
 #hbe .hbe-sw{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid #0004;vertical-align:-1px;margin-right:4px}
+
+/* Panneaux latéraux (petits écrans) : croix de fermeture visible quand un panneau est ouvert */
+#hbe .hbe-x{display:none}
+@media(max-width:900px){
+  #hbe .hbe-left.open+.hbe-xl,#hbe .hbe-right.open+.hbe-xr{display:grid;place-items:center;position:fixed;top:58px;z-index:30;width:34px;height:34px;border-radius:50%;background:#1c2333!important;color:#fff!important;border:2px solid #fff!important;font-size:18px;font-weight:800;cursor:pointer;box-shadow:0 4px 14px #0006}
+  #hbe .hbe-left.open+.hbe-xl{left:calc(min(330px,92vw) - 42px)}
+  #hbe .hbe-right.open+.hbe-xr{right:8px}
+}

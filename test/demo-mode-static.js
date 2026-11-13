@@ -54,7 +54,7 @@ const D = sandbox.SMP_DEMO, state = D.state;
     D.removeGuard();
   });
   await check('api() (app.js) bascule sur la démonstration AVANT tout fetch', () => {
-    const i = app.indexOf('SMP_DEMO.state.active'), f = app.indexOf("await fetch('/api' + p", i);
+    const i = app.indexOf('SMP_DEMO.state.active'), f = app.indexOf('await doFetch()', i);
     assert(i > 0 && f > i);
   });
   await check('le module n\'envoie aucune écriture : seul fetch autorisé = lectures de configuration et déconnexion', () => {

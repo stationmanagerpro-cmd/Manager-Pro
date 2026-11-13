@@ -32,11 +32,29 @@
 <section class="dv2-card"><div class="dv2-card-head"><h3>Mon équipe et leurs rôles</h3></div>
   <div class="dv2-tw"><table class="dv2-table"><thead><tr><th>Employé</th><th>Rôle actuel</th><th>Statut</th><th>Changer le rôle</th></tr></thead><tbody>${team || '<tr><td colspan="4" class="dv2-empty">Aucun employé.</td></tr>'}</tbody></table></div>
   <p class="dv2-note">Vous ne pouvez attribuer que des rôles dont toutes les permissions font partie des vôtres. Le changement est appliqué immédiatement et enregistré dans le journal d'audit.</p></section>
-<section class="dv2-card"><div class="dv2-card-head"><h3>Rôles disponibles</h3><button type="button" onclick="trEdit()">+ Nouveau rôle personnalisé</button></div>
+<section class="dv2-card"><div class="dv2-card-head"><h3>Rôles disponibles</h3><span><button type="button" class="b2" onclick="trGroup()">👥 Attribuer en groupe</button> <button type="button" onclick="trEdit()">+ Nouveau rôle personnalisé</button></span></div>
   <div class="dv2-tw"><table class="dv2-table"><thead><tr><th>Rôle</th><th>Type</th><th>Permissions</th><th>Utilisateurs</th><th>Actions</th></tr></thead><tbody>${list}</tbody></table></div>
-  <p class="dv2-note">Les rôles communs sont définis par la plateforme. Vos rôles personnalisés n'existent que dans votre organisation et ne peuvent contenir que des permissions que vous possédez.</p></section></div>`;
+  <p class="dv2-note">Les rôles communs sont des modèles de départ. Vos rôles personnalisés n'existent que dans votre organisation et ne peuvent contenir que des permissions que vous possédez.</p></section></div>`;
   }
 
+  window.trGroup = function () {
+    const staff = CACHE.users.filter(u => u.active && !(ME && Number(u.id) === Number(ME.id)) && !(u.role === 'ADMIN' && !(ME && ME.role === 'ADMIN')));
+    modal(`<h3 style="margin-top:0">Attribuer un rôle en groupe</h3>
+      <label>Rôle à donner<select id="trg_role">${CACHE.assignable.map(r => `<option value="${E(r.code)}">${E(r.label)}${r.client_id ? ' (personnalisé)' : ''}</option>`).join('')}</select></label>
+      <div style="max-height:44vh;overflow:auto;border:1px solid var(--bd);border-radius:12px;padding:10px;margin-top:8px">
+      ${staff.map(u => `<label class="ck"><input type="checkbox" class="trg-u" value="${Number(u.id)}"> ${E(u.full_name || u.login)} <small>(${E(u.role_label || u.role)})</small></label>`).join('') || '<p class="dv2-empty">Aucun employé.</p>'}</div>
+      <p class="dv2-note">Pour des droits propres à un seul employé, ouvrez sa fiche : « Rôle individuel ».</p>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px"><button type="button" class="b2" onclick="closeM()">Annuler</button><button type="button" onclick="trGroupSave()">Attribuer</button></div>`);
+  };
+  window.trGroupSave = async function () {
+    const role = document.getElementById('trg_role').value, ids = [...document.querySelectorAll('.trg-u:checked')].map(x => Number(x.value));
+    if (!ids.length) return toast('Cochez au moins un employé.', 'error');
+    if (!confirm('Donner ce rôle à ' + ids.length + ' employé(s) ? Leurs accès changeront immédiatement.')) return;
+    try {
+      const r = await Po('/admin/roles/' + encodeURIComponent(role) + '/assign', { user_ids: ids });
+      closeM(); toast(r.updated + ' employé(s) mis à jour' + (r.skipped.length ? ', ' + r.skipped.length + ' ignoré(s) (' + r.skipped.map(x => x.reason).join(', ') + ')' : ''), r.skipped.length ? 'error' : 'success'); go('teamroles');
+    } catch (e) { toast(errMsg(e), 'error'); }
+  };
   window.trSetRole = async function (id, sel) {
     const cur = sel.dataset.cur, role = sel.value;
     if (role === cur) return;

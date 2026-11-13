@@ -91,8 +91,9 @@ app.use('/api/public', require('./home_page').pub);    // page d'accueil publiqu
 app.use('/api/public', require('./client_portal').pub); // espace client : lien privé en lecture seule (jeton haché, révocable)
 app.get('/c/:token', (req, res) => { res.setHeader('Cache-Control', 'no-store'); res.setHeader('X-Robots-Tag', 'noindex, nofollow'); res.sendFile(path.join(__dirname, '..', 'public', 'espace-client.html')); });
 app.use('/api', auth);              // tout ce qui suit exige un jeton valide
-if (envInt('RATE_LIMIT_USER_MAX', 400) > 0) {   // D2 : plafond par utilisateur connecté (défaut 400/minute)
-  app.use('/api', rateLimit({ windowMs: 60 * 1000, max: envInt('RATE_LIMIT_USER_MAX', 400), standardHeaders: true, legacyHeaders: false, message: limitMsg,
+if (envInt('RATE_LIMIT_USER_MAX', 600) > 0) {   // D2 : plafond par utilisateur connecté (défaut 400/minute)
+  app.use('/api', rateLimit({ windowMs: 60 * 1000, max: envInt('RATE_LIMIT_USER_MAX', 600), standardHeaders: true, legacyHeaders: false, message: limitMsg,
+    skip: req => /^\/(messaging\/stream|health)/.test(req.path) || (req.method === 'GET' && /^\/me\/preferences\//.test(req.path)),
     keyGenerator: (req) => (req.user && req.user.id ? 'u:' + req.user.id : 'ip:' + req.ip) }));
 }
 app.use('/api', priv);              // profil, utilisateurs, déconnexion

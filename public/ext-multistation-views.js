@@ -42,8 +42,20 @@
   .msv-tube.na b{color:var(--m);text-shadow:none;font-weight:600;font-size:11px}
   .msv-m{padding:10px 12px;border-radius:14px;background:color-mix(in srgb,var(--msv-mc,#16a34a) 10%,transparent);border:1px solid color-mix(in srgb,var(--msv-mc,#16a34a) 24%,transparent)}
   .msv-m.green{--msv-mc:#16a34a}.msv-m.amber{--msv-mc:#f59e0b}.msv-m.blue{--msv-mc:#2563eb}.msv-m.purple{--msv-mc:#9333ea}
+  .msv-open{text-align:right}
   .msv-name{font-weight:700;font-size:15px;margin-bottom:10px;text-align:right}
-  @media(max-width:1100px){.msv-st{grid-template-columns:72px 1fr 1fr}.msv-tanks{grid-column:1/-1;justify-content:flex-start;flex-wrap:wrap}}
+  .msv-k{min-width:0;flex:1 1 auto}.msv-k b{white-space:nowrap}
+  @media(max-width:1100px){.msv-open{text-align:left}.msv-st{grid-template-columns:repeat(2,minmax(0,1fr))}.msv-logo{grid-column:1/-1;justify-self:start}.msv-nm{grid-column:1/-1;order:1}.msv-st>.agg-chips{grid-column:1/-1;order:3}.msv-st>.msv-m{order:2}.msv-name{text-align:left}.msv-tanks{justify-content:flex-start;flex-wrap:wrap}}
+  @media(max-width:700px){
+    .msv-st{gap:10px;padding:14px 12px 14px 14px}
+    .msv-logo{width:56px;height:56px;border-radius:14px}
+    .msv-m{flex-direction:column;align-items:flex-start;gap:6px;padding:10px}
+    .msv-m .dv2-ico,.msv-m .msv-sm{width:32px!important;height:32px!important}.msv-m .msv-sm svg{width:16px!important;height:16px!important}
+    .msv-k{width:100%}.msv-k small{font-size:11.5px;line-height:1.25;overflow-wrap:break-word;hyphens:auto}
+    .msv-k b{font-size:clamp(.95rem,4.6vw,1.25rem);margin:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .msv-name{font-size:16px;margin-bottom:6px}
+    .msv-tank{width:52px}.msv-tube{height:110px}
+  }
   .msv-range{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:8px 12px;border:1px solid var(--bd);border-radius:12px}
   .msv-range input[type=date]{width:auto}
   .msv-tag{display:inline-block;padding:2px 10px;border-radius:999px;background:rgba(37,99,235,.12);color:#2563eb;font-size:12px;font-weight:600}
@@ -281,8 +293,8 @@
       const tanks = s.tanks ? (s.tanks.length ? s.tanks.map(tank).join('') : '<small class="msv-na">Aucun carburant</small>') : '';
       return `<div class="card msv-st" style="--msv-acc:${ACC[i % ACC.length]}"><div class="msv-logo" data-msv-logo="${Number(s.id)}">${s.has_logo ? '' : esc(String(s.name).split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase())}</div>
         ${ca}${cash}${sh}${cu}
-        <div><div class="msv-name">${esc(s.name)}${s.is_current ? ' <span class="tag">Active</span>' : ''}</div><div class="msv-tanks">${tanks}</div>
-        <div style="text-align:right;margin-top:10px"><button class="b2" onclick="msvOpen(${Number(s.id)})">Ouvrir le tableau de bord</button></div></div>
+        <div class="msv-nm"><div class="msv-name">${esc(s.name)}${s.is_current ? ' <span class="tag">Active</span>' : ''}</div><div class="msv-tanks">${tanks}</div>
+        <div class="msv-open" style="margin-top:10px"><button class="b2" onclick="msvOpen(${Number(s.id)})">Ouvrir le tableau de bord</button></div></div>
         <div class="agg-chips" data-msv-extra="${Number(s.id)}"><span class="msv-na">Chargement des agrégats…</span></div></div>`;
     }).join('');
     setTimeout(hydrateLogos, 0);

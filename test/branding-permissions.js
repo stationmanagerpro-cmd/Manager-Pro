@@ -40,9 +40,8 @@ const call = async (method, p, body, { token, sid, raw } = {}) => {
   r = await call('GET', '/exports/kinds', null, a); ok(r.j.some(x => x.key === 'customers') && r.j.some(x => x.key === 'suppliers'), 'liste des exports contient clients et fournisseurs');
   r = await call('GET', '/exports/kinds', null, c); ok(!r.j.some(x => x.key === 'customers'), 'liste des exports du caissier ne contient pas clients');
   console.log('== Permissions fines : retrait / attribution');
-  r = await call('PUT', '/admin/roles/CAISSIER/permissions', { permissions: ['sale.create', 'customer.view'] }, a); ok(r.s === 200, 'admin ajuste les permissions du rôle CAISSIER');
-  r = await call('GET', '/customers', null, c); ok(r.s === 200 && r.j.every(x => x.balance === null), 'customer.view sans receivable.view : soldes masqués (null)');
-  r = await call('GET', '/dashboard', null, c); ok(r.s === 403, 'dashboard refusé sans report.view/finance.view');
+  r = await call('PUT', '/admin/roles/CAISSIER/permissions', { permissions: ['sale.create', 'customer.view'] }, a); ok(r.s === 403, 'le Super Admin ne définit plus les rôles des employés (403)');
+  r = await call('POST', '/admin/roles', { label: 'Test', permissions: [] }, a); ok(r.s === 403, 'le Super Admin ne crée plus de rôle employé (403)');
   console.log('== Nettoyage');
   await call('PUT', '/admin/branding', { name: old.name, tagline: old.tagline }, a); ok((await call('GET', '/branding')).j.name === old.name, 'identité d\'origine restaurée');
   console.log(fails ? `\n${fails} ÉCHEC(S)` : '\nTOUS LES TESTS PASSENT'); process.exit(fails ? 1 : 0);
