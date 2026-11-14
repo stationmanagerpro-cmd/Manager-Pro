@@ -203,4 +203,28 @@
   V.fidelite = ['Fidélité', 'customer.view|sale.create'];
   V.espaceclient = ['Espace client', 'customer.view|customer.edit'];
   if (typeof NAV_ICONS !== 'undefined') Object.assign(NAV_ICONS, { prixjour: '⛽', previsions: '📉', risque: '🛡️', fidelite: '🎁', espaceclient: '🔗' });
+
+  /* Fidélité : en saisissant un téléphone ou une plaque dans un formulaire de vente, le solde de points s'affiche (GET /loyalty/lookup). */
+  (function () {
+    var timer = null;
+    function pair() {
+      var p = document.getElementById('fyp') || document.getElementById('f_yp'), l = document.getElementById('fyl') || document.getElementById('f_yl');
+      return p && l ? { p: p, l: l } : null;
+    }
+    document.addEventListener('input', function (ev) {
+      var t = ev.target; if (!t || !/^(f_)?y[pl]$|^fy[pl]$/.test(t.id || '')) return;
+      clearTimeout(timer);
+      timer = setTimeout(async function () {
+        var x = pair(); if (!x) return;
+        var ph = x.p.value.trim(), pl = x.l.value.trim();
+        var box = document.getElementById('loy-hint');
+        if (!box) { box = document.createElement('p'); box.id = 'loy-hint'; box.className = 'muted'; box.style.cssText = 'margin:4px 0;font-size:13px'; (x.l.closest('label') || x.l).insertAdjacentElement('afterend', box); }
+        if (ph.length < 6 && pl.length < 3) { box.textContent = ''; return; }
+        try {
+          var r = await G('/loyalty/lookup?' + (ph ? 'phone=' + encodeURIComponent(ph) : '') + (pl ? '&plate=' + encodeURIComponent(pl) : ''));
+          box.textContent = !r.enabled ? '' : r.account ? ('⭐ ' + (r.account.points != null ? r.account.points : r.account.balance_points) + ' point(s) · valeur ' + f(r.account.value != null ? r.account.value : r.account.balance_value || 0)) : 'Nouveau client fidélité : un compte sera créé à cette vente.';
+        } catch (_) { box.textContent = ''; }
+      }, 450);
+    });
+  })();
 })();

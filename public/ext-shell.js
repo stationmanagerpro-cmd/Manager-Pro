@@ -29,11 +29,11 @@
         { label: 'Paie', icon: '💵', keys: ['rhctl', 'rhperiods', 'rhrules', 'declarations', 'act'] }
       ]
     },
-    { label: 'Finance & rapports', icon: '📈', keys: ['treso', 'dettes', 'profit', 'rapports', 'fin', 'mmcomm', 'finevents', 'reconcile', 'exports', 'archive', 'imports'] },
+    { label: 'Finance & rapports', icon: '📈', keys: ['treso', 'dettes', 'profit', 'rapports', 'fin', 'mmcomm', 'finevents', 'reconcile', 'ctrlfin', 'exports', 'archive', 'imports'] },
     { label: 'Comptabilité', icon: '📒', keys: ['compta'] },
     { label: 'La Fiscalité', icon: '⚖️', keys: ['fiscalhub', 'fiscal', 'fiscalest', 'fiscal2', 'fiscal3', 'fiscaldash', 'fiscaldl', 'fiscalcheck', 'fiscalaudit', 'fiscalrulesview', 'fiscalstorage', 'fiscalscore', 'fiscalactivity', 'fiscalyear'] },
     { label: 'Communication', icon: '💬', keys: ['msg'] },
-    { label: 'Administration', icon: '🛡️', keys: ['admin', 'stations', 'carte', 'param', 'teamroles', 'roles', 'dashcfg', 'settings_hub', 'rhsettings', 'licence', 'audit', 'auditx', 'packs'] },
+    { label: 'Administration', icon: '🛡️', keys: ['admin', 'stations', 'carte', 'param', 'teamroles', 'roles', 'dashcfg', 'settings_hub', 'rhsettings', 'licence', 'msgroles', 'audit', 'auditx', 'packs'] },
     { label: 'Mon profil & aide', icon: '🙋', keys: ['moi', 'clients', 'onboard', 'aide'] }
   ];
 

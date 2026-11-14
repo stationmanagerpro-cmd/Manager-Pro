@@ -392,6 +392,7 @@
             '<td class="pc-num">' + money(v.deja_regle) + '</td><td class="pc-num" style="color:var(--r);font-weight:700">' + money(v.total_du) + '</td><td style="white-space:nowrap">' +
             (canManage
               ? '<button class="b2" onclick="vendPrime(' + Number(v.id) + ')">Prime</button> ' +
+                '<button class="b2" onclick="vendEntries(' + Number(v.id) + ')">Écritures</button> ' +
                 '<button onclick="vendRegler(' + Number(v.id) + ')">Régler</button>'
               : '—') + '</td></tr>';
         }).join('') || '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--m)">Aucun montant</td></tr>') +

@@ -343,6 +343,66 @@
     document.getElementById('fe-r').innerHTML = T(['Élément', 'Valeur'], flat);
   });
 
+  /* ───────── Vendeurs : écritures de commission, annulation d'une écriture due ───────── */
+  window.vendEntries = run(async function (empId) {
+    var rows = await G('/seller-commissions/entries?employee_id=' + Number(empId));
+    modal('<h3 style="margin-top:0">Écritures de commission</h3>' + T(['Date', 'Nature', 'Montant', 'Reste', 'Statut', ''], rows.slice(0, 80).map(function (e) {
+      return [fd(e.created_at), esc(e.kind || e.type || 'commission'), f(e.amount), f(e.amount_remaining), esc(e.status),
+        e.status === 'du' && can_('commission.manage') ? '<button class="b2" type="button" onclick="vendCancelEntry(' + Number(e.id) + ',' + Number(empId) + ')">Annuler</button>' : ''];
+    })) + (rows.length ? '' : '<p class="dv2-empty">Aucune écriture.</p>') + '<div class="bar"><button class="b2" type="button" onclick="closeM()">Fermer</button></div>');
+  });
+  window.vendCancelEntry = function (id, empId) {
+    var reason = prompt('Motif de l’annulation (3 caractères minimum) :'); if (!reason || reason.trim().length < 3) return;
+    run(async function () { await Po('/seller-commissions/entries/' + Number(id) + '/cancel', { reason: reason.trim() }); ok('Écriture annulée'); closeM(); go('vendeurs'); })();
+  };
+
+  /* ───────── Contrôles financiers : intégrité de la caisse, événements, historique des taux ───────── */
+  VM.ctrlfin = async function () {
+    var m0 = today().slice(0, 8) + '01';
+    var r = await Promise.all([G('/finance/integrity/cash').catch(function () { return null; }), G('/finance/events/summary?from=' + m0 + '&to=' + today()).catch(function () { return null; }), G('/money/commission-rates/history').catch(function () { return null; })]);
+    var ci = r[0], ev = r[1], hi = r[2];
+    var h = '<h2 style="margin-top:0">Contrôles financiers</h2>';
+    h += '<div class="card"><h3>Intégrité des caisses</h3>' + (ci ? ((ci.ok ? '<p class="ok">✅ Soldes enregistrés = somme des mouvements pour toutes les caisses.</p>' : '<p class="warn">⚠️ ' + ci.issues.length + ' caisse(s) en écart. ' + esc(ci.note || '') + '</p>') +
+      T(['Caisse', 'Solde enregistré', 'Somme des mouvements', 'Écart'], (ci.registers || []).map(function (x) { return [esc(x.name), f(x.stored_balance), f(x.movements_sum), '<b style="color:' + (Math.abs(x.gap) > 0.01 ? 'var(--r)' : 'inherit') + '">' + f(x.gap) + '</b>']; }))) : '<p class="muted">Droit insuffisant ou aucune caisse.</p>') + '</div>';
+    h += '<div class="card"><h3>Événements financiers du mois</h3>' + (ev && ev.by_type && ev.by_type.length ? T(['Type', 'Sens', 'Nombre', 'Total'], ev.by_type.map(function (x) { return [esc(x.event_type), esc(x.direction || ''), x.n, f(x.total)]; })) : '<p class="dv2-empty">Aucun événement ce mois.</p>') + '<div class="bar"><button class="b2" type="button" onclick="go(\'finevents\')">Journal des événements</button></div></div>';
+    var hist = hi && hi.history || [];
+    h += '<div class="card"><h3>Historique des taux de commission Mobile Money</h3>' + (hist.length ? T(['Date d’effet', 'Détail'], hist.slice(0, 40).map(function (x) { return [fd(x.effective_from || x.from || x.at || x.date), esc(typeof x === 'object' ? JSON.stringify(x.rates || x.rate || x).slice(0, 160) : x)]; })) : '<p class="dv2-empty">Aucune modification de taux enregistrée.</p>') + '</div>';
+    return h;
+  };
+
+  /* ───────── Messagerie : qui peut diffuser un message à toute l'équipe ───────── */
+  VM.msgroles = async function () {
+    var d = await G('/messaging/broadcast-roles');
+    if (d && d.enabled === false) return '<h2 style="margin-top:0">Diffusion de messages</h2><p class="warn">' + esc(d.label || '') + ' ' + esc(d.why || 'Option non incluse dans votre contrat.') + '</p><p class="muted">' + esc(d.who || '') + '</p>';
+    var roles = (await G('/admin/roles').catch(function () { return []; })).filter(function (x) { return x.role !== 'SUPERADMIN'; });
+    var set = {}; (d.roles || []).forEach(function (x) { set[x.role_code] = x.allowed; });
+    return '<h2 style="margin-top:0">Qui peut diffuser un message ?</h2><p class="muted">La diffusion envoie un message à toute l’équipe. Par défaut : administrateur et gérant.</p><div class="card">' +
+      roles.map(function (x) { var on = x.role in set ? set[x.role] : ['ADMIN', 'GERANT'].indexOf(x.role) >= 0; return '<label class="ck"><input type="checkbox" class="mbr" data-r="' + esc(x.role) + '"' + (on ? ' checked' : '') + '> ' + esc(x.label || x.role) + '</label>'; }).join('') +
+      '<div class="bar"><button type="button" onclick="msgRolesSave()">Enregistrer</button></div></div>';
+  };
+  window.msgRolesSave = run(async function () {
+    var list = [].map.call(document.querySelectorAll('.mbr'), function (c) { return { role_code: c.getAttribute('data-r'), allowed: c.checked }; });
+    await Pu('/messaging/broadcast-roles', { roles: list }); ok('Droits de diffusion enregistrés');
+  });
+
+  /* ───────── Super Admin : plafonds de droits par station (appliqués par le serveur à tous les utilisateurs de la station) ───────── */
+  VM.caps = async function () {
+    if (!(ME && ME.is_global)) return '<p class="warn">Réservé au Super Admin.</p>';
+    var ov = await G('/admin/platform/overview'), cl = Array.isArray(ov) ? ov : (ov.clients || []), st = [];
+    cl.forEach(function (c) { (c.stations || []).forEach(function (s) { st.push({ id: s.id, label: (c.client_name || c.name || '') + ' — ' + s.name }); }); });
+    return '<h2 style="margin-top:0">Plafonds de droits par station</h2><p class="muted">Une permission retirée ici est refusée à <b>tous</b> les utilisateurs de la station, quel que soit leur rôle. L’administrateur local ne peut pas la rétablir.</p><div class="card"><label>Station<select id="cap-st" onchange="capsLoad()"><option value="">— choisir —</option>' + opts(st, 'id', 'label') + '</select></label><div id="cap-box"></div></div>';
+  };
+  window.capsLoad = run(async function () {
+    var id = val('cap-st'), box = document.getElementById('cap-box'); if (!id) { box.innerHTML = ''; return; }
+    var rows = await G('/admin/stations/' + Number(id) + '/permission-caps');
+    box.innerHTML = '<div style="max-height:52vh;overflow:auto;margin-top:8px">' + rows.map(function (p) { return '<label class="ck"><input type="checkbox" class="capck" data-p="' + esc(p.permission_code) + '"' + (p.allowed ? ' checked' : '') + '> <code>' + esc(p.permission_code) + '</code> <small>' + esc(p.label || '') + '</small></label>'; }).join('') + '</div><div class="bar"><button type="button" onclick="capsSave()">Enregistrer les plafonds</button></div>';
+  });
+  window.capsSave = run(async function () {
+    var id = val('cap-st'); if (!id) return;
+    var caps = [].map.call(document.querySelectorAll('.capck'), function (c) { return { permission_code: c.getAttribute('data-p'), allowed: c.checked }; });
+    await Pu('/admin/stations/' + Number(id) + '/permission-caps', { caps: caps }); ok('Plafonds enregistrés');
+  });
+
   /* ───────── Déclarations ───────── */
   V.rhteams = ['Équipes', 'hr.schedule.view|hr.view|hr.manage'];
   V.rhskills = ['Compétences', 'hr.skills.view|hr.view|hr.manage'];
@@ -356,5 +416,9 @@
   V.licence = ['Licence & modules', 'settings.edit|user.manage'];
   V.moidash = ['Mon tableau de bord', 'report.view|finance.view'];
   V.fiscalest = ['Estimation fiscale', 'settings.edit'];
-  if (typeof NAV_ICONS !== 'undefined') Object.assign(NAV_ICONS, { rhteams: '👥', rhskills: '🎓', rhtrain: '📚', rheval: '📝', rhdisc: '⚖️', rhme: '🙋', rhrules: '🧮', transferts: '🔁', histcompteurs: '🕘', licence: '🔑', moidash: '🎛️', fiscalest: '🧾' });
+  V.ctrlfin = ['Contrôles financiers', 'finance.view|money.manage'];
+  V.msgroles = ['Diffusion de messages', 'settings.edit|user.manage'];
+  V.caps = ['Plafonds de droits', 'user.manage'];
+  try { SUPERADMIN_VIEWS.add('caps'); } catch (_) { /* ensemble indisponible */ }
+  if (typeof NAV_ICONS !== 'undefined') Object.assign(NAV_ICONS, { rhteams: '👥', rhskills: '🎓', rhtrain: '📚', rheval: '📝', rhdisc: '⚖️', rhme: '🙋', rhrules: '🧮', transferts: '🔁', histcompteurs: '🕘', licence: '🔑', moidash: '🎛️', fiscalest: '🧾', ctrlfin: '🧮', msgroles: '📢', caps: '🔒' });
 })();

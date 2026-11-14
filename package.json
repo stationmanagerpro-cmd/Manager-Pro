@@ -186,7 +186,8 @@
     "test:station-views": "node test/station-views-unit.js && node test/zip-writer-unit.js && node test/monthly-archive-unit.js && node test/multistation-routes-mock.js",
     "test:banner": "node test/banner-static.js",
     "test:billing-issue": "node test/billing-issue-unit.js",
-    "test:sidebar-pub-fit": "node test/sidebar-pub-fit.test.js"
+    "test:sidebar-pub-fit": "node test/sidebar-pub-fit.test.js",
+    "test:links-audit": "node test/links-audit-static.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

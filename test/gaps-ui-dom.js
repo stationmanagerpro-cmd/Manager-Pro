@@ -35,6 +35,13 @@ const src = fs.readFileSync(path.join(__dirname, '../public/ext-gaps.js'), 'utf8
       if (p === '/hr/activation-status') return { modules: [{ code: 'payroll_its_enabled', label: 'ITS', flag_on: false, can_enable_flag: true, active_rules: 1, pending_rules: 0, prerequisites: [{ label: 'Barème confirmé', ok: true }] }], checklist: [{ id: 'security_mode', value: 'strict' }] };
       if (p === '/hr/rules') return { warning: 'À valider' };
       if (p === '/hr/its-brackets') return [{ id: 1, version: 1, label: 'Barème 2026', brackets: [{ from: 0, to: 100000, rate: 0 }, { from: 100000, to: null, rate: 10 }], legal_status: 'a_confirmer', technical_status: 'desactivee' }];
+      if (p === '/finance/integrity/cash') return { ok: false, registers: [{ name: 'Caisse 1', stored_balance: 1000, movements_sum: 900, gap: 100 }], issues: [{}], note: 'écart' };
+      if (p.startsWith('/finance/events/summary')) return { by_type: [{ event_type: 'vente', direction: 'in', n: 3, total: 5000 }] };
+      if (p === '/money/commission-rates/history') return { history: [] };
+      if (p === '/messaging/broadcast-roles') return { enabled: true, roles: [{ role_code: 'CAISSIER', allowed: true }] };
+      if (p === '/admin/roles') return [{ role: 'ADMIN', label: 'Admin' }, { role: 'CAISSIER', label: 'Caissier' }];
+      if (p === '/admin/platform/overview') return { clients: [{ client_name: 'ACME', stations: [{ id: 5, name: 'Station Nord' }] }] };
+      if (p === '/admin/stations/5/permission-caps') return [{ permission_code: 'sale.create', label: 'Vendre', allowed: false }];
       if (p.startsWith('/hr/')) return [];
       if (p === '/stock/transfers') return [{ id: 7, status: 'envoye', outgoing: true, to_station: 'Station B', from_station: 'A', sent_at: '2026-11-12', items: [{ product: 'Huile', quantity: 20 }] }];
       if (p === '/stock/transfers/stations') return [{ id: 2, name: 'Station B' }];
@@ -51,12 +58,17 @@ const src = fs.readFileSync(path.join(__dirname, '../public/ext-gaps.js'), 'utf8
   });
   await p.addScriptTag({ content: src });
   const out = {};
-  for (const k of ['rhteams', 'rhskills', 'rhtrain', 'rheval', 'rhdisc', 'rhme', 'rhrules', 'transferts', 'histcompteurs', 'licence', 'moidash', 'fiscalest'])
+  for (const k of ['rhteams', 'rhskills', 'rhtrain', 'rheval', 'rhdisc', 'rhme', 'rhrules', 'transferts', 'histcompteurs', 'licence', 'moidash', 'fiscalest', 'ctrlfin', 'msgroles'])
     out[k] = await p.evaluate(async k => { document.getElementById('out').innerHTML = await VM[k](); return document.getElementById('out').innerText; }, k);
   assert.match(out.rhteams, /Jour/); assert.match(out.rhskills, /Expert|expert/i); assert.match(out.rhtrain, /Sécurité incendie/);
   assert.match(out.rheval, /Ponctualité|Pompiste/); assert.match(out.rhdisc, /Avertissement/); assert.match(out.rhme, /B1/);
   assert.match(out.rhrules, /ITS[\s\S]*Barème 2026[\s\S]*100000→∞|0→100000/); assert.match(out.transferts, /Station B[\s\S]*Huile × 20/); assert.match(out.histcompteurs, /10 → 12/);
   assert.match(out.licence, /ACME[\s\S]*Ventes[\s\S]*J-30/); assert.match(out.moidash, /Ventes carburant/); assert.match(out.fiscalest, /TVA/);
+  assert.match(out.ctrlfin, /Caisse 1[\s\S]*100/); assert.match(out.msgroles, /Caissier/);
+  await p.evaluate(() => { window.ME = { is_global: true }; });
+  assert.match(await p.evaluate(async () => { document.getElementById('out').innerHTML = await VM.caps(); return document.getElementById('out').innerText; }), /Station Nord/);
+  await p.evaluate(() => { document.getElementById('cap-st').value = '5'; return capsLoad(); }); await p.waitForTimeout(200);
+  assert.match(await p.evaluate(() => document.getElementById('cap-box').innerText), /sale\.create/);
   // module désactivé : message clair, pas d'erreur
   await p.evaluate(() => { smpHrModsReset(); mods.training = false; });
   assert.match(await p.evaluate(async () => { document.getElementById('out').innerHTML = await VM.rhtrain(); return document.getElementById('out').innerText; }), /désactivé/);
@@ -64,5 +76,5 @@ const src = fs.readFileSync(path.join(__dirname, '../public/ext-gaps.js'), 'utf8
   await p.evaluate(() => { smpHrModsReset(); mods.training = true; });
   for (const k of ['rhleaves', 'rhatt', 'rhot', 'rhperiods', 'rhsettings']) out[k] = await p.evaluate(async k => { document.getElementById('out').innerHTML = await VM[k](); return document.getElementById('out').innerText; }, k);
   assert.match(out.rhleaves, /Congé payé/); assert.match(out.rhatt, /Corriger/); assert.match(out.rhot, /Traoré[\s\S]*7000/); assert.match(out.rhperiods, /Rouvrir[\s\S]*Envoyer/); assert.match(out.rhsettings, /Modèle de l’e-mail[\s\S]*SMTP/);
-  assert.deepStrictEqual(errs, []); console.log('✓ gaps-ui-dom : 17 écrans rendus sans erreur'); await b.close();
+  assert.deepStrictEqual(errs, []); console.log('✓ gaps-ui-dom : 20 écrans rendus sans erreur'); await b.close();
 })().catch(e => { console.error('✗', e.message); process.exit(1); });
