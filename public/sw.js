@@ -3,7 +3,7 @@
  * - /api/** → network-only (jamais de cache : auth JWT, données métier)
  * - Navigation HTML → network-first, fallback cache index si offline total
  */
-const CACHE = 'smp-static-b02ee7ebf73';
+const CACHE = 'smp-static-b417531d155';
 
 /* PRECACHE:BEGIN (généré par scripts/build-sw.js — ne pas modifier à la main) */
 const PRECACHE = [

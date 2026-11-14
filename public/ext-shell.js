@@ -221,9 +221,12 @@ const visible = k => V[k] && (typeof canView === 'function' ? canView(k) : can(V
 
   document.addEventListener('click', e => { if (!e.target.closest('#nav .nav-node')) closeAll(); if (!e.target.closest('#user-chip')) closeUserMenu(); });
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeAll(); closeUserMenu(); closeNavDrawer(); } });
-  window.addEventListener('resize', () => { closeAll(); if (!isMobile()) closeNavDrawer(); const nav = document.getElementById('nav'); if (nav) nav.classList.toggle('collapsed', collapsed && !isMobile());
+  // Android/Chrome : la barre d'adresse se masque au défilement et déclenche des « resize » (hauteur seule) ; on ne referme les sous-menus que si la LARGEUR change (rotation, redimensionnement réel).
+  let lastNavW = window.innerWidth;
+  window.addEventListener('resize', () => { const w = window.innerWidth; if (w !== lastNavW) { lastNavW = w; closeAll(); } if (!isMobile()) closeNavDrawer(); const nav = document.getElementById('nav'); if (nav) nav.classList.toggle('collapsed', collapsed && !isMobile());
     nav.classList.toggle('user-hidden', navHidden); });
-  window.addEventListener('scroll', e => { const t = e.target; if (t && t.nodeType === 1 && t.closest && t.closest('#nav .flyout')) return; closeAll(); }, true);   // faire défiler un sous-menu ne doit pas le fermer
+  // Tiroir mobile : les sous-menus sont intégrés à la liste (pas flottants) → défiler le tiroir ne doit pas les refermer. Le repli au défilement ne sert qu'aux sous-menus flottants (écrans > 860 px) ; faire défiler un sous-menu flottant ne doit pas non plus le fermer.
+  window.addEventListener('scroll', e => { if (isMobile()) return; const t = e.target; if (t && t.nodeType === 1 && t.closest && t.closest('#nav .flyout')) return; closeAll(); }, true);
 
   
   window.toggleNavHorizontal = function () {
