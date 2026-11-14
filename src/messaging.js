@@ -1043,8 +1043,8 @@ const ALERT_KINDS = new Set([
   'payroll_anomaly', 'payroll_pending', 'incident_note', 'license_expiring', 'backup_failure', 'stock_low', 'tank_variance', 'daily_summary', 'tank_runout'
 ]);
 const THRESHOLD_KINDS = new Set(['cash_variance', 'shift_close', 'counter_anomaly', 'stock_anomaly', 'purchase_variance', 'late_arrival']);
-const CONFIG_THRESHOLD_KINDS = new Set([...THRESHOLD_KINDS, 'account_inactive', 'license_expiring', 'tank_runout']);
-const ALERT_UNITS = new Set(['XOF', 'percent', 'litres', 'units', 'days', 'minutes']);
+const CONFIG_THRESHOLD_KINDS = new Set([...THRESHOLD_KINDS, 'account_inactive', 'license_expiring', 'tank_runout', 'daily_summary']);
+const ALERT_UNITS = new Set(['XOF', 'percent', 'litres', 'units', 'days', 'minutes', 'hours']);
 
 r.put('/messaging/alert-config', need('settings.edit', 'user.manage'), body(z.object({
   alert_kind: z.string().min(1).max(60),
@@ -1052,7 +1052,7 @@ r.put('/messaging/alert-config', need('settings.edit', 'user.manage'), body(z.ob
   notify_employee: z.boolean().default(false),
   copy_user_ids: z.array(z.number().int().positive()).default([]),
   threshold_value: z.number().positive().nullable().optional(),
-  threshold_unit: z.enum(['XOF', 'percent', 'litres', 'units', 'days', 'minutes']).nullable().optional(),
+  threshold_unit: z.enum(['XOF', 'percent', 'litres', 'units', 'days', 'minutes', 'hours']).nullable().optional(),
   threshold_percent: z.number().positive().max(1000).nullable().optional(),
   channels: z.array(z.enum(['app', 'email', 'sms', 'whatsapp'])).min(1).max(4).default(['app']),
   active: z.boolean().default(true)
@@ -1073,7 +1073,8 @@ r.put('/messaging/alert-config', need('settings.edit', 'user.manage'), body(z.ob
       ? ['XOF', 'percent']
       : b.alert_kind === 'counter_anomaly' ? ['litres', 'percent']
       : b.alert_kind === 'stock_anomaly' ? ['units', 'litres', 'percent']
-      : b.alert_kind === 'late_arrival' ? ['minutes'] : ['days'];
+      : b.alert_kind === 'late_arrival' ? ['minutes'] : b.alert_kind === 'daily_summary' ? ['hours'] : ['days'];
+    if (b.alert_kind === 'daily_summary' && !(Number.isInteger(b.threshold_value) && b.threshold_value >= 1 && b.threshold_value <= 23)) throw new HttpError(400, 'L’heure d’envoi du résumé doit être un nombre entier entre 1 et 23.');
     if (!allowedUnits.includes(b.threshold_unit)) throw new HttpError(400, 'Unité incompatible avec ce type d’alerte.');
   } else {
     b.threshold_value = null;

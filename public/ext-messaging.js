@@ -437,7 +437,7 @@
     ['stock_low', 'Stock sous le minimum'], ['backup_failure', 'Échec de sauvegarde'],
     ['daily_summary', 'Résumé du soir'], ['tank_runout', 'Rupture de cuve prévue']
   ];
-  const thresholdKinds = new Set(['cash_variance', 'shift_close', 'counter_anomaly', 'stock_anomaly', 'purchase_variance', 'late_arrival', 'account_inactive', 'license_expiring', 'tank_runout']);
+  const thresholdKinds = new Set(['cash_variance', 'shift_close', 'counter_anomaly', 'stock_anomaly', 'purchase_variance', 'late_arrival', 'account_inactive', 'license_expiring', 'tank_runout', 'daily_summary']);
 
   window.msgAlertCenterOpen = async function () {
     try {
@@ -498,6 +498,7 @@
           <option value="units" ${cfg?.threshold_unit === 'units' ? 'selected' : ''}>Unités / quantité</option>
           <option value="days" ${cfg?.threshold_unit === 'days' ? 'selected' : ''}>Jours</option>
           <option value="minutes" ${cfg?.threshold_unit === 'minutes' ? 'selected' : ''}>Minutes</option>
+          <option value="hours" ${cfg?.threshold_unit === 'hours' ? 'selected' : ''}>Heure d’envoi (1 à 23)</option>
         </select></label>
         <label>Seuil complémentaire en pourcentage (facultatif)<input id="alert-threshold-percent" type="number" min="0.001" max="1000" step="0.001" value="${cfg?.threshold_percent ?? ''}" placeholder="Ex. 2.5"></label>
         <small class="muted">Caisse/facture : XOF ou %. Jaugeage : litres ou %. Stock : unités, litres ou %. Retard : minutes. Inactivité et licence : jours.</small>
@@ -510,8 +511,8 @@
     const thresholdFields = document.getElementById('alert-threshold-fields');
     const updateThresholdVisibility = () => {
       if (thresholdFields) thresholdFields.style.display = thresholdKinds.has(kindEl.value) ? 'block' : 'none';
-      const defaults = { cash_variance: 'XOF', shift_close: 'XOF', counter_anomaly: 'litres', stock_anomaly: 'units', purchase_variance: 'XOF', late_arrival: 'minutes', account_inactive: 'days', license_expiring: 'days' };
-      const allowed = { cash_variance: ['XOF','percent'], shift_close: ['XOF','percent'], purchase_variance: ['XOF','percent'], counter_anomaly: ['litres','percent'], stock_anomaly: ['units','litres','percent'], late_arrival: ['minutes'], account_inactive: ['days'], license_expiring: ['days'] };
+      const defaults = { cash_variance: 'XOF', shift_close: 'XOF', counter_anomaly: 'litres', stock_anomaly: 'units', purchase_variance: 'XOF', late_arrival: 'minutes', account_inactive: 'days', license_expiring: 'days', tank_runout: 'days', daily_summary: 'hours' };
+      const allowed = { cash_variance: ['XOF','percent'], shift_close: ['XOF','percent'], purchase_variance: ['XOF','percent'], counter_anomaly: ['litres','percent'], stock_anomaly: ['units','litres','percent'], late_arrival: ['minutes'], account_inactive: ['days'], license_expiring: ['days'], tank_runout: ['days'], daily_summary: ['hours'] };
       const unitEl = document.getElementById('alert-unit');
       if (unitEl && allowed[kindEl.value] && !allowed[kindEl.value].includes(unitEl.value)) unitEl.value = defaults[kindEl.value];
     };

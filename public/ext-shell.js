@@ -223,7 +223,7 @@ const visible = k => V[k] && (typeof canView === 'function' ? canView(k) : can(V
   document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeAll(); closeUserMenu(); closeNavDrawer(); } });
   window.addEventListener('resize', () => { closeAll(); if (!isMobile()) closeNavDrawer(); const nav = document.getElementById('nav'); if (nav) nav.classList.toggle('collapsed', collapsed && !isMobile());
     nav.classList.toggle('user-hidden', navHidden); });
-  window.addEventListener('scroll', () => closeAll(), true);
+  window.addEventListener('scroll', e => { const t = e.target; if (t && t.nodeType === 1 && t.closest && t.closest('#nav .flyout')) return; closeAll(); }, true);   // faire défiler un sous-menu ne doit pas le fermer
 
   
   window.toggleNavHorizontal = function () {

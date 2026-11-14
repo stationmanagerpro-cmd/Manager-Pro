@@ -92,7 +92,9 @@ async function scanStation(station) {
     }
   }
 
-  if (configByKind.has('daily_summary') && new Date().getHours() >= extra.SUMMARY_HOUR) {
+  const sumCfg = configByKind.get('daily_summary');
+  const sumHour = sumCfg && sumCfg.threshold_unit === 'hours' && Number(sumCfg.threshold_value) >= 1 && Number(sumCfg.threshold_value) <= 23 ? Math.floor(Number(sumCfg.threshold_value)) : extra.SUMMARY_HOUR;
+  if (sumCfg && new Date().getHours() >= sumHour) {
     const today = new Date().toISOString().slice(0, 10);
     const sm = await extra.buildDailySummary(pool, station.station_id, today);
     await fire('daily_summary', { body: sm.text, refTable: 'daily_summary', refId: extra.summaryRefId(today, station.station_id) });
