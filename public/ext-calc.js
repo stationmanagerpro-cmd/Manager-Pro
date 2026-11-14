@@ -146,10 +146,44 @@
   function close() { box.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); if (st.field && st.field.isConnected) st.field.focus(); else btn.focus(); }
   const toggle = () => (box.classList.contains('open') ? close() : open());
 
+  /* ---------- Menu de raccourcis (remplace l'ouverture directe de la calculatrice) ---------- */
+  let menu = null;
+  const canDo = k => { try { return typeof can === 'function' ? can(k) : true; } catch (_) { return false; } };
+  function closeMenu() { if (menu) menu.classList.remove('open'); if (btn) btn.setAttribute('aria-expanded', 'false'); }
+  async function toggleMenu() {
+    if (!menu) return;
+    if (menu.classList.contains('open')) return closeMenu();
+    const items = [['calc', '🧮', 'Calculatrice']];
+    const glob = !!(window.ME && ME.is_global);
+    if (!glob && canDo('expense.create') && typeof addX === 'function') items.push(['dep', '💸', 'Dépense']);
+    if (!glob && canDo('shift.open') && typeof openQ === 'function') items.push(['quart', '🕘', 'Ouverture Quart']);
+    // « + Vente » : seulement lorsqu'un quart est ouvert
+    if (!glob && canDo('sale.create') && typeof addS === 'function') {
+      let open = false;
+      try { const cu = await G('/shifts/current'); open = !!(cu && (cu.id || cu.number) && !cu.closed_at); } catch (_) { open = false; }
+      if (open) items.push(['vente', '＋', '+ Vente']);
+    }
+    items.push(['moi', '👤', 'Profil']);
+    menu.innerHTML = items.map(([k, i, l]) => `<button type="button" role="menuitem" data-a="${k}"><span aria-hidden="true">${i}</span>${l}</button>`).join('');
+    menu.classList.add('open'); btn.setAttribute('aria-expanded', 'true');
+    const first = menu.querySelector('button'); if (first) first.focus();
+  }
+  function runShortcut(a) {
+    closeMenu();
+    try {
+      if (a === 'calc') open();
+      else if (a === 'dep') addX();
+      else if (a === 'quart') openQ();
+      else if (a === 'vente') addS();
+      else if (a === 'moi') go('moi');
+    } catch (e) { typeof toast === 'function' && toast('Action indisponible : ' + (e && e.message || e)); }
+  }
+
   function build() {
     btn = document.createElement('button'); btn.id = 'smp-calc-btn'; btn.type = 'button'; btn.innerHTML = ICON;
-    btn.title = 'Calculatrice (Alt+C)'; btn.setAttribute('aria-label', 'Ouvrir la calculatrice'); btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-controls', 'smp-calc');
-    btn.onclick = toggle;
+    btn.title = 'Raccourcis'; btn.setAttribute('aria-label', 'Ouvrir les raccourcis'); btn.setAttribute('aria-expanded', 'false'); btn.setAttribute('aria-controls', 'smp-shortcuts'); btn.setAttribute('aria-haspopup', 'menu');
+    btn.innerHTML = '<span style="font-size:24px;line-height:1" aria-hidden="true">⚡</span>';
+    btn.onclick = () => { if (box.classList.contains('open')) close(); else toggleMenu(); };
     box = document.createElement('div'); box.id = 'smp-calc'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-label', 'Calculatrice'); box.tabIndex = -1;
     box.innerHTML = '<div class="cc-head"><span>Calculatrice</span><button type="button" class="cc-x" aria-label="Fermer">×</button></div>'
       + '<div class="cc-screen"><div class="cc-expr"></div><div class="cc-res" aria-live="polite">0</div></div>'
@@ -165,13 +199,17 @@
       const t = (e.clipboardData || window.clipboardData).getData('text').replace(/\s/g, '').replace(/\./g, ',');
       if (/^[0-9,+\-−×÷*/()%x]+$/i.test(t)) { e.preventDefault(); st.expr = t.replace(/-/g, '−').replace(/[*x]/gi, '×').replace(/\//g, '÷').slice(0, 120); st.done = false; render(); }
     });
-    document.body.append(btn, box);
+    menu = document.createElement('div'); menu.id = 'smp-shortcuts'; menu.setAttribute('role', 'menu'); menu.setAttribute('aria-label', 'Raccourcis');
+    menu.onclick = e => { const b = e.target.closest('button[data-a]'); if (b) runShortcut(b.dataset.a); };
+    document.addEventListener('click', e => { if (menu.classList.contains('open') && !menu.contains(e.target) && !btn.contains(e.target)) closeMenu(); });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape' && menu.classList.contains('open')) { closeMenu(); btn.focus(); } });
+    document.body.append(btn, box, menu);
   }
 
   const MAP = { '*': '×', x: '×', X: '×', '/': '÷', '-': '−', '.': ',', ',': ',', '+': '+', '(': '(', ')': ')', '%': '%', Enter: '=', '=': '=', Backspace: 'BK', c: 'C', C: 'C' };
   document.addEventListener('keydown', e => {
     if (!btn) return;
-    if (e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 'c' || e.key === 'C')) { if (btn.classList.contains('on')) { e.preventDefault(); toggle(); } return; }
+    if (e.altKey && !e.ctrlKey && !e.metaKey && (e.key === 'c' || e.key === 'C')) { if (btn.classList.contains('on')) { e.preventDefault(); closeMenu(); toggle(); } return; }
     if (!box.classList.contains('open')) return;
     if (e.key === 'Escape') { e.preventDefault(); close(); return; }
     // Ne capte les touches que si le focus est dans la calculatrice : on ne gêne jamais la saisie d'un formulaire
@@ -190,6 +228,7 @@
     const app = document.getElementById('app'), on = !!(app && app.classList.contains('ready'));
     if (!btn) build();
     btn.classList.toggle('on', on);
+    if (!on) closeMenu();
     if (!on && box.classList.contains('open')) { box.classList.remove('open'); st.expr = ''; st.done = false; st.hist = []; st.field = null; }   // déconnexion : on efface la session
   }
   function init() {

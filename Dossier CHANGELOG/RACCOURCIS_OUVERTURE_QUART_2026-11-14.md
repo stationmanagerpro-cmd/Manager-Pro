@@ -1,0 +1,1 @@
+# 2026-11-14 — Liste stations élargie; bouton flottant = menu de raccourcis (Calculatrice, Dépense, Ouverture Quart, +Vente si quart ouvert, Profil); Ouverture de quart restructurée (ligne par pompe, bouton Initialiser). Fichiers: ext-calc.js/.css, ext-core.js, responsive-v3.css

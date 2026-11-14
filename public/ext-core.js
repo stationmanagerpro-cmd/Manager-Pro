@@ -257,6 +257,25 @@ async function openQ() {
   const fd = document.getElementById('f_odate'); if (fd) { fd.max = _today; fd.required = true; }
   const grid = document.querySelector('#m > div .g');
   if (grid) grid.insertAdjacentHTML('afterend', '<p id="oq-place" class="muted" style="font-size:12px;margin:8px 0 0">Pour un quart oublié ou saisi en retard, choisissez sa date et son heure réelles : il sera replacé automatiquement entre les quarts voisins.</p>');
+  // Présentation structurée : date/heure/quart sur une ligne, caisse sur une ligne, puis une ligne par pompe (ses compteurs côte à côte).
+  if (grid) {
+    grid.classList.add('oq-top');
+    const hint = document.getElementById('oq-place');
+    const wrap = document.createElement('div'); wrap.id = 'oq-pumps';
+    const byPump = new Map();
+    cs.forEach((c, i) => {
+      const lab = grid.querySelector('label[data-fkey="i' + i + '"]'); if (!lab) return;
+      if (lab.firstChild && lab.firstChild.nodeType === 3) lab.firstChild.nodeValue = 'Compteur ' + c.counter_number + ' (' + c.product + ') : index initial';
+      if (!byPump.has(c.pn)) {
+        const row = document.createElement('div'); row.className = 'oq-pump-row';
+        const nm = document.createElement('div'); nm.className = 'oq-pump-name'; nm.textContent = c.pn;
+        const cw = document.createElement('div'); cw.className = 'oq-pump-cs';
+        row.append(nm, cw); wrap.append(row); byPump.set(c.pn, cw);
+      }
+      byPump.get(c.pn).append(lab);
+    });
+    if (hint) hint.after(wrap); else grid.after(wrap);
+  }
   // Placement chronologique : à chaque changement de date/heure, on interroge le serveur
   // (quart précédent / suivant) et on préremplit les index initiaux avec la clôture du quart précédent.
   const defaults = Object.fromEntries(cs.map((c, i) => [i, c.current_index]));
@@ -286,6 +305,8 @@ async function openQ() {
   };
   ['f_odate', 'f_otime'].forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('change', refreshPlacement); });
   ptRefresh();
+  const okb = document.getElementById('ok');
+  if (okb && okb.parentNode && !document.getElementById('oq-reset')) { const rb = document.createElement('button'); rb.type = 'button'; rb.className = 'b2'; rb.id = 'oq-reset'; rb.textContent = '↻ Initialiser'; rb.title = 'Remettre le formulaire à zéro'; rb.onclick = () => { closeM(); openQ(); }; okb.parentNode.prepend(rb); }
 }
 /** Raccourci « + Vente » / touche N : choix Produit ou Carburant. */
 async function addS() {

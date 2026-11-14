@@ -61,3 +61,12 @@
   #smp-calc-btn svg { width: 22px; height: 22px; }
   #smp-calc { bottom: calc(144px + var(--safe-bottom, 0px)) !important; right: 14px; max-height: calc(100dvh - 170px); overflow-y: auto; }
 }
+
+/* Menu de raccourcis */
+#smp-shortcuts { position: fixed; right: 18px; bottom: calc(82px + var(--safe-bottom, 0px)); z-index: 1001; display: none; flex-direction: column; gap: 4px; min-width: 210px; padding: 8px; border-radius: 14px; background: #fff; color: #172033; border: 1px solid #cbd5e1; box-shadow: 0 10px 25px rgba(15, 23, 42, .25); color-scheme: light; }
+#smp-shortcuts.open { display: flex; }
+#smp-shortcuts button { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; padding: 11px 12px; border: 0; border-radius: 8px; background: transparent; color: #172033 !important; font-size: 15px; font-weight: 600; cursor: pointer; }
+#smp-shortcuts button:hover, #smp-shortcuts button:focus-visible { background: #d1fae5; outline: none; }
+#smp-shortcuts button span { width: 22px; text-align: center; }
+@media print { #smp-shortcuts { display: none !important; } }
+@media (max-width: 720px) { #smp-shortcuts { bottom: calc(144px + var(--safe-bottom, 0px)); right: 14px; } }
