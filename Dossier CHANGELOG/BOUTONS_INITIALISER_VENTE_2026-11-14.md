@@ -1,0 +1,1 @@
+# 2026-11-14 — Boutons Modèle/Importer dans la barre d'actions (Employés), barres sur une ligne et réductibles (Fournisseurs…), un seul bouton Initialiser (celui d'ext-form-drafts), vente carburant: sélecteur d'employé de repli si pompe sans affectation

@@ -119,6 +119,7 @@
             <label>Pompe<select id="fs_pump">${pumpOpts}</select></label>
             <label>Compteur<select id="fc"></select></label>
             <label>Employé<input id="fs_emp_label" type="text" readonly style="background:var(--bg, #f5f5f5)">
+              <select id="fs_emp_sel" style="display:none" title="Aucun employé n'est affecté à cette pompe : choisissez un participant du quart">${team.map(t => `<option value="${Number(t.id)}">${escLocal(t.name || ('#' + t.id))}</option>`).join('')}</select>
               <input type="hidden" id="fe"></label>
             <label class="fi">Ancien index<input id="fo" type="number" step="any" readonly style="background:var(--bg,#f1f1f1);cursor:not-allowed" title="Index initial : repris automatiquement du dernier index connu, non modifiable"></label>
             <label class="fi">Nouvel index<input id="fn" type="number" step="any"></label>
@@ -168,15 +169,22 @@
         `<option value="${c.counter_id}">C${c.counter_number} · ${escLocal(c.product)}</option>`
       ).join('');
       $('#fc').innerHTML = opts || '<option value="">—</option>';
-      const emp = empForPump(pid);
+      const emp = empForPump(pid), sel = $('#fs_emp_sel'), lab = $('#fs_emp_label');
+      sel.style.display = 'none'; lab.style.display = '';
       if (emp) {
-        $('#fs_emp_label').value = emp.name || ('#' + emp.id);
+        lab.value = emp.name || ('#' + emp.id);
         $('#fe').value = emp.id;
+      } else if (team.length) {
+        // Pompe sans employé affecté à l'ouverture : on propose les participants du quart (l'employé connecté d'abord)
+        lab.style.display = 'none'; sel.style.display = '';
+        if (ownEmpId && team.some(t => Number(t.id) === Number(ownEmpId))) sel.value = String(ownEmpId);
+        $('#fe').value = sel.value;
+        sel.onchange = () => { $('#fe').value = sel.value; };
       } else if (ownEmpId) {
-        $('#fs_emp_label').value = 'Vous';
+        lab.value = 'Vous';
         $('#fe').value = ownEmpId;
       } else {
-        $('#fs_emp_label').value = '— non affecté —';
+        lab.value = '— non affecté —';
         $('#fe').value = '';
       }
     }

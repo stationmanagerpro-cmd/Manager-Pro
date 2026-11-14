@@ -157,7 +157,20 @@
         if (typeof html !== 'string' || html.includes('imp-modbar')) return html;
         // Clients, fournisseurs, produits : l'écran a déjà ses propres boutons « Importer » / « Modèle » (aussi sur la vue des inactifs) → pas de seconde barre.
         if (OWN_IMPORT_BUTTONS.has(route) || /impStart\(|impDownload\(|pcImport\(/.test(html)) return html;
-        try { return (await allowedKinds()).has(MODULE_IMPORT[route]) ? impBar(MODULE_IMPORT[route]) + html : html; } catch (_) { return html; }
+        try {
+          if (!(await allowedKinds()).has(MODULE_IMPORT[route])) return html;
+          // Les boutons rejoignent la barre d'actions existante (une seule ligne) ; à défaut, barre séparée.
+          const k = MODULE_IMPORT[route], m = /<div class="bar[^"]*"[^>]*>/.exec(html);
+          if (m) {
+            let depth = 1, i = m.index + m[0].length; const re = /<div\b|<\/div>/g; re.lastIndex = i; let x;
+            while ((x = re.exec(html))) { if (x[0] === '</div>') { depth--; if (!depth) break; } else depth++; }
+            if (x && !depth) {
+              const btns = impBar(k).replace(/^<div[^>]*>/, '').replace(/<\/div>$/, '');
+              return html.slice(0, x.index) + btns + html.slice(x.index);
+            }
+          }
+          return impBar(k) + html;
+        } catch (_) { return html; }
       });
       return wrapped.get(orig);
     };

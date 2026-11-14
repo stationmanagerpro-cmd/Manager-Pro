@@ -305,8 +305,6 @@ async function openQ() {
   };
   ['f_odate', 'f_otime'].forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('change', refreshPlacement); });
   ptRefresh();
-  const okb = document.getElementById('ok');
-  if (okb && okb.parentNode && !document.getElementById('oq-reset')) { const rb = document.createElement('button'); rb.type = 'button'; rb.className = 'b2'; rb.id = 'oq-reset'; rb.textContent = '↻ Initialiser'; rb.title = 'Remettre le formulaire à zéro'; rb.onclick = () => { closeM(); openQ(); }; okb.parentNode.prepend(rb); }
 }
 /** Raccourci « + Vente » / touche N : choix Produit ou Carburant. */
 async function addS() {

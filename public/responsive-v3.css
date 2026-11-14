@@ -745,3 +745,14 @@ body.demo-on #app-header { top: 44px; }
   #m > div.oq-wide .oq-pump-row { grid-template-columns: 1fr; }
   #m > div.oq-wide .oq-pump-name { padding: 6px; font-size: 1rem; }
 }
+
+/* Barres d'actions des listes (Fournisseurs, Clients, Produits…) : une seule ligne, boutons qui rétrécissent avec le zoom */
+@media (min-width: 640px) {
+  .pc-head { flex-wrap: nowrap; }
+  .pc-head > div:first-child { flex: 0 0 auto; }
+  .pc-head .pc-actions { flex: 1 1 auto; min-width: 0; flex-wrap: nowrap; justify-content: flex-end; gap: clamp(4px, .6vw, 8px); }
+  .pc-head .pc-actions > button, .pc-head .pc-actions > a { flex: 0 1 auto; min-width: 0; white-space: nowrap; font-size: clamp(10px, 1.05vw, 14px); padding: clamp(5px, .55vw, 9px) clamp(6px, .85vw, 14px); overflow: hidden; text-overflow: ellipsis; }
+  .bar:has(> button[onclick*="impStart"]) { flex-wrap: nowrap; }
+  .bar:has(> button[onclick*="impStart"]) > .q, .bar:has(> button[onclick*="impStart"]) > input.q { flex: 1 1 120px; min-width: 80px; }
+  .bar:has(> button[onclick*="impStart"]) > button { flex: 0 1 auto; min-width: 0; white-space: nowrap; font-size: clamp(10px, 1.05vw, 14px); padding: clamp(5px, .55vw, 9px) clamp(6px, .85vw, 14px); overflow: hidden; text-overflow: ellipsis; }
+}
