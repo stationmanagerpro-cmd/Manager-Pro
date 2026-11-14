@@ -7,7 +7,7 @@
  *  - Seules quelques lectures de configuration sans donnée métier sont autorisées (profil, apparence, notifications…).
  *  - Réservé aux administrateurs de station ; rien n'est conservé : recharger la page quitte le mode démonstration. */
 (function () {
-  const MANUAL = '/manuel/Manuel_Utilisation_Manager_Pro.pdf?v=8';
+  const MANUAL = '/manuel/Manuel_Utilisation_Manager_Pro.pdf?v=9';
   const state = { active: false, realFetch: null, lastToast: 0 };
 
   /* ===================== Données d'exemple (station fictive) ===================== */
@@ -160,17 +160,18 @@
   setInterval(() => { if (state.active && (typeof ME === 'undefined' || !ME || typeof TK === 'undefined' || !TK)) { state.active = false; banner(); removeGuard(); } }, 2000);
 
   /* ===================== Aide : manuel, chapitres et boutons « ? » ===================== */
-  /* Pagination du manuel v8 (compte client, 80 pages) — à mettre à jour si le PDF change. */
+  /* Pagination du manuel v9 (compte client, 77 pages) — à mettre à jour si le PDF change. */
   const CHAPTERS = [
-    ['Premiers pas : installer, accéder et se connecter', 6], ['Découvrir l\'écran et ses boutons', 9], ['Le tableau de bord et ses indicateurs', 11], ['Le quart de service : ouvrir et clôturer', 13], ['Les ventes : carburant et produits', 17],
-    ['Pompes et compteurs', 20], ['Produits et stocks', 22], ['Fournisseurs et bons de commande', 24], ['Clients, crédit et facturation', 26], ['Caisse, dépenses, Mobile Money et liquidités', 28],
-    ['Employés, ressources humaines et paie', 31], ['Alertes et notifications', 33], ['Rapports, exports et fin de journée', 35], ['Agrégats et marges : le Rapport client & marges', 37],
-    ['La calculatrice', 40], ['La carte des stations et la géolocalisation', 42], ['Le logo et l\'identité de la station', 45], ['La clé d\'accès : comment l\'utiliser', 46],
-    ['La signature personnalisée', 48], ['Les couleurs du menu et de l\'en-tête', 50], ['Abonnement et licence', 52], ['Utiliser Manager Pro sur téléphone', 54], ['L\'aide intégrée et le mode démo', 56],
-    ['Routine quotidienne et bonnes pratiques', 57], ['Problèmes fréquents et solutions', 58], ['Glossaire', 59],
-    ['Nouveautés v8 : vue d\'ensemble', 62], ['Design Pro et formulaires', 63], ['Quart partagé : employé, pompes, écarts', 67], ['Vendre : nouveaux écrans', 68], ['Travailler hors ligne', 70], ['Cuves et jaugeage', 71], ['Cartes flotte', 73], ['Rapprochement Mobile Money ligne à ligne', 74], ['Avoirs clients et fournisseurs', 76], ['Fiscalité, sécurité, profil', 77], ['Mises à jour et dépannage', 79]
+    ['Bienvenue et mode d\'emploi du guide', 3], ['Présentation de Manager Pro', 6], ['Premiers pas : installer, accéder et se connecter', 7], ['Découvrir l\'écran et ses boutons', 10], ['Le tableau de bord et ses indicateurs', 12],
+    ['Le quart de service : ouvrir et clôturer', 15], ['Les ventes : carburant et produits', 19], ['Pompes et compteurs', 23], ['Produits et stocks', 25], ['Cuves et jaugeage', 27],
+    ['Fournisseurs, achats et bons de commande', 29], ['Clients, crédit, avoirs et facturation', 32], ['Cartes flotte et facture mensuelle', 34], ['Caisse, dépenses, Mobile Money et trésorerie', 36],
+    ['Employés, ressources humaines et paie', 40], ['Alertes et notifications', 43], ['Rapports, exports et fin de journée', 45], ['Agrégats et marges : le Rapport client & marges', 49],
+    ['Comptabilité', 51], ['La Fiscalité : un assistant guidé', 52], ['La calculatrice', 53], ['Stations, carte et géolocalisation', 55], ['Le logo, l\'identité et le bandeau de la station', 57],
+    ['La clé d\'accès : comment l\'utiliser', 60], ['La signature personnalisée', 61], ['Les couleurs du menu et de l\'en-tête', 62], ['Abonnement et licence', 64],
+    ['Utiliser Manager Pro sur téléphone et hors ligne', 65], ['L\'aide intégrée et le mode démo', 67], ['Mon profil et la sécurité des comptes', 68],
+    ['Routine quotidienne et bonnes pratiques', 70], ['Problèmes fréquents et solutions', 71], ['Glossaire : les mots du site expliqués', 73], ['Compléments de novembre 2026 (raccourcis, ouverture de quart, identifiant…)', 76]
   ];
-  const HELP = { quart: 13, clot: 15, ventes: 17, pompes: 20, prod: 22, stock: 22, four: 24, cli: 26, caisse: 28, mmcomm: 29, emp: 31, alert: 33, alertcfg: 33, notifrules: 33, rapports: 35, eod: 36, profit: 37, stations: 43, carte: 44, onboard: 7, aide: 56, teamroles: 5, roles: 5, dash: 11, cuves: 71, flotte: 73, treso: 74, offlineq: 70, fiscalhub: 77, moi: 77 };
+  const HELP = { quart: 15, clot: 17, ventes: 19, pompes: 23, prod: 25, stock: 25, cuves: 27, four: 29, cli: 32, flotte: 34, caisse: 36, treso: 37, mmcomm: 38, emp: 40, alert: 43, alertcfg: 43, notifrules: 43, rapports: 45, eod: 46, profit: 49, compta: 51, fiscalhub: 52, calc: 53, stations: 55, carte: 55, onboard: 7, aide: 67, teamroles: 5, roles: 5, dash: 12, offlineq: 65, moi: 68, licence: 64, factures: 32, bcommande: 30, achats: 29, vendeurs: 32, dettes: 36, jour: 15, histcompteurs: 23, reconcile: 47, ctrlfin: 36, exports: 45, archive: 45, imports: 45, param: 62, settings_hub: 62, rhdash: 40, rh: 40, rhatt: 40, rhleaves: 40, rhctl: 40, fiscal: 52, fiscalest: 52, fiscaldash: 52, msg: 68, audit: 71, fidelite: 32 };
   const manualUrl = page => MANUAL + (page ? '#page=' + page : '');
   window.openManual = page => window.open(manualUrl(page), '_blank', 'noopener');
 
@@ -193,7 +194,7 @@
     window.go = async function (k, a) { const r = await prevGo.call(this, k, a); try { helpButton(k); } catch (_) { /* aide facultative */ } return r; };
   }
   // « ? » dans les fenêtres difficiles (ouverture de quart, vente de carburant, correction d'index, commande)
-  const MODAL_HELP = [[/Ouverture de quart/i, 14], [/Vente de carburant/i, 18], [/Corriger index/i, 20], [/Nouvelle commande|Commande fournisseur|Achat/i, 24]];
+  const MODAL_HELP = [[/Ouverture de quart/i, 16], [/Vente (de|d.un) carburant|vente carburant/i, 19], [/Corriger index/i, 23], [/Nouvelle commande|Commande fournisseur|Achat/i, 30], [/Clôture/i, 17], [/Dépense/i, 36], [/Nouveau client|Client/i, 32]];
   function decorateModal() {
     const m = document.getElementById('m'); if (!m || m.querySelector('.help-q')) return;
     const h = m.querySelector('h3, h2'); if (!h) return;
