@@ -1140,7 +1140,7 @@ function showLogin() {
         <h2>Connexion</h2>
         <p style="margin:0 0 14px;color:var(--m);font-size:13px">Connectez-vous pour continuer</p>
         <label>Identifiant<input id="lu" autocomplete="username"></label>
-        <label style="margin-top:10px">Mot de passe<input id="lp" type="password" autocomplete="current-password" onkeydown="if(event.key=='Enter')doLogin()"></label>
+        <label style="margin-top:10px">Mot de passe<span style="position:relative;display:block"><input id="lp" type="password" autocomplete="current-password" style="width:100%;padding-right:48px;box-sizing:border-box" onkeydown="if(event.key=='Enter')doLogin()"><button type="button" id="lpeye" aria-label="Afficher le mot de passe" aria-pressed="false" onclick="togglePwdView()" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);width:40px;height:36px;margin:0;padding:0;background:none;border:0;color:var(--m);font-size:18px;cursor:pointer">👁</button></span></label>
         <button style="width:100%;margin-top:16px" onclick="doLogin()">Se connecter</button>
         <button type="button" class="b2" data-pwa-install hidden onclick="pwaInstall()" style="width:100%;margin-top:10px">Installer l’application</button>
         <p style="font-size:11px;color:var(--m);margin:10px 0 0;text-align:center">PWA — fonctionne hors navigateur une fois installée (données toujours en ligne)</p>
@@ -1386,3 +1386,15 @@ function setupKeyboardShortcuts() {
 // pouvait se faire avant l'enregistrement de leurs vues et de la navigation (course au chargement).
 const start = () => { loadBrand(); TK ? boot().catch(showLogin) : showLogin(); };
 document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', start) : start();
+
+/* Voir / masquer le mot de passe sur l'écran de connexion */
+window.togglePwdView = function () {
+  const i = document.getElementById('lp'), b = document.getElementById('lpeye');
+  if (!i || !b) return;
+  const show = i.type === 'password';
+  i.type = show ? 'text' : 'password';
+  b.textContent = show ? '🙈' : '👁';
+  b.setAttribute('aria-pressed', String(show));
+  b.setAttribute('aria-label', show ? 'Masquer le mot de passe' : 'Afficher le mot de passe');
+  i.focus();
+};
