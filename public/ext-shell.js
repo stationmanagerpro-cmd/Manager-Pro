@@ -462,7 +462,7 @@ const visible = k => V[k] && (typeof canView === 'function' ? canView(k) : can(V
         <a role="menuitem" tabindex="0" onclick="closeUserMenu();typeof personalNavColorsEditor==='function'&&personalNavColorsEditor()">🎨 Couleurs du menu</a>
         <a role="menuitem" tabindex="0" onclick="closeUserMenu();typeof toggleDayNight==='function'&&toggleDayNight()">🌓 Jour / Nuit</a>
         ${lang ? `<a role="menuitem" tabindex="0" id="lang-toggle" onclick="closeUserMenu();I18N.setLang(I18N.getLang()==='fr'?'en':'fr')">🌐 ${lang}</a>` : ''}
-        <a role="menuitem" tabindex="0" onclick="closeUserMenu();chgPwd()">🔑 Mot de passe</a>
+        <a role="menuitem" tabindex="0" onclick="closeUserMenu();chgPwd()">🔑 Mot de passe</a>${isLocalAdmin()?'<a role="menuitem" tabindex="0" onclick="closeUserMenu();chgLogin()">🆔 Identifiant</a>':''}
         <a role="menuitem" tabindex="0" class="um-danger" onclick="closeUserMenu();logout()">⏻ Déconnexion</a>
       </div>`;
   }

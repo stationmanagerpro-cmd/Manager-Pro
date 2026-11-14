@@ -277,6 +277,24 @@ priv.post('/auth/password', body(z.object({ current: z.string().min(1), next: z.
   res.json({ ok: true });
 }));
 
+// Changement de son propre identifiant (admin local) : mot de passe actuel exigé
+priv.post('/auth/login-change', body(z.object({
+  current: z.string().min(1),
+  login: z.string().trim().min(3, '3 caractères minimum').max(60).regex(/^[A-Za-z0-9._@-]+$/, 'Lettres, chiffres, . _ - @ uniquement')
+})), wrap(async (req, res) => {
+  if (req.user.is_global || req.user.role !== 'ADMIN') throw new HttpError(403, "Réservé à l'administrateur local");
+  const { rows: [u] } = await pool.query('SELECT password_hash, login FROM users WHERE id = $1', [req.user.id]);
+  if (!(await bcrypt.compare(req.body.current, u.password_hash))) throw new HttpError(400, 'Mot de passe actuel incorrect');
+  const nl = req.body.login;
+  if (nl.toLowerCase() === String(u.login).toLowerCase() && nl === u.login) throw new HttpError(400, "Le nouvel identifiant est identique à l'actuel");
+  const { rows: [dup] } = await pool.query('SELECT 1 FROM users WHERE lower(login) = lower($1) AND id <> $2', [nl, req.user.id]);
+  if (dup) throw new HttpError(409, 'Cet identifiant est déjà utilisé');
+  await pool.query('UPDATE users SET login = $2, failed_logins = 0, lockout_until = NULL WHERE id = $1', [req.user.id, nl]);
+  await pool.query('UPDATE user_sessions SET revoked_at = now() WHERE user_id = $1 AND id <> $2 AND revoked_at IS NULL', [req.user.id, req.sessionId]);
+  await audit(pool, req, 'auth', 'Changement d\'identifiant : ' + u.login + ' → ' + nl, 'users', req.user.id, { login: u.login }, { login: nl });
+  res.json({ ok: true, login: nl });
+}));
+
 priv.get('/users', need('user.manage'), wrap(async (req, res) => {
   if (req.user.is_global) {
     // L'Administrateur Principal ne gère ici que les comptes de plateforme.

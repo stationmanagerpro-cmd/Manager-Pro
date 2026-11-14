@@ -75,7 +75,7 @@
       </div>
       <div class="bar mp-actions">
         <button class="b2" onclick="pickMyPhoto()">📷 Photo</button>
-        <button class="b2" onclick="chgPwd()">🔑 Mot de passe</button>
+        <button class="b2" onclick="chgPwd()">🔑 Mot de passe</button>${isLocalAdmin()?'<button class="b2" onclick="chgLogin()">🆔 Identifiant</button>':''}
         ${P.identity.station_id ? `<button class="b2" onclick="mpExport('pdf')">PDF</button><button class="b2" onclick="mpExport('xlsx')">Excel</button>` : ''}
       </div></div>`;
   }
@@ -233,7 +233,7 @@
     try { const m = await G('/me/preferences/motion'); if (['off', 'subtle', 'full'].includes(m.mode)) motion = m.mode; } catch (_) { /* défaut */ }
     const ses = P.sessions.length ? T(['Connexion', 'Adresse', 'État'], P.sessions.map(s => [dt(s.at), E(s.ip || '—'), s.current ? '<b>Session actuelle</b>' : (s.revoked ? 'Fermée' : (new Date(s.expires_at) < new Date() ? 'Expirée' : 'Ouverte'))])) : empty('Aucune connexion enregistrée.');
     return `<div class="mp-grid">${card('Mes dernières connexions', ses + '<p style="color:var(--m);font-size:12px;margin:6px 0 0">Si vous voyez une connexion que vous ne reconnaissez pas, changez votre mot de passe puis prévenez l’administrateur local.</p>')}
-      ${card('Mon compte', `<div class="bar"><button class="b2" onclick="pickMyPhoto()">📷 Changer ma photo</button><button class="b2" onclick="chgPwd()">🔑 Mot de passe</button><button class="b2" onclick="typeof personalThemeEditor==='function'&&personalThemeEditor()">🎨 Mon thème</button><button class="b2" onclick="typeof personalNavColorsEditor==='function'&&personalNavColorsEditor()">🎨 Couleurs du menu</button></div>
+      ${card('Mon compte', `<div class="bar"><button class="b2" onclick="pickMyPhoto()">📷 Changer ma photo</button><button class="b2" onclick="chgPwd()">🔑 Mot de passe</button>${isLocalAdmin()?'<button class="b2" onclick="chgLogin()">🆔 Identifiant</button>':''}<button class="b2" onclick="typeof personalThemeEditor==='function'&&personalThemeEditor()">🎨 Mon thème</button><button class="b2" onclick="typeof personalNavColorsEditor==='function'&&personalNavColorsEditor()">🎨 Couleurs du menu</button></div>
         <label for="profile-motion-mode" style="display:block;margin-top:12px">Animations et effets visuels</label>
         <select id="profile-motion-mode" style="max-width:360px;width:100%;margin:6px 0 10px"><option value="off" ${motion === 'off' ? 'selected' : ''}>Désactivées — priorité à la rapidité</option><option value="subtle" ${motion === 'subtle' ? 'selected' : ''}>Discrètes</option><option value="full" ${motion === 'full' ? 'selected' : ''}>Renforcées</option></select>
         <button type="button" class="b1" onclick="saveMotionPreference()">Enregistrer</button>`)}</div>`;

@@ -19,6 +19,21 @@ async function readStored() {
   const content = About.readable(v);
   return content ? { content, updated_at: row.updated_at } : null;
 }
+// Historique : les 10 dernières versions enregistrées sont conservées (clé « about_page_history »), pour ne jamais perdre une présentation.
+const HKEY = 'about_page_history', HMAX = 10;
+async function readHistory() {
+  try {
+    const row = (await pool.query('SELECT value FROM app_settings WHERE key = $1', [HKEY])).rows[0];
+    let v = row && row.value; if (typeof v === 'string') v = JSON.parse(v);
+    return Array.isArray(v && v.items) ? v.items : [];
+  } catch (_) { return []; }
+}
+async function archiveCurrent(userId) {
+  const cur = await readStored(); if (!cur) return;
+  const items = [{ saved_at: cur.updated_at || new Date().toISOString(), archived_by: userId || null, content: cur.content }, ...(await readHistory())].slice(0, HMAX);
+  await pool.query(`INSERT INTO app_settings(key, value, updated_by) VALUES ($1, $2::jsonb, $3)
+    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now(), updated_by = EXCLUDED.updated_by`, [HKEY, JSON.stringify({ items }), userId || null]);
+}
 const writeStored = (content, userId) => pool.query(
   `INSERT INTO app_settings(key, value, updated_by) VALUES ($1, $2::jsonb, $3)
    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = now(), updated_by = EXCLUDED.updated_by`,
@@ -43,15 +58,54 @@ r.get('/me/about', wrap(async (req, res) => {
 
 r.put('/admin/about', principal, body(z.object({ content: z.any() })), wrap(async (req, res) => {
   const content = clean(req.body.content);
+  await archiveCurrent(req.user.id);
   await writeStored(content, req.user.id);
   await audit(pool, req, 'paramètres', 'Page « A propos de Manager PRO » modifiée', 'app_settings', null, null, null);
   res.json({ ok: true, content });
 }));
 
 r.post('/admin/about/reset', principal, wrap(async (req, res) => {
+  await archiveCurrent(req.user.id);
   await pool.query('DELETE FROM app_settings WHERE key = $1', [KEY]);
   await audit(pool, req, 'paramètres', 'Page « A propos de Manager PRO » : retour au modèle d’origine', 'app_settings', null, null, null);
   res.json({ ok: true, content: About.defaultDoc() });
+}));
+
+r.get('/admin/about/history', principal, wrap(async (req, res) => {
+  const items = await readHistory();
+  const cur = await readStored();
+  res.json({
+    current: cur ? { saved_at: cur.updated_at, sections: cur.content.sections.length, solutions: cur.content.solutions.length } : { saved_at: null, sections: About.defaultDoc().sections.length, solutions: About.defaultDoc().solutions.length, model: true },
+    versions: items.map((it, i) => { let c = null; try { c = About.sanitize(it.content); } catch (_) { /* version illisible */ } return { index: i, saved_at: it.saved_at, sections: c ? c.sections.length : null, solutions: c ? c.solutions.length : null, readable: !!c }; })
+  });
+}));
+
+r.post('/admin/about/restore', principal, body(z.object({ index: z.coerce.number().int().min(0).max(HMAX - 1) })), wrap(async (req, res) => {
+  const items = await readHistory(); const it = items[req.body.index];
+  if (!it) throw new HttpError(404, 'Version introuvable.');
+  const content = clean(it.content);
+  await archiveCurrent(req.user.id);
+  await writeStored(content, req.user.id);
+  await audit(pool, req, 'paramètres', 'Page « A propos de Manager PRO » : version précédente restaurée', 'app_settings', null, null, null);
+  res.json({ ok: true, content });
+}));
+
+/** Complète la page actuelle avec les rubriques et solutions du modèle qui y manquent (aucune suppression, aucune modification de l'existant). */
+r.post('/admin/about/complete', principal, wrap(async (req, res) => {
+  const cur = await readStored(); const D = About.defaultDoc();
+  const base = cur ? cur.content : D;
+  const norm = x => String(x || '').trim().toLowerCase();
+  const haveSol = new Set(base.solutions.map(x => norm(x.name))), haveSec = new Set(base.sections.map(x => norm(x.title)));
+  const addSol = D.solutions.filter(x => !haveSol.has(norm(x.name))), addSec = D.sections.filter(x => !haveSec.has(norm(x.title)));
+  const merged = { ...base, solutions: [...base.solutions, ...addSol], sections: [...base.sections, ...addSec] };
+  if (!merged.upcoming || (!merged.upcoming.title && !merged.upcoming.text)) merged.upcoming = D.upcoming;
+  if (!merged.approach || !(merged.approach.commitments || []).length) merged.approach = D.approach;
+  if (!merged.why || !(merged.why.items || merged.why.points || []).length) merged.why = D.why;
+  const content = clean(merged);
+  await archiveCurrent(req.user.id);
+  await writeStored(content, req.user.id);
+  await audit(pool, req, 'paramètres', `Page « A propos » complétée avec le modèle (+${addSol.length} solution(s), +${addSec.length} rubrique(s))`, 'app_settings', null, null, null);
+  res.json({ ok: true, added_solutions: addSol.length, added_sections: addSec.length, content });
 }));
 
 // Base non à jour : message explicite au lieu de « Erreur interne ».

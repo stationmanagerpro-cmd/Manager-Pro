@@ -68,7 +68,7 @@
     return `<div class="ab" id="ab-root">
       <section class="ab-hero">
         <div class="ab-hero-text"><h2>${E(h.title)}</h2>${h.tagline ? `<p class="ab-tag">${E(h.tagline)}</p>` : ''}${h.intro ? `<p class="ab-intro">${E(h.intro)}</p>` : ''}</div>
-        ${meta.editable ? '<button type="button" class="ab-edit-btn" onclick="abEdit()">✏️ Modifier la page</button>' : ''}
+        ${meta.editable ? '<button type="button" class="ab-edit-btn" onclick="abEdit()">✏️ Modifier la page</button><button type="button" class="ab-edit-btn b2" onclick="abHistory()">🕘 Versions et restauration</button>' : ''}
       </section>
       ${secs.length ? `<div class="ab-grid">${secs.map(s => `<section class="ab-card"><h3>${s.icon ? `<span class="ab-ic" aria-hidden="true">${E(s.icon)}</span>` : ''}${E(s.title)}</h3><div class="ab-body">${rich(s.body)}</div></section>`).join('')}</div>` : ''}
       ${sols.length || up ? `<section class="ab-block" id="ab-solutions"><h2 class="ab-h">${E(d.solutions_title || 'NOS SOLUTIONS LOGICIELLES')}</h2>
@@ -182,6 +182,8 @@
         <div class="ab-form">${field('ab_sgname', 'Nom', sg.name, L.name)}${field('ab_sgtag', 'Phrase de signature', sg.tagline, L.tagline)}${field('ab_sgslogan', 'Slogan', sg.slogan, L.tagline, 'class="ab-wide"')}</div>
       </section>
       <div class="ab-bar ab-save">
+        <button type="button" class="b2" onclick="abComplete()" title="Ajoute les solutions et rubriques du modèle qui manquent, sans rien supprimer">Compléter avec le modèle</button>
+        <button type="button" class="b2" onclick="abHistory()">Versions</button>
         <button type="button" class="b2 bd" onclick="abReset()">Rétablir le modèle d’origine</button>
         <span class="ab-spacer"></span>
         <button type="button" class="b2" onclick="abCancel()">Annuler</button>
@@ -239,6 +241,25 @@
       st.edit = null; toast('Page « A propos » enregistrée', 'success'); go('apropos');
     } catch (e) { toast(errMsg(e), 'error'); }
   };
+  window.abComplete = () => ask('Ajouter à la page les solutions et rubriques du modèle qui manquent ? Rien de ce qui existe n’est supprimé ni modifié.', async () => {
+    try { const r = await Po('/admin/about/complete', {}); st.edit = null; toast('Page complétée : +' + r.added_solutions + ' solution(s), +' + r.added_sections + ' rubrique(s)', 'success'); go('apropos'); }
+    catch (e) { toast(errMsg(e), 'error'); }
+  });
+  window.abHistory = async () => {
+    try {
+      const h = await G('/admin/about/history');
+      const fd2 = v => v ? new Date(v).toLocaleString('fr-FR') : '—';
+      modal('<h3 style="margin-top:0">Versions de la page « A propos »</h3>' +
+        '<p class="muted">Version actuelle : ' + (h.current.model ? 'modèle d’origine' : 'enregistrée le ' + E(fd2(h.current.saved_at))) + ' — ' + h.current.solutions + ' solution(s), ' + h.current.sections + ' rubrique(s).</p>' +
+        (h.versions.length ? '<div style="max-height:46vh;overflow:auto">' + h.versions.map(v => '<div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin:6px 0"><span>' + E(fd2(v.saved_at)) + '<br><small>' + (v.readable ? v.solutions + ' solution(s), ' + v.sections + ' rubrique(s)' : 'illisible') + '</small></span>' +
+          (v.readable ? '<button type="button" class="b2" onclick="abRestore(' + v.index + ')">Restaurer</button>' : '') + '</div>').join('') + '</div>' : '<p class="ab-empty">Aucune version précédente : l’historique commence à partir de la prochaine modification.</p>') +
+        '<div class="bar"><button type="button" class="b2" onclick="closeM()">Fermer</button></div>');
+    } catch (e) { toast(errMsg(e), 'error'); }
+  };
+  window.abRestore = i => ask('Restaurer cette version ? La version actuelle est conservée dans l’historique.', async () => {
+    try { await Po('/admin/about/restore', { index: i }); closeM(); st.edit = null; toast('Version restaurée', 'success'); go('apropos'); }
+    catch (e) { toast(errMsg(e), 'error'); }
+  });
   window.abReset = () => ask('Rétablir le texte d’origine ? Vos modifications de cette page seront perdues.', async () => {
     try { await Po('/admin/about/reset', {}); st.edit = null; toast('Modèle d’origine rétabli', 'success'); go('apropos'); }
     catch (e) { toast(errMsg(e), 'error'); }
