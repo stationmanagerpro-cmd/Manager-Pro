@@ -434,9 +434,10 @@
     ['account_inactive', 'Compte inactif'], ['account_locked', 'Compte bloqué'],
     ['payroll_anomaly', 'Anomalie de paie'], ['payroll_pending', 'Bulletins de paie en attente'],
     ['incident_note', 'Note d’incident'], ['license_expiring', 'Licence bientôt expirée'],
-    ['stock_low', 'Stock sous le minimum'], ['backup_failure', 'Échec de sauvegarde']
+    ['stock_low', 'Stock sous le minimum'], ['backup_failure', 'Échec de sauvegarde'],
+    ['daily_summary', 'Résumé du soir'], ['tank_runout', 'Rupture de cuve prévue']
   ];
-  const thresholdKinds = new Set(['cash_variance', 'shift_close', 'counter_anomaly', 'stock_anomaly', 'purchase_variance', 'late_arrival', 'account_inactive', 'license_expiring']);
+  const thresholdKinds = new Set(['cash_variance', 'shift_close', 'counter_anomaly', 'stock_anomaly', 'purchase_variance', 'late_arrival', 'account_inactive', 'license_expiring', 'tank_runout']);
 
   window.msgAlertCenterOpen = async function () {
     try {

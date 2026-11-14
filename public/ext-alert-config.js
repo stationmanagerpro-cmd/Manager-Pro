@@ -19,6 +19,8 @@
     { id: 'payroll_anomaly', label: 'Anomalie de paie', desc: 'Incohérence détectée sur la paie.', needsThreshold: false },
     { id: 'incident_note', label: 'Note d’incident', desc: 'Incident saisi dans le système.', needsThreshold: false },
     { id: 'license_expiring', label: 'Licence bientôt expirée', desc: 'Avertissement avant expiration du contrat.', needsThreshold: true, units: [['days', 'Jours']] },
+    { id: 'daily_summary', label: 'Résumé du soir', desc: 'Chaque soir après 20 h : ventes par pompe, quarts, écarts de caisse et anomalies du jour.', needsThreshold: false },
+    { id: 'tank_runout', label: 'Rupture de cuve prévue', desc: 'Prévient quand le stock estimé d’un carburant ne couvre plus que X jours de vente (moyenne des 7 derniers jours).', needsThreshold: true, units: [['days', 'Jours']] },
     { id: 'backup_failure', label: 'Échec de sauvegarde', desc: 'La sauvegarde automatique a échoué.', needsThreshold: false }
   ];
 

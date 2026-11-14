@@ -1040,10 +1040,10 @@ r.get('/messaging/alert-config', need('settings.edit', 'user.manage'), wrap(asyn
 const ALERT_KINDS = new Set([
   'cash_variance', 'shift_close', 'counter_anomaly', 'stock_anomaly', 'purchase_variance',
   'absence', 'late_arrival', 'account_inactive', 'account_locked',
-  'payroll_anomaly', 'payroll_pending', 'incident_note', 'license_expiring', 'backup_failure', 'stock_low', 'tank_variance'
+  'payroll_anomaly', 'payroll_pending', 'incident_note', 'license_expiring', 'backup_failure', 'stock_low', 'tank_variance', 'daily_summary', 'tank_runout'
 ]);
 const THRESHOLD_KINDS = new Set(['cash_variance', 'shift_close', 'counter_anomaly', 'stock_anomaly', 'purchase_variance', 'late_arrival']);
-const CONFIG_THRESHOLD_KINDS = new Set([...THRESHOLD_KINDS, 'account_inactive', 'license_expiring']);
+const CONFIG_THRESHOLD_KINDS = new Set([...THRESHOLD_KINDS, 'account_inactive', 'license_expiring', 'tank_runout']);
 const ALERT_UNITS = new Set(['XOF', 'percent', 'litres', 'units', 'days', 'minutes']);
 
 r.put('/messaging/alert-config', need('settings.edit', 'user.manage'), body(z.object({

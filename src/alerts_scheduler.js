@@ -6,7 +6,8 @@ const { pool } = require('./core');
 const { swallow } = require('./safe');
 const { sendSystemAlert } = require('./messaging');
 
-const SCANNED_KINDS = ['stock_low', 'account_inactive', 'license_expiring', 'payroll_pending'];
+const SCANNED_KINDS = ['stock_low', 'account_inactive', 'license_expiring', 'payroll_pending', 'daily_summary', 'tank_runout'];
+const extra = require('./alerts_extra');
 let running = false;
 let lastRunAt = null;
 let lastRunResult = null;
@@ -87,6 +88,24 @@ async function scanStation(station) {
       for (const c of rows) await fire('license_expiring', {
         body: `Le contrat du compte client arrive à échéance le ${String(c.end_date).slice(0, 10)} (dans ${Math.max(0, Math.ceil((new Date(c.end_date) - new Date()) / 86400000))} jour(s)).`,
         refTable: 'client_contracts', refId: c.id
+      });
+    }
+  }
+
+  if (configByKind.has('daily_summary') && new Date().getHours() >= extra.SUMMARY_HOUR) {
+    const today = new Date().toISOString().slice(0, 10);
+    const sm = await extra.buildDailySummary(pool, station.station_id, today);
+    await fire('daily_summary', { body: sm.text, refTable: 'daily_summary', refId: extra.summaryRefId(today, station.station_id) });
+  }
+
+  if (configByKind.has('tank_runout')) {
+    const cfg = configByKind.get('tank_runout');
+    const limit = Math.max(1, Math.min(60, Math.floor(Number(cfg.threshold_value) || 3)));
+    for (const t of await extra.tankRunouts(pool, station.station_id)) {
+      if (t.days == null || t.days > limit) continue;
+      await fire('tank_runout', {
+        body: `Rupture prévue : ${t.name} — environ ${t.days < 1 ? 'moins d’un jour' : Math.floor(t.days) + ' jour(s)'} de stock (≈ ${extra.fmtL(t.stock)} L, vente moyenne ${extra.fmtL(t.daily)} L/jour sur 7 jours). Estimation à partir du dernier jaugeage.`,
+        refTable: 'tank_runout', refId: t.product_id
       });
     }
   }
