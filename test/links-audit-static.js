@@ -44,7 +44,7 @@ const unlinked=routes.filter(r=>!calls.some(c=>same(c,r))).filter(r=>{
 });
 let bad=0;
 if(orphan.length){bad++;console.error('✘ Appels du front sans route serveur :');orphan.forEach(c=>console.error('   ',c.m,c.p,'←',c.f));}
-const KNOWN_NO_SCREEN=new Set(['PUT /pumps/:pumpId/counters/:n','GET /admin/licenses/duration-presets','GET /exports/:kind/preferences','PUT /exports/:kind/preferences','GET /money/accounts/:id/movements','POST /fiscal/deadlines/scan','POST /messaging/messages/:id/read','POST /messaging/messages/:id/archive']);
+const KNOWN_NO_SCREEN=new Set(['PUT /pumps/:pumpId/counters/:n','GET /admin/licenses/duration-presets','GET /exports/:kind/preferences','PUT /exports/:kind/preferences','GET /money/accounts/:id/movements','POST /messaging/messages/:id/read','POST /messaging/messages/:id/archive']);
 const fresh=unlinked.filter(r=>!KNOWN_NO_SCREEN.has(r.m+' '+r.p));
 if(fresh.length){bad++;console.error('✘ Routes serveur sans écran (ni exception documentée) :');fresh.forEach(r=>console.error('   ',r.m,r.p,'['+r.f+']'));}
 if(bad){process.exit(1);}

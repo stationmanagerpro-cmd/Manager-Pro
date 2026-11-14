@@ -1224,11 +1224,7 @@ async function scanFiscalDeadlines() {
   return { scanned: rows.length, alerts_sent: sent };
 }
 
-r.post('/fiscal/deadlines/scan', need('user.manage'), wrap(async (req, res) => {
-  if (!req.user.is_global) throw new HttpError(403, 'Réservé Superadmin');
-  const result = await scanFiscalDeadlines();
-  res.json({ ...result, disclaimer: DISCLAIMER });
-}));
+// Le scan des échéances (scanFiscalDeadlines) est exécuté uniquement par le planificateur d'alertes (alerts_scheduler.js) : aucune route manuelle.
 
 // ---------------------------------------------------------------------------
 // LOT 4 — Checklist, Excel multi-périodes, métadonnées documents
