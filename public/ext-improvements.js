@@ -102,6 +102,7 @@
     if (!shift) return '<div class="focus-quick" style="max-width:420px;margin:24px auto;padding:20px"><h2 style="text-align:center;margin-top:0">Vente rapide</h2><p style="text-align:center">Aucun quart ouvert : ouvrez un quart avant de vendre.</p><div class="r" style="justify-content:center"><button class="b2" onclick="toggleFocusMode()">Quitter Focus</button></div></div>';
     var opts = [];
     (pumps || []).forEach(function (p) { (p.counters || []).forEach(function (c) { opts.push('<option value="' + c.id + '" data-pump="' + p.id + '">' + esc(p.name || ('Pompe ' + p.id)) + ' · cpt ' + c.counter_number + ' · ' + esc(c.product || '') + '</option>'); }); });
+    var loy = null; try { loy = await G('/loyalty/settings').catch(function () { return null; }); } catch (e) {}
     var team = (shift.team || []);
     var empSel = team.length > 1 ? '<label style="margin-top:10px">Pompiste<select id="fq-emp">' + team.map(function (t) { var pids = Array.isArray(t.pump_ids) ? t.pump_ids : (t.pump_id != null ? [t.pump_id] : []); return '<option value="' + (t.employee_id || t.id) + '" data-pumps=",' + pids.join(',') + ',">' + esc(t.name || t.full_name || ('#' + (t.employee_id || t.id))) + '</option>'; }).join('') + '</select></label><p id="fq-emp-note" style="font-size:12px;color:var(--m);margin:4px 0 0"></p>' : '';
     // La pompe fait foi : le pompiste est celui à qui la pompe du compteur est affectée (sinon, choix manuel).
@@ -111,6 +112,7 @@
       '<label>Compteur<select id="fq-counter" onchange="fqSyncEmp()">' + (opts.join('') || '<option value="">Aucune pompe</option>') + '</select></label>' + empSel +
       '<label style="margin-top:10px">Mode<select id="fq-mode"><option value="litres">Litres</option><option value="montant">Montant</option></select></label>' +
       '<label style="margin-top:10px">Valeur<input type="number" id="fq-val" step="any" min="0" placeholder="0"></label>' +
+      (loy && loy.enabled ? '<label style="margin-top:10px">Fidélité · téléphone (facultatif)<input id="fyp" inputmode="tel" placeholder="Ex. 70 11 22 33"></label><label style="margin-top:6px">Fidélité · plaque (facultatif)<input id="fyl" placeholder="Ex. AB-123-CD"></label>' : '') +
       '<p style="font-size:12px;color:var(--m)">Paiement en espèces. Pour mobile money, crédit ou carte, utilisez l’écran Ventes.</p>' +
       '<div class="r" style="margin-top:18px;justify-content:center;gap:10px">' +
       '<button onclick="submitFocusSale()" style="min-width:140px">Enregistrer</button>' +
@@ -133,10 +135,13 @@
     var body = { mode: mode, counter_id: counterId };
     if (mode === 'litres') body.liters = val; else body.amount = val;
     if (eEl && eEl.value) body.employee_id = +eEl.value;
+    var yp = document.getElementById('fyp'), yl = document.getElementById('fyl');
+    if (yp && yl && (yp.value.trim() || yl.value.trim())) body.loyalty = { phone: yp.value.trim() || null, plate: yl.value.trim() || null };
     try {
       var sent = window.smpFuelSale ? await smpFuelSale(body) : await Po('/sales/fuel', body);
       toast(sent && sent.queued ? 'Hors ligne : vente gardée sur l’appareil' : 'Vente enregistrée', sent && sent.queued ? 'info' : 'success');
       if (valEl) valEl.value = '';
+      if (yp) yp.value = ''; if (yl) yl.value = '';
     } catch (e) {
       toast(errMsg(e), 'error');
     }
