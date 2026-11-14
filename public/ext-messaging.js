@@ -381,7 +381,7 @@
       const r = await fetch('/api/messaging/stream', { headers, signal: rt.ctrl.signal, cache: 'no-store' });
       if (r.status === 401 || r.status === 403 || r.status === 404) { rt.blockedUntil = Date.now() + 5 * 60 * 1000; return; }
       if (!r.ok || !r.body) throw new Error('flux indisponible');
-      rt.retry = 0;
+      rt.retry = 0; const openedAt = Date.now();
       const reader = r.body.getReader(), dec = new TextDecoder();
       let buf = '';
       for (;;) {
@@ -391,6 +391,9 @@
         let i;
         while ((i = buf.indexOf('\n\n')) >= 0) { handleRtChunk(buf.slice(0, i)); buf = buf.slice(i + 2); }
       }
+      // Flux fermé très vite (proxy, réseau instable) : on espace les reconnexions au lieu de boucler toutes les 3 s.
+      if (Date.now() - openedAt < 15000) rt.blockedUntil = Date.now() + Math.min(60000, 5000 * Math.pow(2, Math.min(rt.shortCloses = (rt.shortCloses || 0) + 1, 4)));
+      else rt.shortCloses = 0;
       onRealtimeMessage({}); // reconnexion : on rattrape ce qui a pu être manqué
     } catch (_) {
       rt.blockedUntil = Date.now() + Math.min(30000, 2000 * Math.pow(2, rt.retry++));

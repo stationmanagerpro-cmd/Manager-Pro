@@ -179,12 +179,21 @@ const NAV_ICONS = {
 };
 const BOTTOM_KEYS = ['dash', 'quart', 'ventes', 'caisse', 'emp'];
 
+window.apiMeterInfo = function () {
+  const M = window.__apiMeter || [], c = {};
+  M.forEach(x => { c[x[1]] = (c[x[1]] || 0) + 1; });
+  const top = Object.entries(c).sort((a, b) => b[1] - a[1])[0];
+  return '(' + M.length + ' requêtes de cet écran en 1 min' + (top ? ', surtout ' + top[0] + ' ×' + top[1] : '') + ')';
+};
 async function api(m, p, b) {
   const requestSid = SID;
   const requestStationEpoch = STATION_EPOCH;
   const method = String(m || 'GET').toUpperCase();
   // A8 — Mode démonstration : données d'exemple locales, écritures simulées (voir ext-aide-demo.js). Aucun appel réseau pour les données.
   if (window.SMP_DEMO && window.SMP_DEMO.state.active) return window.SMP_DEMO.handle(method, p, b);
+  /* Compteur de requêtes (60 dernières secondes) : en cas de 429, le message dit combien de requêtes ont été envoyées et vers quelle route. */
+  const nowT = Date.now(), M = (window.__apiMeter = window.__apiMeter || []);
+  M.push([nowT, String(p).split('?')[0].replace(/\/\d+/g, '/:id')]); while (M.length && nowT - M[0][0] > 60000) M.shift();
   const doFetch = () => fetch('/api' + p, { method, headers: { 'Content-Type': 'application/json', ...(TK && { Authorization: 'Bearer ' + TK }), ...(requestSid && { 'X-Station-Id': requestSid }) }, body: b ? JSON.stringify(b) : undefined });
   let r = await doFetch();
   /* 429 (trop de requêtes) : une nouvelle tentative automatique après la pause demandée (lectures et écritures idempotentes) */
@@ -208,7 +217,7 @@ async function api(m, p, b) {
     if (r.status === 403 && j && j.code === 'LICENSE_EXPIRED' && typeof window.__onLicenseExpired === 'function') {
       try { window.__onLicenseExpired(j); } catch (_) {}
     }
-    throw Object.assign(new Error((j && j.error) || (r.status === 429 ? 'Trop de requêtes : patientez quelques secondes puis réessayez.' : 'Erreur ' + r.status)), { details: j && j.details, status: r.status, code: j && j.code });
+    throw Object.assign(new Error((j && j.error) || (r.status === 429 ? 'Trop de requêtes : patientez quelques secondes puis réessayez. ' + window.apiMeterInfo() : 'Erreur ' + r.status)), { details: j && j.details, status: r.status, code: j && j.code });
   }
   return j;
 }

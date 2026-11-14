@@ -26,11 +26,25 @@ app.use(cors({ origin: process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split('
 // Réglage : RATE_LIMIT_IP_MAX (défaut 600 requêtes/minute/IP : plusieurs postes d'une même station partagent une IP).
 const rateLimit = require('express-rate-limit');
 const envInt = (k, d) => { const v = Number(process.env[k]); return Number.isFinite(v) && v >= 0 ? v : d; };
+const _rlLast = {};
+/** Journalise (au plus une fois par minute et par clé) un blocage de débit : permet de voir QUI et QUELLE route déclenchent un 429. */
+function logRateLimit(scope, key, req) {
+  const k = scope + ':' + key, now = Date.now();
+  if (_rlLast[k] && now - _rlLast[k] < 60000) return;
+  _rlLast[k] = now;
+  console.warn(`[rate-limit] ${scope} ${key} bloqué sur ${req.method} ${req.originalUrl.split('?')[0]}`);
+}
 const limitMsg = { error: 'Trop de requêtes, réessayez dans un instant.', code: 'RATE_LIMIT' };
 const ipMax = envInt('RATE_LIMIT_IP_MAX', 600);
 if (ipMax > 0) {
+  // Derrière l'hébergeur (Render / CDN), plusieurs utilisateurs peuvent partager la même adresse IP vue par le serveur :
+  // un plafond par IP appliqué aux utilisateurs connectés les ferait se bloquer entre eux. Les requêtes portant un jeton valide
+  // sont donc comptées uniquement par le plafond PAR UTILISATEUR (plus bas) ; le plafond par IP protège le trafic anonyme.
+  const jwtLib = require('jsonwebtoken');
+  const hasValidToken = req => { try { const t = (req.headers.authorization || '').replace(/^Bearer /, ''); return !!t && !!jwtLib.verify(t, process.env.JWT_SECRET); } catch (_) { return false; } };
   app.use('/api', rateLimit({ windowMs: 60 * 1000, max: ipMax, standardHeaders: true, legacyHeaders: false, message: limitMsg,
-    skip: req => req.path === '/health' }));
+    skip: req => req.path === '/health' || hasValidToken(req),
+    handler: (req, res, _next, opts) => { logRateLimit('ip', req.ip, req); res.status(opts.statusCode).json(limitMsg); } }));
 }
 // Corps JSON : petite limite par défaut ; 16 Mo seulement sur les routes qui reçoivent des fichiers en base64
 // (images, logos, signatures, pièces jointes, imports Excel). JSON_BODY_LIMIT_DEFAULT=16mb rétablit l'ancien comportement partout.
@@ -94,6 +108,7 @@ app.use('/api', auth);              // tout ce qui suit exige un jeton valide
 if (envInt('RATE_LIMIT_USER_MAX', 600) > 0) {   // D2 : plafond par utilisateur connecté (défaut 400/minute)
   app.use('/api', rateLimit({ windowMs: 60 * 1000, max: envInt('RATE_LIMIT_USER_MAX', 600), standardHeaders: true, legacyHeaders: false, message: limitMsg,
     skip: req => /^\/(messaging\/stream|health)/.test(req.path) || (req.method === 'GET' && /^\/me\/preferences\//.test(req.path)),
+    handler: (req, res, _next, opts) => { logRateLimit('user', req.user && req.user.id ? req.user.id : req.ip, req); res.status(opts.statusCode).json(limitMsg); },
     keyGenerator: (req) => (req.user && req.user.id ? 'u:' + req.user.id : 'ip:' + req.ip) }));
 }
 app.use('/api', priv);              // profil, utilisateurs, déconnexion
