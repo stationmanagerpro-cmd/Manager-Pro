@@ -20,7 +20,7 @@
     condensed: '"Arial Narrow","Roboto Condensed",Arial,sans-serif'
   };
   const FONT_LABEL = { sans: 'Moderne (Inter / système)', serif: 'Classique (Georgia)', mono: 'Technique (monospace)', rounded: 'Arrondie', condensed: 'Condensée' };
-  const BUILTIN_IMAGES = { dflt_hero: '/home-default-hero.png' };
+  const BUILTIN_IMAGES = { dflt_hero: '/home-default-hero.webp' };
   const BP = { tablet: 1000, mobile: 600 };
   const NODE_TYPES = ['section', 'box', 'text', 'button', 'image', 'icon', 'mockup'];
   const CONTAINERS = ['section', 'box'];
