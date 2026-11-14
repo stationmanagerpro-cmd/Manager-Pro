@@ -10,8 +10,8 @@ android {
     defaultConfig {
         minSdk = 29                 // Android 10+ : enregistrement des fichiers sans permission de stockage
         targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.1.0"
         applicationId = "com.managepro.app"
 
         // >>> Adresse du site : modifiez ici UNIQUEMENT (sans paramètre ?utm_source=...)
