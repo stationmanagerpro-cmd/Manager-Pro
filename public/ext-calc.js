@@ -236,5 +236,21 @@
     const app = document.getElementById('app');
     if (app) new MutationObserver(sync).observe(app, { attributes: true, attributeFilter: ['class', 'style'] });
   }
+
+  /* ---------- Rappel de clôture : un quart ouvert depuis plus de 10 h déclenche un message (une fois par quart et par session) ---------- */
+  const SHIFT_MAX_H = 10, warned = new Set();
+  async function shiftReminder() {
+    try {
+      const app = document.getElementById('app');
+      if (!app || !app.classList.contains('ready') || document.hidden) return;
+      if (!(window.ME && !ME.is_global) || !canDo('shift.open') || typeof G !== 'function') return;
+      const cu = await G('/shifts/current').catch(() => null);
+      if (!cu || !cu.opened_at || cu.closed_at || warned.has(cu.id)) return;
+      const h = (Date.now() - new Date(cu.opened_at).getTime()) / 3600000;
+      if (h >= SHIFT_MAX_H) { warned.add(cu.id); typeof toast === 'function' && toast('⏰ Le quart N° ' + (cu.number || cu.id) + ' est ouvert depuis ' + Math.floor(h) + ' h : pensez à le clôturer.'); }
+    } catch (_) { /* rappel facultatif */ }
+  }
+  setTimeout(shiftReminder, 20000); setInterval(shiftReminder, 15 * 60 * 1000);
+
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
 })();

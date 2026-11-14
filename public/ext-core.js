@@ -250,6 +250,9 @@ async function openQ() {
       if (d.odate < _today) ask('Ce quart sera enregistré à la date du ' + d.odate + ' (date antérieure) et replacé automatiquement dans l’ordre chronologique des quarts. Continuer ?', doOpen);
       else await doOpen();
     }, participants);
+  // Textes d'aide sous les champs ambigus
+  [['f_ci', 'Montant en caisse au démarrage du quart (compté avec le caissier précédent).'], ['f_reg', 'Caisse où seront enregistrées les espèces de ce quart.'], ['f_otime', 'Heure réelle : modifiez-la seulement pour un quart saisi après coup.']].forEach(([id, t]) => { const el = document.getElementById(id); if (el && el.closest('label') && !el.closest('label').querySelector('.oq-help')) el.closest('label').insertAdjacentHTML('beforeend', '<small class="oq-help" style="display:block;color:var(--m);font-size:11.5px;margin-top:3px;font-weight:400">' + t + '</small>'); });
+  cs.forEach((c, i) => { const el = document.getElementById('f_i' + i); if (el && el.closest('label') && !el.closest('label').querySelector('.oq-help')) el.closest('label').insertAdjacentHTML('beforeend', '<small class="oq-help" style="display:block;color:var(--m);font-size:11.5px;margin-top:3px;font-weight:400">Repris du dernier index de clôture ; non modifiable.</small>'); });
   // Index initial : repris du dernier index connu, non modifiable (seul l'index final / nouveau est saisi)
   cs.forEach((c, i) => { const el = document.getElementById('f_i' + i); if (el && c.current_index != null) { el.readOnly = true; el.style.background = 'var(--bg,#f1f1f1)'; el.style.cursor = 'not-allowed'; el.title = 'Index initial : repris automatiquement, non modifiable'; } });
   // Modale élargie + champ date borné à aujourd’hui + aide de placement chronologique
