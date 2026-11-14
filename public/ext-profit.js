@@ -84,16 +84,17 @@
 
     // Graphique : chiffre d'affaires, marge brute et résultat par période
     const chartId = 'prChart' + Date.now();
-    if (d.series.length > 1) setTimeout(() => {
+    if (d.series.length > 0) { let tries = 0; const draw = () => {
       const ctx = document.getElementById(chartId);
-      if (!ctx || typeof Chart === 'undefined') return;
+      if (!ctx) { if (++tries < 40) setTimeout(draw, 100); return; }
+      if (typeof Chart === 'undefined') { ctx.parentNode.innerHTML = '<p style="color:var(--m);padding:12px">Graphique indisponible (bibliothèque non chargée) : rechargez la page.</p>'; return; }
       new Chart(ctx, { type: 'bar', data: { labels: d.series.map(x => x.label), datasets: [
         { label: "Chiffre d'affaires", data: d.series.map(x => x.revenue), backgroundColor: 'rgba(13,122,107,.35)' },
         { label: 'Marge brute', data: d.series.map(x => x.gross_margin), backgroundColor: 'rgba(13,122,107,.8)' },
         { label: 'Résultat de gestion', data: d.series.map(x => x.operating_result), backgroundColor: 'rgba(200,120,20,.8)' }] },
       options: { responsive: true, maintainAspectRatio: false, scales: { y: { ticks: { callback: v => new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(v) } } } } });
-    }, 50);
-    const chart = d.series.length > 1 ? `<div class="card" style="margin:12px 0;height:300px"><canvas id="${chartId}"></canvas></div>` : '';
+    }; setTimeout(draw, 50); }
+    const chart = d.series.length > 0 ? `<div class="card" style="margin:12px 0;height:300px"><canvas id="${chartId}"></canvas></div>` : '';
 
     const body = d.sections.map(s => renderSection(s)).join('');
     const notes = d.notes.length ? `<h3>Notes et limites</h3>${d.notes.map(n => `<div class="warn">${esc(n)}</div>`).join('')}` : '';
