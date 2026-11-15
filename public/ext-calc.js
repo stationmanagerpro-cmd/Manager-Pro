@@ -164,6 +164,7 @@
       if (open) items.push(['vente', '＋', '+ Vente']);
     }
     if (!glob && typeof addS === 'function' && typeof addX === 'function' && typeof openQ === 'function' && (canDo('sale.create') || canDo('shift.open'))) items.push(['pompiste', '⛽', 'Mode pompiste']);
+    if (!glob && typeof smpMyDay === 'function' && (canDo('report.view') || canDo('shift.close'))) items.push(['myday', '📅', 'Ma journée']);
     items.push(['moi', '👤', 'Profil']);
     menu.innerHTML = items.map(([k, i, l]) => `<button type="button" role="menuitem" data-a="${k}"><span aria-hidden="true">${i}</span>${l}</button>`).join('');
     menu.classList.add('open'); btn.setAttribute('aria-expanded', 'true');
@@ -189,6 +190,7 @@
       else if (a === 'vente') addS();
       else if (a === 'moi') go('moi');
       else if (a === 'pompiste') pompiste();
+      else if (a === 'myday') smpMyDay();
     } catch (e) { typeof toast === 'function' && toast('Action indisponible : ' + (e && e.message || e)); }
   }
 

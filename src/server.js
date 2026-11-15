@@ -257,6 +257,7 @@ app.use('/api', require('./platform_insights').r); // santé clients, comparaiso
 app.use('/api', require('./usage').r);      // temps d'utilisation (battement de l'application ouverte)
 app.use('/api', require('./push').r);       // abonnements aux notifications push (téléphone / navigateur)
 app.use('/api', require('./fleet').r);      // Cartes carburant / flottes
+app.use('/api', require('./my_day').r);    // « Ma journée » : synthèse, objectif mensuel, classement des employés
 app.use('/api', require('./tanks').r);      // Cuves : jauges et réconciliation du stock en cuve
 app.use('/api', require('./money_match').r);   // Rapprochement ligne à ligne des relevés Mobile Money / banque
 app.use('/api', require('./finance'));
