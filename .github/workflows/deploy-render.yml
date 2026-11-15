@@ -1,0 +1,23 @@
+name: Déployer sur Render
+
+# Se lance à chaque envoi sur main, ou à la demande (onglet Actions → Run workflow).
+# Nécessite le secret de dépôt RENDER_DEPLOY_HOOK (URL « Deploy Hook » du service Render).
+# Sans ce secret, l'étape est simplement ignorée.
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'android/**'
+      - 'Dossier CHANGELOG/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Déclencher le déploiement Render
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$HOOK" ]; then echo "Secret RENDER_DEPLOY_HOOK absent : déploiement non déclenché."; exit 0; fi
+          curl -fsS -X POST "$HOOK" && echo "Déploiement Render demandé."

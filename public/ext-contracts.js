@@ -146,8 +146,30 @@
     });
     el.innerHTML = '<b>' + yes + '</b> autorisation(s) activée(s) · <b>' + no + '</b> désactivée(s)';
   };
+  /* Groupes de modules : un clic active ou coupe toutes les cases d'une même famille (au lieu de cocher une à une). */
+  const MODULE_GROUPS = {
+    fiscalite: { label: 'Fiscalité (15 cases)', keys: ['can_access_fiscal', 'can_fiscal_estimates', 'can_fiscal_exports', 'can_fiscal_prepare', 'can_fiscal_deadlines', 'fiscal_tva', 'fiscal_synthetique', 'fiscal_ibic', 'fiscal_is', 'fiscal_its', 'fiscal_cfe', 'fiscal_tfp', 'fiscal_logement', 'fiscal_retenues', 'fiscal_autres'] },
+    comptabilite: { label: 'Comptabilité (6 cases)', keys: ['can_access_accounting', 'accounting_entries', 'accounting_assets', 'accounting_vat', 'accounting_closing', 'accounting_export'] },
+    paie: { label: 'Paie (5 cases)', keys: ['payroll_amo', 'payroll_inps', 'payroll_its', 'payroll_charges', 'employee_portal_payslips'] },
+    messagerie: { label: 'Messagerie (5 cases)', keys: ['can_use_messaging', 'messaging_attachments', 'messaging_groups', 'messaging_broadcast', 'messaging_support'] },
+    flotte_credit: { label: 'Clients, flottes et trésorerie', keys: ['module_customers', 'module_fleet', 'module_loyalty', 'module_portal', 'module_treasury'] }
+  };
+  window.applyModuleGroup = function (code, on) {
+    const g = MODULE_GROUPS[code]; if (!g) return;
+    let n = 0;
+    g.keys.forEach(k => { const el = document.getElementById('f_' + k); if (el) { el.value = on ? 'true' : 'false'; n++; } });
+    if (typeof toast === 'function') toast(g.label.replace(/ \(.*\)/, '') + ' : ' + (on ? 'tout activé' : 'tout désactivé') + ' (' + n + ' cases)', 'success');
+    try { updateAuthSummary(); } catch (_) {}
+  };
+  function moduleGroupsHtml() {
+    return '<div class="card" style="margin:12px 0;padding:12px"><b>Groupes de modules</b>' +
+      '<p class="muted" style="font-size:12px;margin:4px 0 8px">Activez ou coupez toute une famille en un clic, puis ajustez au besoin.</p>' +
+      Object.keys(MODULE_GROUPS).map(c => '<div class="r" style="flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0"><span style="min-width:190px">' + MODULE_GROUPS[c].label + '</span>' +
+        '<button type="button" class="b2" onclick="applyModuleGroup(\'' + c + '\',true)">Tout activer</button>' +
+        '<button type="button" class="b2" onclick="applyModuleGroup(\'' + c + '\',false)">Tout couper</button></div>').join('') + '</div>';
+  }
   function authPacksExtraHtml() {
-    return '<div class="card" style="margin:12px 0;padding:12px">' +
+    return moduleGroupsHtml() + '<div class="card" style="margin:12px 0;padding:12px">' +
       '<b>Packs d\'autorisations</b> ' +
       '<p class="muted" style="font-size:12px;margin:4px 0 8px">Appliquez un profil, puis ajustez case par case.</p>' +
       '<div class="r" style="flex-wrap:wrap;gap:6px">' +
@@ -189,6 +211,11 @@
       ['module_direction', '② Pilotage direction (dashboard)', 's', YN],
       ['module_mm_commission', '② Commissions Mobile Money', 's', YN],
       ['module_multistation', '② Multi-stations (vue consolidée)', 's', YN],
+      ['module_fleet', '② Cartes carburant / flottes', 's', YN],
+      ['module_tanks', '② Cuves et jaugeage', 's', YN],
+      ['module_loyalty', '② Fidélité clients', 's', YN],
+      ['module_portal', '② Espace client (liens privés)', 's', YN],
+      ['module_treasury', '② Trésorerie et créances/dettes', 's', YN],
       // ═══ RH / PAIE ═══
       ['can_access_hr', '③ Module RH (accès)', 's', YN],
       ['can_manage_hr', '③ Module RH (gestion complète)', 's', YN],
@@ -273,6 +300,11 @@
       module_direction: mod('direction'),
       module_mm_commission: mod('mm_commission'),
       module_multistation: mod('multistation'),
+      module_fleet: mod('fleet'),
+      module_tanks: mod('tanks'),
+      module_loyalty: mod('loyalty'),
+      module_portal: mod('portal'),
+      module_treasury: mod('treasury'),
       can_access_hr: on(f.can_access_hr === false || m.hr === false ? false : true),
       can_manage_hr: on(f.can_manage_hr),
       payroll_amo: mod('payroll_amo'),
@@ -379,6 +411,11 @@
         mm_commission: t('module_mm_commission'),
         seller_commissions: t('module_seller_commissions'),
         multistation: t('module_multistation'),
+        fleet: t('module_fleet'),
+        tanks: t('module_tanks'),
+        loyalty: t('module_loyalty'),
+        portal: t('module_portal'),
+        treasury: t('module_treasury'),
         hr: t('can_access_hr'),
         finance: t('can_access_finance'),
         reports: t('can_view_reports'),

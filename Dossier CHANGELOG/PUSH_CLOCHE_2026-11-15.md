@@ -1,0 +1,1 @@
+# 2026-11-15 — Animation de la cloche + notifications push application fermée (Web Push VAPID sans dépendance : migration 106, src/push.js, src/push_vapid.js, sw.js, ext-push.js). Non valable dans l'APK WebView (qui garde son propre contrôle périodique).

@@ -63,6 +63,9 @@ async function notifyConversation(convId, extra) {
   try {
     const { rows } = await pool.query('SELECT user_id FROM conversation_members WHERE conversation_id = $1', [convId]);
     publish(rows.map(r => r.user_id), 'message', Object.assign({ conversation_id: Number(convId) }, extra || {}));
+    // Appareils hors application (aucun flux ouvert) : notification push, sauf l'expéditeur.
+    const offline = rows.map(r => Number(r.user_id)).filter(id => id !== Number(extra && extra.sender_id) && !isOnline(id));
+    if (offline.length) require('./push').pushToUsers(offline);
   } catch (_) { /* le rafraîchissement périodique rattrape un évènement manqué */ }
 }
 

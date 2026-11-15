@@ -1,0 +1,1 @@
+# 2026-11-15 — Modules commercialisables supplémentaires (activables par contrat/pack, actifs par défaut): fleet, tanks, loyalty, portal, treasury. Blocage serveur (src/server.js), menu masqué (public/app.js), cases dans l'écran Contrat (ext-contracts.js)

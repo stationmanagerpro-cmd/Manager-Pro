@@ -187,6 +187,12 @@ app.use('/api', async (req, res, next) => {
       if (isPath('/invoices') && !featureOn(contract, 'can_use_billing') && !featureOn(contract, 'module:billing')) {
         return res.status(403).json({ error: 'La facturation n’est pas incluse dans votre contrat.', code: 'FEATURE_DISABLED', feature: 'can_use_billing' });
       }
+      // Modules commercialisables (activables par contrat / pack) — actifs par défaut pour les contrats existants
+      for (const [prefixes, mod, label] of [[['/fleet'], 'fleet', 'Cartes carburant / flottes'], [['/tanks'], 'tanks', 'Cuves et jaugeage'], [['/loyalty'], 'loyalty', 'Fidélité clients'], [['/portal'], 'portal', 'Espace client'], [['/treasury', '/debts'], 'treasury', 'Trésorerie et créances/dettes']]) {
+        if (prefixes.some(isPath) && !featureOn(contract, 'module:' + mod)) {
+          return res.status(403).json({ error: 'Module ' + label + ' non inclus dans votre contrat.', code: 'FEATURE_DISABLED', feature: mod });
+        }
+      }
       if (isPath('/imports') && !featureOn(contract, 'module:imports')) {
         return res.status(403).json({ error: 'Imports par lot non inclus dans votre contrat.', code: 'FEATURE_DISABLED', feature: 'imports' });
       }
@@ -246,6 +252,7 @@ app.use('/api', require('./market'));          // rapprochement Mobile Money ↔
 app.use('/api', require('./gaps'));            // transferts de stock, historique compteurs, prêts, SMTP, licences, préférences dashboard
 app.use('/api', require('./client_portal'));   // liens d'espace client (gestion)
 app.use('/api', require('./treasury').r);   // Trésorerie + Créances & dettes (agrégats)
+app.use('/api', require('./push').r);       // abonnements aux notifications push (téléphone / navigateur)
 app.use('/api', require('./fleet').r);      // Cartes carburant / flottes
 app.use('/api', require('./tanks').r);      // Cuves : jauges et réconciliation du stock en cuve
 app.use('/api', require('./money_match').r);   // Rapprochement ligne à ligne des relevés Mobile Money / banque

@@ -309,7 +309,13 @@ const visible = k => V[k] && (typeof canView === 'function' ? canView(k) : can(V
     try {
       const it = await bellItems();
       const n = it.messages.length + it.platform.length + it.alerts.length;
-      b.hidden = !n; b.textContent = n > 99 ? '99+' : String(n);
+      const prev = Number(b.dataset.n || 0);
+      b.hidden = !n; b.textContent = n > 99 ? '99+' : String(n); b.dataset.n = String(n);
+      if (n > prev && prev !== undefined && b.dataset.init === '1') {   // nouvelle notification : la cloche sonne (animation)
+        const bell = document.getElementById('bell');
+        if (bell && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) { bell.classList.remove('ring'); void bell.offsetWidth; bell.classList.add('ring'); setTimeout(() => bell.classList.remove('ring'), 3200); }
+      }
+      b.dataset.init = '1';
       b.setAttribute('aria-label', n + ' notification(s) non lue(s)');
     } catch (e) { /* notifications indisponibles : on n'affiche rien */ }
   }

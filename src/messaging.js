@@ -305,7 +305,7 @@ r.get('/messaging/conversations', wrap(async (req, res) => {
               c.is_group, c.is_broadcast, COALESCE(c.is_support, FALSE) AS is_support, (c.is_group AND c.created_by IS NULL) AS is_system_conv, c.client_id, c.created_at,
               (SELECT COUNT(*)::int FROM messages m
                  LEFT JOIN message_states ms ON ms.message_id = m.id AND ms.user_id = $1
-                WHERE m.conversation_id = c.id AND m.deleted_at IS NULL AND m.sender_id <> $1
+                WHERE m.conversation_id = c.id AND m.deleted_at IS NULL AND (m.sender_id <> $1 OR m.is_system)
                   AND (ms.read_at IS NULL OR ms.message_id IS NULL)
               ) AS unread,
               (SELECT json_build_object('id', m2.id, 'body', left(m2.body, 120), 'sender_id', m2.sender_id, 'created_at', m2.created_at)
@@ -332,7 +332,7 @@ r.get('/messaging/conversations', wrap(async (req, res) => {
             (SELECT COUNT(*)::int FROM messages m
                LEFT JOIN message_states ms ON ms.message_id = m.id AND ms.user_id = $2
               WHERE m.conversation_id = c.id AND m.deleted_at IS NULL
-                AND m.sender_id <> $2
+                AND (m.sender_id <> $2 OR m.is_system)
                 AND (ms.read_at IS NULL OR ms.message_id IS NULL)
             ) AS unread,
             (SELECT json_build_object(
@@ -391,7 +391,7 @@ r.get('/messaging/unread', wrap(async (req, res) => {
        LEFT JOIN clients cl ON cl.id = c.client_id
        LEFT JOIN users creator ON creator.id = c.created_by
        LEFT JOIN message_states ms ON ms.message_id = m.id AND ms.user_id = $1 AND ms.deleted_at IS NULL
-      WHERE m.deleted_at IS NULL AND m.sender_id <> $1
+      WHERE m.deleted_at IS NULL AND (m.sender_id <> $1 OR m.is_system)
         AND ms.read_at IS NULL ${tenantFilter}
       ORDER BY m.created_at ASC, m.id ASC
       LIMIT 100`,
@@ -536,7 +536,7 @@ r.get('/messaging/conversations/:id/messages', wrap(async (req, res) => {
   await pool.query(
     `INSERT INTO message_states(message_id, user_id, read_at)
      SELECT m.id, $2, now() FROM messages m
-      WHERE m.conversation_id = $1 AND m.sender_id <> $2 AND m.deleted_at IS NULL
+      WHERE m.conversation_id = $1 AND (m.sender_id <> $2 OR m.is_system) AND m.deleted_at IS NULL
      ON CONFLICT (message_id, user_id) DO UPDATE SET read_at = COALESCE(message_states.read_at, now())`,
     [convId, req.user.id]
   );
@@ -863,7 +863,7 @@ async function createSystemConversation({ clientId, title, body, kind, refTable 
     const { rows: [m] } = await c.query(
       `INSERT INTO messages(client_id, conversation_id, sender_id, body, is_system, system_kind, ref_table, ref_id)
        VALUES ($1,$2,$3,$4,TRUE,$5,$6,$7) RETURNING id`, [clientId, cv.id, senderId, body, kind, refTable, refId]);
-    for (const uid of recipientIds) if (uid !== senderId) await c.query(`INSERT INTO message_states(message_id, user_id) VALUES ($1,$2)`, [m.id, uid]);
+    for (const uid of recipientIds) await c.query(`INSERT INTO message_states(message_id, user_id) VALUES ($1,$2)`, [m.id, uid]);
     return { conversation_id: cv.id, message_id: m.id, recipients: recipientIds.length };
   });
   realtime.notifyConversation(result.conversation_id, { message_id: result.message_id, system: true });

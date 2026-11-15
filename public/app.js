@@ -299,6 +299,12 @@ const contractAllowsView = k => {
   if (k === 'pompes' || k === 'histcompteurs') return modOn('pumps', true);
   if (k === 'transferts') return modOn('stock', true);
   if (k === 'emp') return modOn('employees', true);
+  // Modules commercialisables (actifs par défaut)
+  if (k === 'flotte') return modOn('fleet', true);
+  if (k === 'cuves') return modOn('tanks', true);
+  if (k === 'fidelite') return modOn('loyalty', true);
+  if (k === 'espaceclient') return modOn('portal', true);
+  if (k === 'treso' || k === 'dettes') return modOn('treasury', true);
   // Imports
   if (k === 'imports') return modOn('imports', true);
   // Multi-stations / Mes stations
