@@ -937,7 +937,7 @@ const addM = async () => {
     go('caisse');
   });
 };
-async function vAlert() { const ls = await G('/notifications'); return T(['Date', 'Niveau', 'Message', ''], ls.map(n => [dt(n.created_at), `<span class="tag ${n.level == 'info' ? '' : 'x'}">${n.level}</span>`, esc(n.message), n.read_at ? '' : `<button class="b2" onclick="Po('/notifications/${n.id}/read').then(()=>go('alert'))">Lu</button>`])); }
+async function vAlert() { const ls = await G('/notifications'); return T(['Date', 'Niveau', 'Message', ''], ls.map(n => [dt(n.created_at), `<span class="tag ${n.level == 'info' ? '' : 'x'}">${n.level}</span>`, esc(n.message), (n.kind == 'licence_expiration' && typeof requestRenewal == 'function' ? `<button onclick="requestRenewal()">Renouveler</button> ` : '') + (n.read_at ? '' : `<button class="b2" onclick="Po('/notifications/${n.id}/read').then(()=>go('alert'))">Lu</button>`)])); }
 async function vAudit() { const ls = await G('/audit'); const mo = new Date().toISOString().slice(0, 8) + '01', td = new Date().toISOString().slice(0, 10); return `<div class="bar"><input class="q" placeholder="Filtrer" oninput="flt(this)"><button class="b2" onclick="dlFile('/finance/audit?from=${mo}&to=${td}&format=pdf','audit')">Rapport PDF (mois)</button><button class="b2" onclick="dlFile('/finance/audit?from=${mo}&to=${td}&format=xlsx','audit')">Excel</button></div>` + T(['Date', 'Utilisateur', 'Module', 'Action', 'Avant', 'Après'], ls.map(a => [dts(a.created_at), esc(a.login), esc(a.module), esc(a.action), esc(a.old_value ? JSON.stringify(a.old_value) : ''), esc(a.new_value ? JSON.stringify(a.new_value) : '')])); }
 async function vParam() {
   const us = await G('/users');

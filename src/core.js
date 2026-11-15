@@ -199,7 +199,9 @@ function errorHandler(e, req, res, next) {
   const schemaMismatch = 'Schéma de base de données incompatible (table ou colonne manquante). Consultez les journaux du serveur pour identifier la requête. Avant toute migration, faites une sauvegarde indépendante et vérifiez schema_migrations ; ne réinitialisez pas la base. Si l’historique est vide alors que des données existent, arrêtez-vous et faites auditer le schéma.';
   const map = { '42P01': [503, schemaMismatch], '42703': [503, schemaMismatch], '22P02': [400, 'Paramètre invalide (format incorrect)'], 22003: [400, 'Valeur numérique hors limites'], 22007: [400, 'Date ou heure invalide'], 22008: [400, 'Date ou heure invalide'], 22001: [400, 'Texte trop long'], 23505: [409, 'Doublon'], 23503: [409, 'Référence invalide'], 23514: [400, 'Valeur non autorisée'], P0001: [409, e.message] };
   const m = map[e.code];
-  if (m) return res.status(m[0]).json({ error: m[1] });
+  const journal = status => { try { require('./platform_insights').logError({ source: 'server', method: req && req.method, path: req && (req.originalUrl || '').split('?')[0], status, code: e && e.code, message: e && e.message, stack: e && e.stack, user_id: req && req.user && req.user.id, client_id: req && req.user && req.user.client_id, user_agent: req && req.get && req.get('user-agent') }); } catch (_) { /* journal facultatif */ } };
+  if (m) { if (m[0] >= 500) journal(m[0]); return res.status(m[0]).json({ error: m[1] }); }
+  journal(500);
   console.error('[500] ' + (req && req.method) + ' ' + (req && req.originalUrl) + ' —', e && e.code ? '[' + e.code + ']' : '', e);
   res.status(500).json({ error: 'Erreur interne' });
 }
