@@ -1,0 +1,1 @@
+# 2026-11-15 — Règles de notification : bouton « Créer une règle » du haut supprimé ; cloche : les messages système (règles, alertes) dont l'expéditeur technique est le destinataire lui-même comptent maintenant comme non lus (src/messaging.js)

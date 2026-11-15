@@ -72,7 +72,6 @@
     return '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:4px">' +
       '<div><h2 style="margin:0">Règles de notification</h2>' +
       '<p class="muted" style="margin:6px 0 0">Déclencheur, rapports (1 à 5), priorité, modèle d’e-mail et périodicité.</p></div>' +
-      '<button type="button" class="b1" style="white-space:nowrap;font-size:15px;padding:10px 18px" onclick="nrNew()">＋ Créer une règle</button>' +
       '</div>' +
       '<div class="bar" style="flex-wrap:wrap;gap:8px;margin:12px 0">' +
       '<button type="button" class="b1" onclick="nrNew()">＋ Nouvelle règle</button>' +
