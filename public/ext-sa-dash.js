@@ -44,6 +44,31 @@
     if (sum) mk('sad_c_fin', { type: 'bar', data: { labels: ['Facturé', 'Encaissé', 'Dépenses engagées', 'Dépenses payées'], datasets: [{ data: [sum.invoiced, sum.collected, sum.expenses_committed, sum.expenses_paid], backgroundColor: ['#2563eb', '#22c55e', '#f59e0b', '#ef4444'], borderRadius: 8, maxBarThickness: 60 }] }, options: { ...base, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid }, x: { grid: { display: false } } } } });
   }
 
+  const hm = s => { s = Number(s) || 0; const h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60); return h ? h + ' h ' + String(m).padStart(2, '0') : m + ' min'; };
+  const ago = d => { if (!d) return 'jamais'; const m = Math.round((Date.now() - new Date(d)) / 60000); return m < 2 ? 'à l’instant' : m < 60 ? 'il y a ' + m + ' min' : m < 1440 ? 'il y a ' + Math.round(m / 60) + ' h' : 'il y a ' + Math.round(m / 1440) + ' j'; };
+  let usageCharts = [];
+  window.sadUsage = async function (days) {
+    const box = document.getElementById('sad_usage_body'); if (!box) return;
+    let d; try { d = await G('/admin/platform/usage?days=' + (days || 30)); } catch (e) { box.textContent = 'Statistiques indisponibles : ' + (e.message || e); return; }
+    usageCharts.forEach(c => { try { c.destroy(); } catch (_) { /* déjà détruit */ } }); usageCharts = [];
+    const totS = d.clients.reduce((a, c) => a + c.seconds, 0), totL = d.clients.reduce((a, c) => a + c.logins, 0);
+    const act = d.users.filter(u => u.logins > 0 || u.seconds > 0).length;
+    const since = d.tracking_since ? new Date(d.tracking_since).toLocaleDateString('fr-FR') : null;
+    box.innerHTML = `<div class="sad-kpis2" style="margin-bottom:10px">${mini('⏱', 'Temps total', hm(totS))}${mini('🔑', 'Connexions', totL)}${mini('🧑‍💼', 'Utilisateurs actifs', act + ' / ' + d.users.length)}${mini('🏢', 'Clients actifs', d.clients.filter(c => c.logins || c.seconds).length + ' / ' + d.clients.length)}</div>
+      <div class="sad-row r21"><div><h4 style="margin:4px 0">Temps passé par client (heures)</h4><div class="sad-chart sm"><canvas id="sad_u_cli"></canvas></div></div>
+      <div><h4 style="margin:4px 0">Activité par jour</h4><div class="sad-chart sm"><canvas id="sad_u_day"></canvas></div></div></div>
+      <h4 style="margin:10px 0 4px">Classement des clients</h4>
+      <div style="overflow:auto"><table><thead><tr><th>#</th><th>Client</th><th>Temps passé</th><th>Connexions</th><th>Utilisateurs actifs</th><th>Dernière activité</th></tr></thead><tbody>${d.clients.map((c, i) => `<tr><td>${i + 1}</td><td><b>${esc(c.client_name)}</b></td><td>${hm(c.seconds)}</td><td>${c.logins}</td><td>${c.active_users} / ${c.users}</td><td>${ago(c.last_activity)}</td></tr>`).join('') || '<tr><td colspan="6">Aucun client</td></tr>'}</tbody></table></div>
+      <h4 style="margin:12px 0 4px">Utilisateurs, du plus fréquent au moins fréquent</h4>
+      <div style="overflow:auto;max-height:420px"><table><thead><tr><th>#</th><th>Utilisateur</th><th>Client</th><th>Temps passé</th><th>Connexions</th><th>Jours actifs</th><th>Dernière activité</th></tr></thead><tbody>${d.users.map((u, i) => `<tr><td>${i + 1}</td><td><b>${esc(u.display_name)}</b><br><small>${esc(u.login)}</small></td><td>${esc(u.client_name)}</td><td>${hm(u.seconds)}</td><td>${u.logins}</td><td>${u.active_days}</td><td>${ago(u.last_activity)}</td></tr>`).join('') || '<tr><td colspan="7">Aucun utilisateur</td></tr>'}</tbody></table></div>
+      <p style="font-size:12px;margin:8px 0 0">Les connexions sont comptées depuis l’historique des sessions. Le temps passé est mesuré uniquement quand l’application est ouverte et visible${since ? ', depuis le ' + since : ' ; aucune mesure enregistrée pour l’instant (elle démarre à la prochaine ouverture de l’application par les clients)'}.</p>`;
+    if (typeof Chart === 'undefined') return;
+    const top = d.clients.slice(0, 10);
+    const a = document.getElementById('sad_u_cli'), b = document.getElementById('sad_u_day');
+    if (a) usageCharts.push(new Chart(a, { type: 'bar', data: { labels: top.map(c => c.client_name), datasets: [{ data: top.map(c => Math.round(c.seconds / 36) / 100), backgroundColor: '#0ea5e9', borderRadius: 6, barThickness: 12 }] }, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } } } }));
+    if (b) usageCharts.push(new Chart(b, { type: 'line', data: { labels: d.daily.map(x => x.day.slice(5)), datasets: [{ label: 'Connexions', data: d.daily.map(x => x.logins), borderColor: '#22c55e', backgroundColor: '#22c55e33', tension: .3, yAxisID: 'y' }, { label: 'Heures', data: d.daily.map(x => x.hours), borderColor: '#f59e0b', backgroundColor: '#f59e0b33', tension: .3, yAxisID: 'y1' }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, position: 'left' }, y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false } } } } }));
+  };
+
   window.renderSaDashboard = async function () {
     const [lic, ov, info, sum, plat] = await Promise.all([
       G('/admin/licenses/dashboard').catch(() => null),
@@ -73,6 +98,7 @@
     const nAlert = checks.filter(c => !c.ok).length;
 
     setTimeout(() => drawCharts(lic, sum), 30);
+    setTimeout(() => window.sadUsage && window.sadUsage(30), 60);
 
     return `
     <div class="sad-hello"><div><h1>Bonjour, ${esc(ME.display_name || ME.name || ME.login || 'admin')} 👋</h1><p>Vue d'ensemble de la plateforme : licences, clients, finances et cohérence des données.</p></div>
@@ -113,6 +139,8 @@
         <div class="sad-card"><h3>Opérations de licence récentes</h3><div class="sad-list">${ops.map(h => `<div><span>📄 <b>${esc(h.client_name || '')}</b> · ${esc(h.operation || '')} <small style="display:inline">par ${esc(h.admin_login || '—')}</small></span><small>${dshort(h.performed_at)}</small></div>`).join('') || '<p class="dv2-empty">Aucune opération.</p>'}</div></div>
       </div>
     </div>
+
+    <div class="sad-card" id="sad_usage"><h3>Utilisation de la plateforme <span><select id="sad_usage_days" onchange="sadUsage(this.value)"><option value="7">7 jours</option><option value="30" selected>30 jours</option><option value="90">90 jours</option></select></span></h3><div id="sad_usage_body" style="color:var(--m)">Chargement…</div></div>
 
     <div class="sad-card"><h3>Cohérence des agrégats ${nAlert ? `<span class="sad-pill">${nAlert} alerte(s)</span>` : '<span class="sad-pill">Tout est cohérent</span>'}</h3>
       <p style="margin:0 0 6px;font-size:12px;color:var(--m)">Recoupement automatique entre licences, clients, stations, comptes et finance plateforme.</p>

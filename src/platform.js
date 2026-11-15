@@ -42,6 +42,39 @@ function period(q) {
 }
 
 // ---------- Apparence des rapports de la plateforme (indépendante des clients) ----------
+// Statistiques d'utilisation (Superadmin) : connexions et temps passé, par client et par utilisateur.
+r.get('/admin/platform/usage', needPrincipal, wrap(async (req, res) => {
+  const days = Math.min(365, Math.max(1, parseInt(req.query.days, 10) || 30));
+  const { rows: users } = await pool.query(
+    `SELECT u.id, u.login, c.id AS client_id, c.name AS client_name,
+            COALESCE(NULLIF(trim(e.first_name || ' ' || e.last_name), ''), u.login) AS display_name,
+            (SELECT COUNT(*)::int FROM user_sessions s WHERE s.user_id = u.id AND s.created_at >= now() - make_interval(days => $1::int)) AS logins,
+            COALESCE((SELECT SUM(seconds)::int FROM user_usage x WHERE x.user_id = u.id AND x.day > CURRENT_DATE - $1::int), 0) AS seconds,
+            COALESCE((SELECT COUNT(*)::int FROM user_usage x WHERE x.user_id = u.id AND x.day > CURRENT_DATE - $1::int AND x.pings > 0), 0) AS active_days,
+            GREATEST(u.last_login_at, (SELECT MAX(last_ping_at) FROM user_usage x WHERE x.user_id = u.id)) AS last_activity
+       FROM users u JOIN clients c ON c.id = u.client_id
+       LEFT JOIN employees e ON e.user_id = u.id
+      WHERE u.is_global = false AND u.deleted_at IS NULL
+      ORDER BY seconds DESC, logins DESC, u.login`, [days]);
+  const byClient = new Map();
+  for (const u of users) {
+    const c = byClient.get(u.client_id) || { client_id: u.client_id, client_name: u.client_name, users: 0, active_users: 0, logins: 0, seconds: 0, last_activity: null };
+    c.users++; if (u.logins > 0 || u.seconds > 0) c.active_users++;
+    c.logins += u.logins; c.seconds += u.seconds;
+    if (u.last_activity && (!c.last_activity || new Date(u.last_activity) > new Date(c.last_activity))) c.last_activity = u.last_activity;
+    byClient.set(u.client_id, c);
+  }
+  const clients = [...byClient.values()].sort((a, b) => b.seconds - a.seconds || b.logins - a.logins);
+  const { rows: daily } = await pool.query(
+    `WITH d AS (SELECT generate_series(CURRENT_DATE - ($1::int - 1), CURRENT_DATE, interval '1 day')::date AS day)
+     SELECT to_char(d.day, 'YYYY-MM-DD') AS day,
+            COALESCE((SELECT COUNT(*)::int FROM user_sessions s JOIN users u ON u.id = s.user_id WHERE s.created_at::date = d.day AND u.is_global = false), 0) AS logins,
+            COALESCE((SELECT ROUND(SUM(x.seconds) / 3600.0, 2)::float FROM user_usage x WHERE x.day = d.day), 0) AS hours
+       FROM d ORDER BY d.day`, [Math.min(days, 90)]);
+  const { rows: [tr] } = await pool.query(`SELECT MIN(day) AS since FROM user_usage`);
+  res.json({ days, clients, users, daily, tracking_since: tr && tr.since });
+}));
+
 // État du système (Superadmin) : version, base de données, abonnements push, activité récente.
 r.get('/admin/system-status', needPrincipal, wrap(async (req, res) => {
   const out = { time: new Date().toISOString(), node: process.version, uptime_s: Math.round(process.uptime()) };

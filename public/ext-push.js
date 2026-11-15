@@ -149,6 +149,15 @@
   }
 
 
+
+  // ── Temps d'utilisation : un battement par minute tant que l'application est ouverte et visible ──
+  setInterval(function () {
+    try {
+      if (document.visibilityState !== 'visible' || !window.TK || (typeof ME !== 'undefined' && ME && ME.is_global)) return;
+      Po('/usage/ping', {}).catch(function () {});
+    } catch (_) { /* mesure facultative */ }
+  }, 60000);
+
   // ── Son de cloche (facultatif, par appareil) ──
   function soundOn() { try { return localStorage.getItem('smp_bell_sound') === '1'; } catch (_) { return false; } }
   window.smpBellBeep = function () {
