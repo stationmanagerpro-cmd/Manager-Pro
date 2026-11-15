@@ -3,7 +3,7 @@
  * - /api/** → network-only (jamais de cache : auth JWT, données métier)
  * - Navigation HTML → network-first, fallback cache index si offline total
  */
-const CACHE = 'smp-static-b197b24ef13';
+const CACHE = 'smp-static-b167e9dd6f8';
 
 /* PRECACHE:BEGIN (généré par scripts/build-sw.js — ne pas modifier à la main) */
 const PRECACHE = [
@@ -209,6 +209,17 @@ self.addEventListener('message', function (event) {
       data: { url: '/' }
     });
   }
+});
+/* Push serveur (application fermée) : notification générique, puis ouverture de l'application. */
+self.addEventListener('push', function (event) {
+  event.waitUntil(self.registration.showNotification('Manager PRO', {
+    body: 'Vous avez une nouvelle notification.',
+    tag: 'smp-push',
+    renotify: true,
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-192.png',
+    data: { url: '/' }
+  }));
 });
 self.addEventListener('notificationclick', function (event) {
   event.notification.close();

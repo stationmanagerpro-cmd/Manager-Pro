@@ -1,0 +1,17 @@
+'use strict';
+const assert = require('assert');
+const fs = require('fs');
+const v = require('../src/push_vapid');
+const k = v.generateVapidKeys();
+assert.strictEqual(Buffer.from(k.publicKey, 'base64url').length, 65);
+assert.strictEqual(Buffer.from(k.publicKey, 'base64url')[0], 4);
+const h = v.authorizationHeader(k, 'https://fcm.googleapis.com/fcm/send/abc', 'mailto:a@b.c');
+const m = /^vapid t=([^,]+), k=(.+)$/.exec(h); assert.ok(m); assert.strictEqual(m[2], k.publicKey);
+assert.ok(v.verifyJwt(m[1], k.publicKey), 'signature VAPID valide');
+const claims = JSON.parse(Buffer.from(m[1].split('.')[1], 'base64url'));
+assert.strictEqual(claims.aud, 'https://fcm.googleapis.com'); assert.ok(claims.exp > Date.now() / 1000);
+const other = v.generateVapidKeys(); assert.ok(!v.verifyJwt(m[1], other.publicKey), 'mauvaise clé refusée');
+const sw = fs.readFileSync(__dirname + '/../public/sw.js', 'utf8');
+assert.match(sw, /addEventListener\('push'/); assert.match(sw, /showNotification/);
+assert.match(fs.readFileSync(__dirname + '/../src/server.js', 'utf8'), /require\('\.\/push'\)\.r/);
+console.log('push-vapid : OK');

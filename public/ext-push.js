@@ -96,10 +96,36 @@
     } catch (_) {}
   }
 
+  /* Abonnement serveur : permet de recevoir les notifications même application fermée. */
+  async function serverSubscribe() {
+    try {
+      if (!('serviceWorker' in navigator) || !('PushManager' in window) || !window.TK || (window.ME && ME.is_global)) return false;
+      if (Notification.permission !== 'granted') return false;
+      const reg = await navigator.serviceWorker.ready;
+      let sub = await reg.pushManager.getSubscription();
+      if (!sub) {
+        const k = await G('/push/key');
+        const raw = atob(String(k.key).replace(/-/g, '+').replace(/_/g, '/'));
+        const keyBytes = Uint8Array.from(raw, c => c.charCodeAt(0));
+        sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes });
+      }
+      await Po('/push/subscribe', { endpoint: sub.endpoint, user_agent: String(navigator.userAgent || '').slice(0, 280) });
+      return true;
+    } catch (_) { return false; }
+  }
+  async function serverUnsubscribe() {
+    try {
+      const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription();
+      if (sub) { await Po('/push/unsubscribe', { endpoint: sub.endpoint }).catch(() => {}); await sub.unsubscribe(); }
+    } catch (_) { /* rien à désabonner */ }
+  }
+  window.smpPushSync = serverSubscribe;
+
   window.enablePushNotifications = async function () {
     const ok = await ensurePermission();
     if (!ok) return;
     setEnabled(true);
+    serverSubscribe().then(ok => { if (ok) toast('Notifications téléphone activées (même application fermée)', 'success'); });
     toast('Notifications navigateur activées', 'success');
     pollAlerts();
     startPushPolling();
@@ -107,6 +133,7 @@
 
   window.disablePushNotifications = function () {
     setEnabled(false);
+    serverUnsubscribe();
     if (timer) clearInterval(timer);
     timer = null;
     toast('Notifications navigateur désactivées', 'info');
@@ -115,6 +142,7 @@
   function startPushPolling() {
     if (timer) clearInterval(timer);
     if (!enabled()) return;
+    setTimeout(serverSubscribe, 6000);
     timer = setInterval(pollAlerts, 60000);
     setTimeout(pollAlerts, 4000);
   }
