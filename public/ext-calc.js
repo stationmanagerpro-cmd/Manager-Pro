@@ -154,7 +154,7 @@
     if (!menu) return;
     if (menu.classList.contains('open')) return closeMenu();
     const items = [['calc', '🧮', 'Calculatrice']];
-    const glob = !!(window.ME && ME.is_global);
+    const glob = !!(typeof ME !== 'undefined' && ME && ME.is_global);
     if (!glob && canDo('expense.create') && typeof addX === 'function') items.push(['dep', '💸', 'Dépense']);
     if (!glob && canDo('shift.open') && typeof openQ === 'function') items.push(['quart', '🕘', 'Ouverture Quart']);
     // « + Vente » : seulement lorsqu'un quart est ouvert
@@ -243,7 +243,7 @@
     try {
       const app = document.getElementById('app');
       if (!app || !app.classList.contains('ready') || document.hidden) return;
-      if (!(window.ME && !ME.is_global) || !canDo('shift.open') || typeof G !== 'function') return;
+      if (!(typeof ME !== 'undefined' && ME && !ME.is_global) || !canDo('shift.open') || typeof G !== 'function') return;
       const cu = await G('/shifts/current').catch(() => null);
       if (!cu || !cu.opened_at || cu.closed_at || warned.has(cu.id)) return;
       const h = (Date.now() - new Date(cu.opened_at).getTime()) / 3600000;

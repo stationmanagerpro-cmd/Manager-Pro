@@ -1,0 +1,1 @@
+# 2026-11-15 — Correctif : ME est une variable (let) et non window.ME → le menu ⚡ montrait Dépense/Quart/Vente au Superadmin, le rappel de clôture et le bouton Identifiant ne s'activaient pas (ext-calc.js, ext-core.js)

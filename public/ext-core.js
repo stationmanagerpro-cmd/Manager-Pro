@@ -136,7 +136,7 @@ window.savePersonalTheme = async function (themeValue) {
     toast('Thème appliqué sur cet appareil. Synchronisation serveur impossible pour le moment (' + (typeof errMsg === 'function' ? errMsg(e) : e.message) + ').', 'error');
   }
 };
-function chgLogin() { form('Changer mon identifiant', [['login', 'Nouvel identifiant (3 caractères min.)', 'text'], ['current', 'Mot de passe actuel (confirmation)', 'password']], { login: (window.ME && ME.login) || '' }, async d => { const r = await Po('/auth/login-change', { current: d.current, login: String(d.login || '').trim() }); if (window.ME) ME.login = r.login; closeM(); toast('Identifiant modifié : ' + r.login); }); }
+function chgLogin() { form('Changer mon identifiant', [['login', 'Nouvel identifiant (3 caractères min.)', 'text'], ['current', 'Mot de passe actuel (confirmation)', 'password']], { login: (typeof ME !== 'undefined' && ME && ME.login) || '' }, async d => { const r = await Po('/auth/login-change', { current: d.current, login: String(d.login || '').trim() }); if (typeof ME !== 'undefined' && ME) ME.login = r.login; closeM(); toast('Identifiant modifié : ' + r.login); }); }
 window.chgLogin = chgLogin;
 function chgPwd() { form('Changer mon mot de passe', [['current', 'Mot de passe actuel', 'password'], ['next', 'Nouveau mot de passe (8 caractères min.)', 'password'], ['again', 'Confirmer le nouveau mot de passe', 'password']], {}, async d => { if (d.next !== d.again) throw new Error('Les deux mots de passe ne correspondent pas'); await Po('/auth/password', { current: d.current, next: d.next }); closeM(); toast('Mot de passe modifié'); }); }
 
@@ -1130,4 +1130,4 @@ window.emailSlip = safe(async id => {
 });
 
 /* Admin local = rôle ADMIN non global : peut changer son identifiant */
-window.isLocalAdmin = function () { return !!(window.ME && ME.role === 'ADMIN' && !ME.is_global); };
+window.isLocalAdmin = function () { return !!(typeof ME !== 'undefined' && ME && ME.role === 'ADMIN' && !ME.is_global); };
