@@ -246,7 +246,8 @@ r.get('/fleet/statement', need('customer.view', 'report.view'), wrap(async (req,
     const q = v => '"' + String(v ?? '').replace(/"/g, '""') + '"';
     const csv = ['Carte;Véhicule;Date;Produit;Litres;Montant;Kilométrage'].concat(cards.flatMap(c => c.lines.map(l => [q(c.card_number), q(c.label), q(new Date(l.date).toISOString().slice(0, 16).replace('T', ' ')), q(l.product), String(l.liters).replace('.', ','), String(l.amount).replace('.', ','), l.odometer_km ?? ''].join(';')))).join('\r\n');
     res.set({ 'Content-Type': 'text/csv; charset=utf-8', 'Content-Disposition': `attachment; filename="releve-flotte-${month}.csv"` });
-    return res.send('﻿' + csv);
+    const expBy = require('./docs').exportedByLine();
+    return res.send('﻿' + csv + (expBy ? '\r\n\r\n' + q(expBy) : ''));
   }
   res.json({ customer: cu, month, cards, total });
 }));

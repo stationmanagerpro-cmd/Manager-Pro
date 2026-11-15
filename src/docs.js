@@ -15,6 +15,8 @@ const generatorStore = new AsyncLocalStorage();
 /** Middleware Express (à placer après l'authentification) : mémorise la requête, dont req.user est lu au moment de générer le PDF. */
 const generatorMiddleware = (req, res, next) => generatorStore.run({ req }, next);
 /** Identifiant (login) de l'utilisateur qui génère le document ; à défaut son nom. Null hors requête authentifiée (tâche planifiée). */
+/** Ligne « Exporté par : identifiant » ajoutée au bas de chaque export tableur (Excel, CSV) ; null hors requête authentifiée. */
+function exportedByLine() { const g = currentGenerator(); return g ? 'Exporté par : ' + g : null; }
 function currentGenerator() {
   const u = generatorStore.getStore()?.req?.user;
   return u ? (String(u.login || u.full_name || '').trim() || null) : null;
@@ -297,7 +299,7 @@ async function buildXlsx({ b, title, subtitle, ref, sheets }) {
   const primary = /^#[0-9a-f]{6}$/i.test(b.report_colors?.primary || '') ? b.report_colors.primary : DEFAULT_GREEN;
   const secondary = /^#[0-9a-f]{6}$/i.test(b.report_colors?.secondary || '') ? b.report_colors.secondary : DEFAULT_SOFT;
   const argb = hex => 'FF' + hex.replace('#', '').toUpperCase();
-  const wb = new ExcelJS.Workbook(); wb.creator = b.name; wb.created = new Date();
+  const wb = new ExcelJS.Workbook(); wb.creator = b.name; wb.created = new Date(); wb.lastModifiedBy = currentGenerator() || b.name;
   for (const s of sheets) {
     const ws = wb.addWorksheet(String(s.name).replace(/[\\/*?:[\]]/g, ' ').slice(0, 31));
     ws.addRow([b.name]).font = { bold: true, size: 14, color: { argb: argb(primary) } };
@@ -322,6 +324,7 @@ async function buildXlsx({ b, title, subtitle, ref, sheets }) {
     }
     (s.notes || []).forEach(n => { const nr = ws.addRow([n]); nr.font = { italic: true, color: { argb: 'FF5B6675' } }; });
     if (b.footer?.forced_signature) { ws.addRow([]); ws.addRow([b.footer.forced_signature]).font = { bold: true, color: { argb: 'FF1F2937' } }; }
+    const exp = exportedByLine(); if (exp) { ws.addRow([]); ws.addRow([exp]).font = { italic: true, bold: true, color: { argb: 'FF1F2937' } }; }
     ws.views = [{ state: 'frozen', ySplit: hr.number }];
     if (s.rows.length) ws.autoFilter = { from: { row: hr.number, column: 1 }, to: { row: hr.number, column: s.head.length } };
     ws.pageSetup = { orientation: s.head.length > 6 ? 'landscape' : 'portrait', fitToPage: true, fitToWidth: 1, fitToHeight: 0 };
@@ -329,9 +332,9 @@ async function buildXlsx({ b, title, subtitle, ref, sheets }) {
   return Buffer.from(await wb.xlsx.writeBuffer());
 }
 const csvCell = require('./csv_safe');
-const csv = (head, rows) => '\ufeff' + [head, ...rows.map(r => r.map(cellText))].map(l => l.map(x => csvCell(x)).join(';')).join('\r\n');
+const csv = (head, rows) => '\ufeff' + [head, ...rows.map(r => r.map(cellText)), ...(exportedByLine() ? [[], [exportedByLine()]] : [])].map(l => l.map(x => csvCell(x)).join(';')).join('\r\n');
 const MIME = { pdf: 'application/pdf', xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', csv: 'text/csv; charset=utf-8' };
 function send(res, fmt, buf, name) {
   res.set('Content-Type', MIME[fmt]).set('Content-Disposition', `attachment; filename="${name.replace(/[^\w.-]/g, '_')}.${fmt}"`).send(typeof buf === 'string' ? Buffer.from(buf, 'utf8') : buf);
 }
-module.exports = { branding, buildPdf, buildXlsx, csv, send, cellText, fmtDate, generatorMiddleware, currentGenerator };
+module.exports = { branding, buildPdf, buildXlsx, csv, send, cellText, fmtDate, generatorMiddleware, currentGenerator, exportedByLine };

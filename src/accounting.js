@@ -244,6 +244,7 @@ router.get('/export', view, sub('accounting_export', 'Export comptable'), wrap(a
   }
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
   res.setHeader('Content-Disposition', `attachment; filename="compta_${kind}_${from || 'debut'}_${to}.csv"`);
+  const expBy = require('./docs').exportedByLine(); if (expBy) rows.push([], [expBy]);
   res.send('\uFEFF' + rows.map(r => r.map(csvCell).join(';')).join('\r\n'));
 }));
 

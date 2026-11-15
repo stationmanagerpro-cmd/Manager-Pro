@@ -167,6 +167,7 @@ r.get('/hr/declarations', need('hr.payroll', 'hr.manage', 'report.view'), wrap(a
     }
     lines.push('');
     lines.push(['TOTAL', '', '', '', '', summary.gross_total, summary.its_total, summary.inps_employee_total, summary.inps_employer_total, summary.amo_employee_total, summary.amo_employer_total, summary.employer_charges_total, summary.net_total, ''].join(';'));
+    const expBy = require('./docs').exportedByLine(); if (expBy) lines.push('', expBy);
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="declarations-${summary.month}.csv"`);
     return res.send('\uFEFF' + lines.join('\n'));

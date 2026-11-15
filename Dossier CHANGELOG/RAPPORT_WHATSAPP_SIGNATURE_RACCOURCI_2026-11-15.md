@@ -32,3 +32,10 @@ Branche : feat/rapport-whatsapp-signature-raccourci → fusion dans main (pas de
 ## Restant
 - Déploiement Render (après accord) puis vérification sur le site réel ; retour arrière possible via revert du commit de fusion.
 - Mettre à jour MENU_LATERAL_MOBILE_DEFILEMENT_2026-11-14.md après test appareil.
+
+## Complément 2026-11-15 — « Exporté par » dans chaque export
+- Demande : l'identifiant de la personne qui exporte doit figurer dans chaque export.
+- PDF : déjà couverts (« Généré par : identifiant »). Excel (docs.buildXlsx, tous les modules + export plateforme) : ligne « Exporté par : identifiant » en bas + propriété « dernier modificateur ». CSV (docs.csv, exports, comptabilité, déclarations paie, relevé flotte) : dernière ligne « Exporté par : identifiant ».
+- Hors requête authentifiée (tâche planifiée) : aucune ligne ajoutée, aucun nom inventé.
+- Fichiers : src/docs.js, exports.js, accounting.js, ops_plus.js, fleet.js, platform.js ; test/export-by-static.js (4 contrôles OK, exceljs/pdfkit simulés) ; suites statiques/unitaires identiques à la référence.
+- Non vérifié : fichiers réels ouverts dans Excel ; un CSV ré-importé dans un outil comptable verra une ligne de pied supplémentaire.

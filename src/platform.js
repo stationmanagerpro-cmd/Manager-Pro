@@ -300,6 +300,7 @@ r.get('/admin/platform/reports/:type', needPrincipal, wrap(async (req, res) => {
     ws.addRow(['Manager PRO — Plateforme']).font = { bold: true, size: 14, color: { argb: argb(colors.primary) } };
     ws.addRow([d.title]).font = { bold: true, size: 12 };
     ws.addRow(['Généré le ' + new Date().toLocaleString('fr-FR')]).font = { italic: true, color: { argb: 'FF5B6675' } };
+    const expBy = require('./docs').exportedByLine(); if (expBy) ws.addRow([expBy]).font = { italic: true, bold: true, color: { argb: 'FF1F2937' } };
     ws.addRow([]);
     const header = ws.addRow(d.columns); header.font = { bold: true, color: { argb: argb(colors.text) } };
     header.eachCell(c => { c.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: argb(colors.secondary) } }; c.border = { bottom: { style: 'thin' } }; });

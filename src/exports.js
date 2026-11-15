@@ -336,6 +336,7 @@ r.get('/exports/:kind', wrap(async (req, res) => {
     for (const row of data.rows) lines.push(row.map(csvCell).join(sep));
     const csvTotal = totalsRow(data.head, data.rows, data.sumCols);   // règle : total en bas, calculé sur les lignes exportées
     if (csvTotal && data.rows.length) lines.push(csvTotal.map(csvCell).join(sep));
+    const expBy = docs.exportedByLine(); if (expBy) lines.push('', csvCell(expBy));
     const buf = Buffer.from('\ufeff' + lines.join('\n'), 'utf8'); // BOM Excel FR
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="${kind}-${to}.csv"`);
