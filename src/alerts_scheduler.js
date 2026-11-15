@@ -198,6 +198,8 @@ function startScheduler() {
     return null;
   }
   const tick = () => runAlertScan().catch(e => console.warn('[alertes-auto] Erreur de scan:', e.message));
+  const monthly = () => require('./usage_report').monthlyTick().catch(e => console.warn('[rapport-usage] ' + e.message));
+  const m1 = setInterval(monthly, 5 * 60 * 1000); if (m1.unref) m1.unref();
   const first = setTimeout(tick, 20000);
   if (first.unref) first.unref();
   const timer = setInterval(tick, 5 * 60 * 1000);

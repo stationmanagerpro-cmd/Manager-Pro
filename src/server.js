@@ -252,6 +252,7 @@ app.use('/api', require('./market'));          // rapprochement Mobile Money ↔
 app.use('/api', require('./gaps'));            // transferts de stock, historique compteurs, prêts, SMTP, licences, préférences dashboard
 app.use('/api', require('./client_portal'));   // liens d'espace client (gestion)
 app.use('/api', require('./treasury').r);   // Trésorerie + Créances & dettes (agrégats)
+app.use('/api', require('./usage_report').r);  // rapport d'utilisation (PDF, envoi mensuel)
 app.use('/api', require('./usage').r);      // temps d'utilisation (battement de l'application ouverte)
 app.use('/api', require('./push').r);       // abonnements aux notifications push (téléphone / navigateur)
 app.use('/api', require('./fleet').r);      // Cartes carburant / flottes
