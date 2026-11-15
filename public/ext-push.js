@@ -109,7 +109,8 @@
         const keyBytes = Uint8Array.from(raw, c => c.charCodeAt(0));
         sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: keyBytes });
       }
-      await Po('/push/subscribe', { endpoint: sub.endpoint, user_agent: String(navigator.userAgent || '').slice(0, 280) });
+      const j = sub.toJSON ? sub.toJSON() : {}; const kk = (j && j.keys) || {};
+      await Po('/push/subscribe', { endpoint: sub.endpoint, user_agent: String(navigator.userAgent || '').slice(0, 280), p256dh: kk.p256dh, auth: kk.auth });
       return true;
     } catch (_) { return false; }
   }
@@ -147,6 +148,50 @@
     setTimeout(pollAlerts, 4000);
   }
 
+
+  // ── Son de cloche (facultatif, par appareil) ──
+  function soundOn() { try { return localStorage.getItem('smp_bell_sound') === '1'; } catch (_) { return false; } }
+  window.smpBellBeep = function () {
+    if (!soundOn()) return;
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+      const ctx = new AC(); const t = ctx.currentTime;
+      [880, 1175].forEach(function (f, i) {
+        const o = ctx.createOscillator(), g = ctx.createGain();
+        o.type = 'sine'; o.frequency.value = f; o.connect(g); g.connect(ctx.destination);
+        g.gain.setValueAtTime(0.0001, t + i * 0.18); g.gain.exponentialRampToValueAtTime(0.25, t + i * 0.18 + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.18 + 0.16);
+        o.start(t + i * 0.18); o.stop(t + i * 0.18 + 0.2);
+      });
+      setTimeout(function () { try { ctx.close(); } catch (_) { /* déjà fermé */ } }, 800);
+    } catch (_) { /* son indisponible */ }
+  };
+  window.smpToggleBellSound = function () {
+    try { localStorage.setItem('smp_bell_sound', soundOn() ? '0' : '1'); } catch (_) { /* stockage indisponible */ }
+    if (soundOn()) window.smpBellBeep();
+    if (typeof toast === 'function') toast(soundOn() ? 'Son de la cloche activé' : 'Son de la cloche coupé');
+  };
+
+  // ── État du système (Superadmin) ──
+  window.smpSystemStatus = async function () {
+    let d;
+    try { d = await G('/admin/system-status'); } catch (e) { return toast('État indisponible : ' + (e.message || e)); }
+    const fmt = function (x) { return x ? new Date(x).toLocaleString('fr-FR') : '—'; };
+    const row = function (l, v, ok) { return '<tr><td style="padding:6px 8px;color:var(--m)">' + l + '</td><td style="padding:6px 8px"><b>' + v + '</b>' + (ok === undefined ? '' : (ok ? ' ✅' : ' ❌')) + '</td></tr>'; };
+    const up = Math.floor((d.uptime_s || 0) / 3600) + ' h ' + Math.floor(((d.uptime_s || 0) % 3600) / 60) + ' min';
+    modal('<h3>État du système</h3><table style="width:100%;border-collapse:collapse">'
+      + row('Version', esc(d.version || '—')) + row('Serveur (Node)', esc(d.node || '—')) + row('En marche depuis', up)
+      + row('Base de données', d.db && d.db.ok ? 'OK — ' + d.db.latency_ms + ' ms' : 'Erreur', !!(d.db && d.db.ok))
+      + row('Migrations appliquées', d.migrations && d.migrations.n != null ? d.migrations.n : '—')
+      + row('Clients', d.clients && d.clients.n != null ? d.clients.n : '—')
+      + row('Appareils abonnés aux notifications', d.push && d.push.subscriptions != null ? d.push.subscriptions + ' (' + d.push.users + ' utilisateur(s))' : '—')
+      + row('Dernier envoi push réussi', fmt(d.push && d.push.last_ok))
+      + row('Messages (24 h)', d.messages && d.messages.last_24h != null ? d.messages.last_24h + ' dont ' + d.messages.system_24h + ' alerte(s) auto' : '—')
+      + row('Dernier message', fmt(d.messages && d.messages.last_at))
+      + row('Actions journalisées (24 h)', d.activity && d.activity.audit_24h != null ? d.activity.audit_24h : '—')
+      + row('Heure du serveur', fmt(d.time))
+      + '</table><div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="smpSystemStatus()">↻ Actualiser</button><button class="btn" onclick="closeM()">Fermer</button></div>');
+  };
+
   // Entrée menu utilisateur
   const prevInit = window.initShell;
   window.initShell = async function () {
@@ -166,6 +211,19 @@
       };
       a.textContent = enabled() ? '🔔 Notifications : ON' : '🔔 Activer les notifications';
       um.appendChild(a);
+    }
+    if (um && !document.getElementById('bell-sound-link')) {
+      const b = document.createElement('a');
+      b.id = 'bell-sound-link'; b.setAttribute('role', 'menuitem'); b.tabIndex = 0;
+      b.textContent = soundOn() ? '🔊 Son de la cloche : ON' : '🔈 Son de la cloche : OFF';
+      b.onclick = function () { if (typeof closeUserMenu === 'function') closeUserMenu(); smpToggleBellSound(); b.textContent = soundOn() ? '🔊 Son de la cloche : ON' : '🔈 Son de la cloche : OFF'; };
+      um.appendChild(b);
+    }
+    if (um && !document.getElementById('sys-status-link') && typeof ME !== 'undefined' && ME && ME.is_global) {
+      const c = document.createElement('a');
+      c.id = 'sys-status-link'; c.setAttribute('role', 'menuitem'); c.tabIndex = 0; c.textContent = '🩺 État du système';
+      c.onclick = function () { if (typeof closeUserMenu === 'function') closeUserMenu(); smpSystemStatus(); };
+      um.appendChild(c);
     }
   };
 

@@ -188,7 +188,7 @@ app.use('/api', async (req, res, next) => {
         return res.status(403).json({ error: 'La facturation n’est pas incluse dans votre contrat.', code: 'FEATURE_DISABLED', feature: 'can_use_billing' });
       }
       // Modules commercialisables (activables par contrat / pack) — actifs par défaut pour les contrats existants
-      for (const [prefixes, mod, label] of [[['/fleet'], 'fleet', 'Cartes carburant / flottes'], [['/tanks'], 'tanks', 'Cuves et jaugeage'], [['/loyalty'], 'loyalty', 'Fidélité clients'], [['/portal'], 'portal', 'Espace client'], [['/treasury', '/debts'], 'treasury', 'Trésorerie et créances/dettes']]) {
+      for (const [prefixes, mod, label] of [[['/fleet'], 'fleet', 'Cartes carburant / flottes'], [['/tanks'], 'tanks', 'Cuves et jaugeage'], [['/loyalty'], 'loyalty', 'Fidélité clients'], [['/portal'], 'portal', 'Espace client'], [['/treasury', '/debts'], 'treasury', 'Trésorerie et créances/dettes'], [['/reports/client-profit'], 'profit', 'Marges et rentabilité'], [['/mobile'], 'mobile', 'Alertes application mobile']]) {
         if (prefixes.some(isPath) && !featureOn(contract, 'module:' + mod)) {
           return res.status(403).json({ error: 'Module ' + label + ' non inclus dans votre contrat.', code: 'FEATURE_DISABLED', feature: mod });
         }

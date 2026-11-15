@@ -42,6 +42,22 @@ function period(q) {
 }
 
 // ---------- Apparence des rapports de la plateforme (indépendante des clients) ----------
+// État du système (Superadmin) : version, base de données, abonnements push, activité récente.
+r.get('/admin/system-status', needPrincipal, wrap(async (req, res) => {
+  const out = { time: new Date().toISOString(), node: process.version, uptime_s: Math.round(process.uptime()) };
+  try { out.version = require('../package.json').version; } catch (_) { out.version = null; }
+  const t0 = Date.now();
+  try { await pool.query('SELECT 1'); out.db = { ok: true, latency_ms: Date.now() - t0 }; }
+  catch (e) { out.db = { ok: false, error: String(e.message || e).slice(0, 120) }; }
+  const one = async (key, sql) => { try { const { rows: [x] } = await pool.query(sql); out[key] = x; } catch (e) { out[key] = { error: true }; } };
+  await one('migrations', `SELECT COUNT(*)::int AS n FROM schema_migrations`);
+  await one('push', `SELECT COUNT(*)::int AS subscriptions, COUNT(DISTINCT user_id)::int AS users, MAX(last_ok_at) AS last_ok FROM push_subscriptions`);
+  await one('messages', `SELECT COUNT(*) FILTER (WHERE created_at > now() - interval '24 hours')::int AS last_24h, COUNT(*) FILTER (WHERE is_system AND created_at > now() - interval '24 hours')::int AS system_24h, MAX(created_at) AS last_at FROM messages WHERE deleted_at IS NULL`);
+  await one('activity', `SELECT COUNT(*) FILTER (WHERE created_at > now() - interval '24 hours')::int AS audit_24h, MAX(created_at) AS last_at FROM audit_logs`);
+  await one('clients', `SELECT COUNT(*)::int AS n FROM clients`);
+  res.json(out);
+}));
+
 r.get('/admin/platform/report-colors', needPrincipal, wrap(async (req, res) => {
   res.json(await getPlatformReportColors());
 }));
