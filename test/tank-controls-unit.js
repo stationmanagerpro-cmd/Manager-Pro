@@ -76,7 +76,7 @@ Module._load = orig;
   });
   await check('branchements : clôture, réception, route de récidive, migration', () => {
     assert.match(fs.readFileSync('src/shifts.js', 'utf8'), /tankCloseCheck/); assert.match(fs.readFileSync('src/purchase_orders.js', 'utf8'), /deliveryVariance/);
-    assert.match(fs.readFileSync('src/hr.js', 'utf8'), /\/hr\/gaps\/recurrence/); assert.match(fs.readFileSync('migrations/107_receipt_tank_dips.sql', 'utf8'), /CREATE TABLE IF NOT EXISTS receipt_tank_dips/);
+    assert.match(fs.readFileSync('src/hr.js', 'utf8'), /\/hr\/gaps\/recurrence/); assert.match(fs.readFileSync('migrations/111_receipt_tank_dips.sql', 'utf8'), /CREATE TABLE IF NOT EXISTS receipt_tank_dips/);
   });
   console.log(`\n${n} contrôles réussis.`);
 })().catch(e => { console.error('✘', e); process.exit(1); });
