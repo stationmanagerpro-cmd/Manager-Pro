@@ -5,7 +5,7 @@ const { z } = require('zod');
 const { pool, tx, fl, f3, HttpError, wrap, body, need, audit, cashMove, defaultReg, recordFinancialEvent, settle } = require('./core');
 const { getSetting } = require('./admin');
 const docs = require('./docs');
-const { individualMessage } = require('./shift_message');
+const { individualMessage, closerMessage } = require('./shift_message');
 const r = express.Router();
 const VIEW = ['finance.report', 'money.manage', 'finance.view'];
 const ymd = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
@@ -516,11 +516,16 @@ r.get('/finance/validations', need(...VIEW), wrap(async (req, res) => {
 
 // ---------- Rapport de quart en PDF (instantané figé à la clôture) et rapport d'audit ----------
 async function shiftReport(sid, shiftId, opts = {}) {
-  const { rows: [s] } = await pool.query('SELECT sh.*, u.login AS manager, cb.login AS closer FROM shifts sh JOIN users u ON u.id = sh.manager_id LEFT JOIN users cb ON cb.id = sh.closed_by WHERE sh.id = $1 AND sh.station_id = $2', [shiftId, sid]);
+  const { rows: [s] } = await pool.query('SELECT sh.*, u.login AS manager, u.full_name AS manager_full_name, cb.login AS closer, cb.full_name AS closer_full_name FROM shifts sh JOIN users u ON u.id = sh.manager_id LEFT JOIN users cb ON cb.id = sh.closed_by WHERE sh.id = $1 AND sh.station_id = $2', [shiftId, sid]);
   if (!s) throw new HttpError(404, 'Quart introuvable');
   const { rows: [rp] } = await pool.query("SELECT content FROM reports WHERE shift_id = $1 AND kind = 'quart' ORDER BY id DESC LIMIT 1", [s.id]);
   if (!rp) throw new HttpError(409, "Le quart n'est pas clôturé : aucun rapport");
   const c = rp.content, b = await docs.branding(sid), m = v => `${docs.cellText(fl(v))} ${b.currency}`;
+  const closer = await closerOf(sid, { closed_by: s.closed_by, closer_login: s.closer, closer_full_name: s.closer_full_name });
+  const managerName = String(s.manager_full_name || '').trim() || s.manager;
+  // Responsable du quart ≠ clôturant : deux cases distinctes, chacune avec l'identité réelle (la case « Clôturant » n'est renseignée que si la clôture est enregistrée)
+  const sigResponsable = { label: 'Responsable du quart', text: `Responsable : ${managerName}` };
+  const sigCloser = closer && closer.name ? { label: 'Clôturant', name: closer.name, status: 'Clôturé', date: s.closed_at } : { label: 'Clôturant' };
   const emps = (await pool.query('SELECT e.first_name || \' \' || e.last_name AS n FROM shift_employees se JOIN employees e ON e.id = se.employee_id WHERE se.shift_id = $1', [s.id])).rows.map(x => x.n).join(', ');
   // Rapports récents : situation propre à chaque employé. Anciens rapports (sans « employees ») : rapport unique comme avant.
   const shared = Array.isArray(c.employees) && c.employees.length > 0;
@@ -570,7 +575,7 @@ async function shiftReport(sid, shiftId, opts = {}) {
       { type: 'table', title: 'Vos anomalies', head: ['Description', 'Montant'], rows: myAnoms.length ? myAnoms.map(a => [a.description + reportedTxt(a).replace("l'employé lui-même", 'vous-même'), a.amount == null ? '' : a.kind === 'ecart_stock' ? `${docs.cellText(fl(a.amount))} (quantité)` : m(a.amount)]) : [['Aucune', '']] },
       { type: 'kv', title: 'Information', rows: [['Portée de ce document', "Cet état ne concerne que vous. Un écart n'est jamais retenu automatiquement : le gérant décide après vous avoir entendu."]] }];
     const bufMine = await docs.buildPdf({ b, title: 'SITUATION INDIVIDUELLE - QUART', subtitle: `Quart ${String(s.number).padStart(6, '0')} (${s.kind}) - ${mine.name}`, ref: `QRT-${String(s.number).padStart(6, '0')}-E${mine.employee_id}`, sections: mySections, landscape: false,
-      signatures: [{ label: 'Employé', name: mine.name }, { label: 'Responsable du quart', name: s.manager, status: 'Clôturé', date: s.closed_at }, { label: 'Gérant' }] });
+      signatures: [{ label: 'Employé', name: mine.name }, sigResponsable, sigCloser, { label: 'Gérant' }] });
     return { buf: bufMine, s, c, b, emps, personal: mine };
   }
   const sections = [
@@ -591,7 +596,7 @@ async function shiftReport(sid, shiftId, opts = {}) {
       : { type: 'table', title: 'Anomalies détectées', head: ['Description'], rows: c.anomalies.length ? c.anomalies.map(a => [a.description]) : [['Aucune']] },
     { type: 'kv', title: 'Justification et observations', rows: [['Justification des écarts', s.gap_justification || '-'], ['Observations', s.observations || '-']] }];
   const buf = await docs.buildPdf({ b, title: 'RAPPORT DE QUART', subtitle: `Quart ${String(s.number).padStart(6, '0')} (${s.kind})`, ref: `QRT-${String(s.number).padStart(6, '0')}`, sections, landscape: false,
-    signatures: [{ label: 'Employé / pompiste', name: emps.split(',')[0] || undefined }, { label: 'Responsable du quart', name: s.manager, status: 'Clôturé', date: s.closed_at }, { label: 'Gérant' }] });
+    signatures: [{ label: 'Employé / pompiste', name: emps.split(',')[0] || undefined }, sigResponsable, sigCloser, { label: 'Gérant' }] });
   return { buf, s, c, b, emps };
 }
 r.get('/shifts/:id/report.pdf', wrap(async (req, res) => {
@@ -607,9 +612,21 @@ const cleanEmail = v => { const e = String(v || '').trim().toLowerCase(); return
 /** Numéro WhatsApp : chiffres uniquement, indicatif pays obligatoire (au moins 10 chiffres), « 00 » ou « + » initial retiré. */
 const waNumber = v => { let d = String(v || '').replace(/[^\d+]/g, ''); if (d.startsWith('+')) d = d.slice(1); else if (d.startsWith('00')) d = d.slice(2); d = d.replace(/\D/g, ''); if (d.length === 8) d = '223' + d; return d.length >= 10 && d.length <= 15 ? d : null; };
 
+/** Identité RÉELLE du clôturant : le compte qui a validé la clôture (shifts.closed_by) — fiche employé liée, sinon nom complet du compte, sinon identifiant.
+ *  Jamais déduite du responsable du quart ni saisie à la main ; null si la clôture n'a pas d'auteur enregistré (anciens quarts). */
+async function closerOf(sid, s) {
+  if (!s.closed_by) return null;
+  const { rows: [ce] } = await pool.query(
+    `SELECT e.id, e.first_name || ' ' || e.last_name AS name, e.email, e.phone FROM employees e WHERE e.user_id = $1 AND e.station_id = $2`, [s.closed_by, sid]);
+  const full = String(s.closer_full_name || '').trim();
+  return { name: ce?.name || full || s.closer_login || 'n/d', login: s.closer_login || null, email: ce?.email || null, phone: ce?.phone || null };
+}
+/** « Généré par » : identifiant de l'utilisateur qui produit le document. */
+const generatedByUser = req => String((req.user && (req.user.login || req.user.full_name)) || '').trim() || null;
+
 async function shareContext(sid, shiftId) {
   const { rows: [s] } = await pool.query(
-    `SELECT sh.id, sh.number, sh.kind, sh.opened_at, sh.closed_at, sh.closed_by, sh.gap_justification, sh.observations, u.login AS manager, cb.login AS closer_login
+    `SELECT sh.id, sh.number, sh.kind, sh.opened_at, sh.closed_at, sh.closed_by, sh.gap_justification, sh.observations, u.login AS manager, u.full_name AS manager_full_name, cb.login AS closer_login, cb.full_name AS closer_full_name
        FROM shifts sh JOIN users u ON u.id = sh.manager_id LEFT JOIN users cb ON cb.id = sh.closed_by
       WHERE sh.id = $1 AND sh.station_id = $2`, [shiftId, sid]);
   if (!s) throw new HttpError(404, 'Quart introuvable');
@@ -624,13 +641,8 @@ async function shareContext(sid, shiftId) {
         AND (EXISTS (SELECT 1 FROM shift_employees se WHERE se.shift_id = $1 AND se.employee_id = e.id)
           OR EXISTS (SELECT 1 FROM sales sa WHERE sa.shift_id = $1 AND sa.employee_id = e.id AND sa.status = 'valide'))
       ORDER BY e.last_name, e.first_name`, [s.id, sid]);
-  let closer = null;
-  if (s.closed_by) {
-    const { rows: [ce] } = await pool.query(
-      `SELECT e.id, e.first_name || ' ' || e.last_name AS name, e.email, e.phone FROM employees e WHERE e.user_id = $1 AND e.station_id = $2`, [s.closed_by, sid]);
-    closer = { name: ce?.name || s.closer_login || 'n/d', login: s.closer_login || null, email: ce?.email || null, phone: ce?.phone || null };
-  }
-  return { s, c: rp.content, st: st || {}, emps, closer };
+  const closer = await closerOf(sid, s);
+  return { s, c: rp.content, st: st || {}, emps, closer, managerName: String(s.manager_full_name || '').trim() || s.manager };
 }
 
 /** Écarts de stock = QUANTITÉS (jamais de devise), arrondies à 2 décimales, noms de produits nettoyés. */
@@ -638,13 +650,11 @@ async function shareContext(sid, shiftId) {
 const reportedTxt = a => a && a.reported_by && a.kind !== 'ecart_caisse' && a.kind !== 'ecart_stock' && a.kind !== 'rattachement' ? (a.reported_self ? ' (signalée par l\'employé lui-même)' : ` (signalée par ${a.reported_by})`) : '';
 const stockGapText = list => (list && list.length) ? list.map(x => `${String(x.product || '').replace(/\s+/g, ' ').trim()} : ${docs.cellText(fl(x.amount))}`).join(' ; ') : '-';
 
-/** Texte du message (WhatsApp) : dates, carburant, autres ventes, compteurs, paiements, caisse, observations. */
+const SHARE_TZ = () => process.env.APP_TZ || process.env.FLEET_TZ || 'Africa/Bamako';
+/** Texte du message (WhatsApp) : rapport complet du clôturant ou situation individuelle d'un employé (même style, même signature du clôturant). */
 function shareMessage(ctx, currency, employeeId = null) {
   const { s, c, st } = ctx;
-  const m = v => `${docs.cellText(fl(v))} ${currency}`;
   const num6 = String(s.number).padStart(6, '0');
-  const L = [];
-  const stk = stockGapText;
   const mine = employeeId != null && Array.isArray(c.employees) ? c.employees.find(x => Number(x.employee_id) === Number(employeeId)) : null;
   // Message destiné à un employé sans situation individuelle (ancien rapport, ou employé sans situation sur ce quart) : jamais le message complet (il contient les collègues et la caisse globale).
   if (employeeId != null && !mine) {
@@ -653,36 +663,16 @@ function shareMessage(ctx, currency, employeeId = null) {
   }
   if (mine) {
     // Message individuel : gabarit unique (src/shift_message.js), uniquement la situation de CET employé
-    return individualMessage({ stationName: st.name, currency, shift: s, mine, anomalies: c.anomalies, fixes: (c.attribution_check && c.attribution_check.fixes) || [], tz: process.env.APP_TZ || process.env.FLEET_TZ || 'Africa/Bamako' });
+    return individualMessage({ stationName: st.name, currency, shift: s, mine, anomalies: c.anomalies, fixes: (c.attribution_check && c.attribution_check.fixes) || [], tz: SHARE_TZ(), managerName: ctx.managerName, closerName: ctx.closer && ctx.closer.name, generatedBy: ctx.generatedBy });
   }
-  L.push(`*${st.name || 'Station'}* - Rapport de quart ${num6} (${s.kind})`);
-  L.push(`Ouverture : ${docs.fmtDate(s.opened_at)}`, `Fermeture : ${docs.fmtDate(s.closed_at)}`, `Responsable : ${s.manager}`, '');
-  L.push(`Carburant (compteurs) : ${m(c.fuel_total)}`);
-  L.push(`Autres produits / ventes : ${m(c.other_sales?.total)}`);
-  if (c.counters?.length) {
-    L.push('', 'Pompes / compteurs :');
-    for (const x of c.counters) L.push(`- ${x.pump} / ${x.counter} (${x.product}) : ${x.index_start} -> ${x.index_end}, ${docs.cellText(fl(x.liters))} L, ${m(x.amount)}`);
-  }
-  const fp = c.fuel_payments || {};
-  L.push('', 'Paiements carburant :', `- Espèces : ${m(fp.especes)}`, `- Mobile money : ${m(fp.mobile_money)}`, `- Carte : ${m(fp.carte)}`, `- Crédit : ${m(fp.credit)}`);
-  if (fp.autres) L.push(`- Autres : ${m(fp.autres)}`);
-  const cash = c.cash || {};
-  L.push('', 'Caisse :', `- Théorique : ${m(cash.theoretical)}`, `- Comptée : ${m(cash.counted)}`, `- Écart : ${m(cash.gap)}`);
-  if (Array.isArray(c.employees) && c.employees.length) {
-    L.push('', 'Situation par employé :');
-    for (const e of c.employees) L.push(`- ${e.name} (${(e.pumps || []).join(', ') || 'sans pompe'}) : écart de caisse ${e.cash_gap == null ? 'n/d' : m(e.cash_gap)} ; écarts de stock ${stk(e.stock_gaps)}`);
-    if (c.unassigned && ((c.unassigned.cash_gap && Math.abs(c.unassigned.cash_gap) > 0.004) || (c.unassigned.stock_gaps || []).length))
-      L.push(`- Non attribué à un employé : écart de caisse ${c.unassigned.cash_gap ? m(c.unassigned.cash_gap) : '-'} ; écarts de stock ${stk(c.unassigned.stock_gaps)}`);
-    const an = (c.anomalies || []).filter(a => a.employee && a.kind !== 'ecart_caisse' && a.kind !== 'ecart_stock');   // les écarts de caisse (FCFA) et de stock (quantités) sont déjà ci-dessus, chacun avec son unité
-    if (an.length) { L.push('', 'Anomalies par employé :'); for (const a of an) L.push(`- ${a.employee} : ${String(a.description || '').replace(/\s+/g, ' ').trim()}${reportedTxt(a)}`); }
-  }
-  L.push('', `Justification des écarts : ${s.gap_justification || '-'}`, `Observations : ${s.observations || '-'}`);
-  return L.join('\n');
+  // Rapport complet du clôturant : gabarit unique (src/shift_message.js) ; signature = compte qui a réellement clôturé, jamais le responsable du quart
+  return closerMessage({ stationName: st.name, currency, shift: s, report: c, managerName: ctx.managerName, closerName: ctx.closer && ctx.closer.name, generatedBy: ctx.generatedBy, justification: s.gap_justification, observations: s.observations, tz: SHARE_TZ() });
 }
 
 /** Coordonnées des personnes concernées + message prêt à envoyer (aucune limite de 200 ventes côté navigateur). */
 r.get('/shifts/:id/report-contacts', need(...SHARE_PERMS), wrap(async (req, res) => {
   const ctx = await shareContext(req.sid, req.params.id);
+  ctx.generatedBy = generatedByUser(req);   // « Généré par : identifiant » en bas de chaque message
   const b = await docs.branding(req.sid);
   const st = { name: ctx.st.name || null, email: cleanEmail(ctx.st.email), whatsapp: waNumber(ctx.st.phone), phone: ctx.st.phone || null };
   res.json({

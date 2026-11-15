@@ -188,6 +188,7 @@ class MainActivity : AppCompatActivity() {
         ui.swipe.setOnChildScrollUpCallback { _, _ -> ui.web.scrollY > 0 || refreshBlocked }
         ui.retry.setOnClickListener { ui.offline.visibility = View.GONE; failed = false; ui.web.loadUrl(BuildConfig.BASE_URL) }
         ui.scan.setOnClickListener { startScan() }
+        ui.scanClose.setOnClickListener { scanDismissed = true; showScanButton(false, keepDismissed = true) }   // croix : masque le bouton Scanner jusqu'à la sortie des champs de saisie
         ui.unlock.setOnClickListener { promptUnlock() }
         ui.quit.setOnClickListener { finishAffinity() }
 
@@ -242,7 +243,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     // ---------- Scan code-barres ----------
-    fun showScanButton(show: Boolean) { ui.scan.visibility = if (show) View.VISIBLE else View.GONE }
+    private var scanDismissed = false
+    /** Le bouton Scanner (et sa croix) s'affiche quand un champ de saisie a le focus ; la croix le masque tant que l'utilisateur reste dans les champs. */
+    fun showScanButton(show: Boolean, keepDismissed: Boolean = false) {
+        if (!show && !keepDismissed) scanDismissed = false          // plus aucun champ actif : on réarme le bouton pour la prochaine saisie
+        val visible = show && !scanDismissed
+        val v = if (visible) View.VISIBLE else View.GONE
+        ui.scan.visibility = v
+        ui.scanClose.visibility = v
+    }
     fun startScan() {
         val opts = GmsBarcodeScannerOptions.Builder().setBarcodeFormats(Barcode.FORMAT_ALL_FORMATS).enableAutoZoom().build()
         GmsBarcodeScanning.getClient(this, opts).startScan()

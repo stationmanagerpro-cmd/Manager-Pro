@@ -13,5 +13,6 @@
     <string name="unlock">Déverrouiller</string>
     <string name="quit">Quitter</string>
     <string name="scan">Scanner</string>
+    <string name="scan_close">Fermer le bouton Scanner</string>
     <string name="settings">Réglages de l\'application</string>
 </resources>

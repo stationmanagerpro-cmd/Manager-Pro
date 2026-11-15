@@ -42,6 +42,8 @@ pool.query = async (sql, params) => {
   if (/FROM employees e\s+WHERE e\.station_id/.test(sql)) { assert(/shift_employees/.test(sql) && /sa\.status = 'valide'/.test(sql), 'employés affectés OU ventes valides'); assert.strictEqual(params[1], 77, 'filtré sur la station courante'); return { rows: DB.emps }; }
   if (/WHERE e\.user_id = \$1/.test(sql)) return { rows: DB.closer ? [DB.closer] : [] };
   if (/INSERT INTO audit_logs/.test(sql)) { DB.audits.push(params); return { rows: [] }; }
+  // Relectures de repli du rapport (produits vendus, stock reconstitué, ventes par employé) : aucune donnée dans ces scénarios
+  if (/FROM sale_details d JOIN sales sa/.test(sql) || /FROM products pr LEFT JOIN stock sk/.test(sql) || /FROM sales sa LEFT JOIN employees e/.test(sql)) return { rows: [] };
   throw new Error('requête inattendue : ' + sql.slice(0, 80));
 };
 const sent = [];

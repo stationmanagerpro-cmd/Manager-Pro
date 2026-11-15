@@ -64,6 +64,8 @@ pool.query = async (sql, params) => {
   if (/FROM employees e\s+WHERE e\.station_id/.test(sql)) return { rows: DB.emps };
   if (/WHERE e\.user_id = \$1/.test(sql)) return { rows: DB.closer ? [DB.closer] : [] };
   if (/INSERT INTO audit_logs/.test(sql)) { DB.audits.push(params); return { rows: [] }; }
+  // Relectures de repli du rapport (produits vendus, stock reconstitué, ventes par employé) : aucune donnée dans ces scénarios
+  if (/FROM sale_details d JOIN sales sa/.test(sql) || /FROM products pr LEFT JOIN stock sk/.test(sql) || /FROM sales sa LEFT JOIN employees e/.test(sql)) return { rows: [] };
   throw new Error('requête inattendue : ' + sql.slice(0, 80));
 };
 const sent = [];
@@ -124,16 +126,17 @@ const dump = o => JSON.stringify(o);
     const byId = Object.fromEntries(j.employees.map(e => [e.id, e.message]));
     assert(/RAPPORT INDIVIDUEL DE FIN DE QUART/.test(byId[2]) && /Employé : Moussa Keita/.test(byId[2]) && /P3/.test(byId[2]) && /-2[\s\u202f\u00a0]?500/.test(byId[2]) && !/Awa|Fanta|P1|P2/.test(byId[2]), 'Moussa : sa situation seulement');
     assert(/Bidon cassé/.test(byId[1]) && !/Moussa|Fanta/.test(byId[1]), "Awa : son anomalie, rien sur les autres");
-    assert(/Situation par employé/.test(j.message) && /Moussa Keita \(P3\)/.test(j.message) && /Awa Traoré/.test(j.message), 'message du clôturant : tous, avec le nom de l\'employé');
-    assert(/Anomalies par employé/.test(j.message) && /Awa Traoré : Bidon cassé/.test(j.message));
+    assert(/SITUATION PAR EMPLOYÉ/.test(j.message) && /Moussa Keita\*\n   Poste : P3/.test(j.message) && /Awa Traoré/.test(j.message), 'message du clôturant : tous, avec le nom de l\'employé');
+    assert(/ANOMALIES DÉTECTÉES/.test(j.message) && /Awa Traoré : Bidon cassé/.test(j.message));
+    assert(/SIGNATURE DU CLÔTURANT/.test(j.message) && /Clôturé par : Gérant/.test(j.message), 'signature du clôturant réel');
   });
   await check('message du clôturant : écarts de stock = quantités sans devise (arrondies, noms nettoyés), pas de doublon ni de valeur brute, caisse en devise', async () => {
     reset(); const { out } = await call('get', '/shifts/:id/report-contacts'); const m = out.json.message;
-    const emp = m.split('\n').find(l => /^- Moussa Keita/.test(l));
-    assert(/écart de caisse -2[\s\u202f\u00a0]?500 [A-Z]+ ; écarts de stock Gasoil : -6( |$)/.test(emp) && !/Gasoil  /.test(m), emp);
+    const blk = m.split('👤 *Moussa Keita*')[1].split('\n\n')[0];
+    assert(/Écart de caisse : 🔴 -2[\s\u202f\u00a0]?500 [A-Z]+/.test(blk) && /Écart de stock : 🔴 Gasoil : -6$/.test(blk) && !/Gasoil  /.test(m), blk);
     assert(!/-6[.,]004|-6\.0/.test(m), 'pas de valeur brute à 3 décimales');
-    assert(!m.split('\n').some(l => /FCFA|XOF|CFA/.test((l.split(/écarts? de stock/i)[1]) || '')), 'aucune devise après « écarts de stock » (la partie caisse de la ligne peut en porter une)');
-    const sec = m.split('Anomalies par employé :')[1] || ''; assert(!/Écart de (caisse|stock)/.test(sec), 'les écarts ne sont pas répétés dans les anomalies');
+    assert(!m.split('\n').some(l => /Écart de stock/.test(l) && /FCFA|XOF|CFA/.test(l)), 'aucune devise sur une ligne d\'écart de stock');
+    const sec = m.split('Anomalies commerciales :')[1].split('💵')[0]; assert(!/Écart de (caisse|stock)/.test(sec), 'les écarts physiques ne sont pas répétés dans les anomalies commerciales (pas de double comptage)');
   });
   console.log(`\n${n}/6 contrôles réussis.`); process.exit(0);
 })().catch(e => { console.error('✘', e); process.exit(1); });

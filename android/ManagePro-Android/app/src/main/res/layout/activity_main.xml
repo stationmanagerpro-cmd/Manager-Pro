@@ -47,6 +47,24 @@
         android:text="📷"
         android:visibility="gone" />
 
+    <!-- Petite croix au-dessus de l'icône caméra : ferme le bouton Scanner s'il n'est pas utile -->
+    <TextView
+        android:id="@+id/scan_close"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="4dp"
+        android:layout_marginBottom="136dp"
+        android:background="@drawable/scan_close_bg"
+        android:contentDescription="@string/scan_close"
+        android:elevation="8dp"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:text="×"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:visibility="gone" />
+
 
     <LinearLayout
         android:id="@+id/offline"

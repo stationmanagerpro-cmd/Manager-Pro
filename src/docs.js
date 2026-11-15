@@ -7,6 +7,18 @@ const files = require('./files');
 const { getSetting } = require('./admin');
 const appBranding = require('./branding');
 const clientSignature = require('./signature');
+const { AsyncLocalStorage } = require('async_hooks');
+
+// « Généré par » : identité de l'utilisateur authentifié qui produit le document. Le contexte de la requête est conservé le temps de
+// son traitement, pour que TOUS les PDF générés pendant cette requête portent le nom de leur auteur sans modifier chaque appelant.
+const generatorStore = new AsyncLocalStorage();
+/** Middleware Express (à placer après l'authentification) : mémorise la requête, dont req.user est lu au moment de générer le PDF. */
+const generatorMiddleware = (req, res, next) => generatorStore.run({ req }, next);
+/** Identifiant (login) de l'utilisateur qui génère le document ; à défaut son nom. Null hors requête authentifiée (tâche planifiée). */
+function currentGenerator() {
+  const u = generatorStore.getStore()?.req?.user;
+  return u ? (String(u.login || u.full_name || '').trim() || null) : null;
+}
 
 const DEFAULT_GREEN = '#0a6b5c', GREY = '#5b6675', LINE = '#d5dbe2', DEFAULT_SOFT = '#e8f3f0';
 // Les polices PDF standard ne connaissent pas certains caractères : on les remplace pour ne jamais afficher de symboles cassés
@@ -68,7 +80,8 @@ async function branding(stationId) {
 }
 
 // sections : {type:'kpis'|'kv'|'table'|'bars'|'text', title, ...}   signatures : [{label, name, function, status, date}]
-function buildPdf({ b, title, subtitle, ref, period, sections, signatures = [], landscape }) {
+function buildPdf({ b, title, subtitle, ref, period, sections, signatures = [], landscape, generatedBy }) {
+  const author = String(generatedBy ?? currentGenerator() ?? '').trim();   // lu ici (synchrone) : le contexte de la requête est encore actif
   const GREEN = /^#[0-9a-f]{6}$/i.test(b.report_colors?.primary || '') ? b.report_colors.primary : DEFAULT_GREEN;
   const SOFT = /^#[0-9a-f]{6}$/i.test(b.report_colors?.secondary || '') ? b.report_colors.secondary : DEFAULT_SOFT;
   const REPORT_TEXT = /^#[0-9a-f]{6}$/i.test(b.report_colors?.text || '') ? b.report_colors.text : '#111827';
@@ -242,14 +255,22 @@ function buildPdf({ b, title, subtitle, ref, period, sections, signatures = [], 
         doc.font('Helvetica').fontSize(7.5).fillColor(GREY);
         // Signature personnalisée du client : posée sur les cases non encore validées par un intervenant,
         // sauf celles destinées à un tiers (employé, client de la station, fournisseur) ou marquées sign:false.
-        const signed = !g.status && b.signature && g.sign !== false && (g.sign === true || !/employ|pompiste|salari|client|fournisseur/i.test(g.label || ''));
+        const signed = !g.status && b.signature && !g.text && g.sign !== false && (g.sign === true || !/employ|pompiste|salari|client|fournisseur/i.test(g.label || ''));
         if (g.status) doc.text(latin(`${g.status} par ${g.name || ''}${g.date ? ' le ' + fmtDate(g.date) : ''}`), x + 5, y + 18, { width: bw - 10 });
+        else if (g.text) doc.text(latin(g.text), x + 5, y + 18, { width: bw - 10 });   // identité connue mais case à signer à la main (ex. responsable du quart)
         else if (signed) { doc.text(latin('Nom : ' + (b.signature.name || g.name || '')), x + 5, y + 20, { width: bw - 10, lineBreak: false }); doc.text('Date : ' + fmtDate(new Date()).slice(0, 10), x + 5, y + 34, { width: bw - 10, lineBreak: false }); }
         else { doc.text('Nom : ____________________', x + 5, y + 20, { width: bw - 10, lineBreak: false }); doc.text('Date : ___ / ___ / ______', x + 5, y + 34, { width: bw - 10, lineBreak: false }); }
         doc.text('Signature :', x + 5, y + 58, { width: bw - 10, lineBreak: false });
         if (signed) { try { doc.image(b.signature.buf, x + 52, y + 44, { fit: [bw - 60, 30], align: 'left', valign: 'center' }); } catch (_) { /* image illisible : case laissée vierge */ } }
       });
       doc.y = y + 86;
+    }
+    // --- « Généré par : identifiant » tout en bas du rapport (dernière page) ; la signature personnalisée du client, si elle existe, l'accompagne ---
+    if (author) {
+      need(30);
+      const gy = Math.max(doc.y + 6, bottom() - 24);
+      doc.font('Helvetica-Bold').fontSize(9).fillColor(REPORT_TEXT).text(latin('Généré par : ' + author), L, gy, { width: W * .6, lineBreak: false });
+      if (b.signature && b.signature.buf) { try { doc.image(b.signature.buf, L + W - 110, gy - 12, { fit: [110, 30], align: 'right', valign: 'center' }); } catch (_) { /* image illisible : le nom suffit */ } }
     }
     // --- Pied de page sur toutes les pages : station, date, mentions configurées, numéro de page ---
     const range = doc.bufferedPageRange(), f = b.footer || {}, year = new Date().getFullYear();
@@ -313,4 +334,4 @@ const MIME = { pdf: 'application/pdf', xlsx: 'application/vnd.openxmlformats-off
 function send(res, fmt, buf, name) {
   res.set('Content-Type', MIME[fmt]).set('Content-Disposition', `attachment; filename="${name.replace(/[^\w.-]/g, '_')}.${fmt}"`).send(typeof buf === 'string' ? Buffer.from(buf, 'utf8') : buf);
 }
-module.exports = { branding, buildPdf, buildXlsx, csv, send, cellText, fmtDate };
+module.exports = { branding, buildPdf, buildXlsx, csv, send, cellText, fmtDate, generatorMiddleware, currentGenerator };

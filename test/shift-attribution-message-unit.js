@@ -38,36 +38,38 @@ check('fermeture : tout est correct → aucune correction', () => assert.strictE
 const shift = { number: 1, kind: 'personnalise', opened_at: '2026-11-08T00:53:00Z', closed_at: '2026-11-08T01:03:00Z' };
 const mine = { employee_id: 1, name: 'Kontao Amadou', pumps: ['Pompe 1'], fuel_amount: 58150, fuel_liters: 62, declared_fuel: 43750, undeclared: 14400, non_cash: { mobile_money: 0, card: 0, credit: 0 },
   expected_cash: 78150, counted_cash: 50000, cash_gap: -28150, stock_gaps: [{ product: 'Essence', amount: -4.71 }, { product: 'Gasoil', amount: -40 }] };
-const EXPECTED = `⛽ STATION HALIMATOU SERVICE
-📋 RAPPORT INDIVIDUEL DE FIN DE QUART
+const EXPECTED = `📊 *RAPPORT INDIVIDUEL DE FIN DE QUART*
 
-🔖 Quart N° : 000001 (Personnalisé)
-
+🏢 Station : STATION HALIMATOU SERVICE
+🔖 Rapport N° : 000001
+🕘 Type de quart : Personnalisé
 👤 Employé : Kontao Amadou
 📅 Date : 08/11/2026
-🕐 Ouverture : 00h53
-🕐 Fermeture : 01h03
+🔓 Ouverture : 00h53
+🔒 Fermeture : 01h03
 ⏱️ Durée : 10 minutes
 
 ━━━━━━━━━━━━━━━━━━
-⛽ 1. SITUATION DES VENTES
+⛽ *RÉCAPITULATIF DES VENTES*
 
 Pompe concernée : Pompe N° 1
 
-💰 Total des ventes : 58 150 FCFA
+💰 Total des ventes : *58 150 FCFA*
 🛢️ Volume distribué : 62 litres
 
 • Montant déclaré à la saisie : 43 750 FCFA
 • Montant non déclaré (comptabilisé en espèces) : 14 400 FCFA
 
-Modes de paiement :
+━━━━━━━━━━━━━━━━━━
+💳 *RÉPARTITION DES PAIEMENTS*
+
 • Espèces : selon rapprochement de caisse
 • Mobile Money : 0 FCFA
 • Carte bancaire : 0 FCFA
 • Crédit : 0 FCFA
 
 ━━━━━━━━━━━━━━━━━━
-💵 2. SITUATION DE LA CAISSE
+💰 *SITUATION DE LA CAISSE*
 
 • Espèces attendues : 78 150 FCFA
 • Espèces effectivement remises : 50 000 FCFA
@@ -77,7 +79,7 @@ Modes de paiement :
 Un déficit de caisse de 28 150 FCFA est constaté à la clôture du quart.
 
 ━━━━━━━━━━━━━━━━━━
-📦 3. ÉCARTS DE STOCK IMPUTÉS
+📦 *ÉCARTS DE STOCK IMPUTÉS*
 
 • Essence : -4,71
 • Gasoil : -40
@@ -85,27 +87,36 @@ Un déficit de caisse de 28 150 FCFA est constaté à la clôture du quart.
 Ces écarts sont enregistrés au titre du quart de Kontao Amadou.
 
 ━━━━━━━━━━━━━━━━━━
-⚠️ 4. ANOMALIES SIGNALÉES
+⚠️ *ANOMALIES DÉTECTÉES*
 
-1️⃣ Écart de caisse imputé à Kontao Amadou : -28 150 FCFA.
+1️⃣ 🔴 Écart de caisse imputé à Kontao Amadou : -28 150 FCFA.
 
-2️⃣ Écart de stock Essence imputé à Kontao Amadou : -4,71.
+2️⃣ 🔴 Écart de stock Essence imputé à Kontao Amadou : -4,71.
 
-3️⃣ Écart de stock Gasoil imputé à Kontao Amadou : -40.
+3️⃣ 🔴 Écart de stock Gasoil imputé à Kontao Amadou : -40.
 
 ━━━━━━━━━━━━━━━━━━
-⚖️ 5. OBSERVATION ET RESPONSABILITÉ
+📝 *JUSTIFICATIONS ET OBSERVATIONS*
 
 Les anomalies constatées devront faire l'objet d'une vérification et d'explications de la part de l'employé concerné.
 
 📌 IMPORTANT : Aucune retenue financière n'est automatique. Le gérant prend toute décision éventuelle après avoir entendu l'employé et examiné les éléments justificatifs.
 
 ━━━━━━━━━━━━━━━━━━
-🏢 STATION HALIMATOU SERVICE
-La Direction – Contrôle et suivi des opérations
+📌 *SYNTHÈSE FINALE*
 
-📄 Fin du rapport – Quart N° 000001.`;
-check('message individuel : IDENTIQUE au modèle demandé (caractère pour caractère)', () => {
+• Total des ventes : *58 150 FCFA*
+• Écart de caisse : 🔴 -28 150 FCFA
+• Écarts de stock : 🔴 2 produits
+• Anomalies : 🔴 3
+
+━━━━━━━━━━━━━━━━━━
+✍️ *SIGNATURE DU CLÔTURANT*
+
+👤 Nom : non disponible (clôturant non enregistré pour ce quart)
+📅 Date : 08/11/2026
+🕒 Heure : 01h03`;
+check('message individuel : IDENTIQUE au modèle WhatsApp en vigueur (caractère pour caractère)', () => {
   const got = individualMessage({ stationName: 'Station Halimatou Service', shift, mine });
   assert.strictEqual(got, EXPECTED);
 });
@@ -118,7 +129,7 @@ check('message : excédent, durée > 1 h, anomalie manuelle et vente réattribu�
     anomalies: [{ kind: 'autre', description: 'Pompe en panne 10 min', employee_id: 1 }, { kind: 'ecart_caisse', description: 'doublon', employee_id: 1 }, { kind: 'autre', description: 'Autre employé', employee_id: 2 }],
     fixes: [{ total: 5000, from: 'Traoré Fanta', to: 'Kontao Amadou' }] });
   assert.match(m, /Durée : 1 heure 20 minutes/); assert.match(m, /🟠 ÉCART DE CAISSE : \+1 000 FCFA/); assert.match(m, /excédent de caisse de 1 000 FCFA/);
-  assert.match(m, /1️⃣ Écart de caisse imputé/); assert.match(m, /2️⃣ Pompe en panne 10 min\./); assert.match(m, /3️⃣ Vente de 5 000 FCFA initialement saisie au nom de Traoré Fanta, réattribuée à Kontao Amadou/);
+  assert.match(m, /1️⃣ 🔴 Écart de caisse imputé/); assert.match(m, /2️⃣ 🔴 Pompe en panne 10 min\./); assert.match(m, /3️⃣ 🔴 Vente de 5 000 FCFA initialement saisie au nom de Traoré Fanta, réattribuée à Kontao Amadou/);
   assert.ok(!m.includes('doublon') && !m.includes('Autre employé'));
 });
 check('unités : un écart de stock (quantité, ici -4.707 L brut) n\'est jamais exprimé en FCFA, un écart de caisse toujours', () => {
@@ -128,7 +139,7 @@ check('unités : un écart de stock (quantité, ici -4.707 L brut) n\'est jamais
   const stockLines = lines.filter(l => /Essence|Gasoil/.test(l));
   assert.ok(stockLines.length >= 4 && stockLines.every(l => !/FCFA/.test(l)), stockLines.join(' | '));
   assert.ok(lines.includes('• Essence : -4,71') && lines.includes('• Gasoil : -40'));
-  assert.ok(lines.some(l => /^1️⃣ Écart de caisse imputé à Kontao Amadou : -28 150 FCFA\.$/.test(l)));
+  assert.ok(lines.some(l => /^1️⃣ 🔴 Écart de caisse imputé à Kontao Amadou : -28 150 FCFA\.$/.test(l)));
   assert.ok(!m.includes('-4.707') && !m.includes('-4,707'), 'quantité arrondie à 2 décimales, jamais de valeur brute');
   assert.ok(!/-32 ?[0-9]{3}|-28 ?[0-9]{3}[^ ]* ?FCFA.*stock/i.test(m) && !m.includes('32 854'), 'aucune somme caisse + stock');
   assert.ok(lines.filter(l => /FCFA/.test(l) && /stock/i.test(l)).length === 0, 'aucune ligne « stock » avec FCFA');

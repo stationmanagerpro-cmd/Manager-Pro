@@ -70,3 +70,9 @@
 #smp-shortcuts button span { width: 22px; text-align: center; }
 @media print { #smp-shortcuts { display: none !important; } }
 @media (max-width: 720px) { #smp-shortcuts { bottom: calc(144px + var(--safe-bottom, 0px)); right: 14px; } }
+
+/* Raccourci flottant ⚡ : translucide et aux couleurs de la plateforme personnalisée (--p = couleur principale du thème).
+   Il reste lisible mais ne masque plus les boutons situés dessous ; il redevient plein au toucher/survol et lorsque le menu est ouvert. */
+#smp-calc-btn { background: var(--p, #087f6e); opacity: .5; box-shadow: 0 4px 12px rgba(15, 23, 42, .14); border: 1px solid rgba(255, 255, 255, .35); transition: opacity .2s ease, transform .15s ease; }
+#smp-calc-btn:active, #smp-calc-btn:focus-visible, #smp-calc-btn[aria-expanded="true"] { opacity: 1; background: var(--p, #087f6e); }
+@media (hover: hover) { #smp-calc-btn:hover:not(:disabled) { opacity: 1; background: var(--p, #087f6e); } }
