@@ -74,6 +74,8 @@ const DEFAULT_FEATURES = {
     loyalty: true,
     portal: true,
     treasury: true,
+    profit: true,
+    mobile: true,
     fiscal: false,
     fiscal_tva: false,
     fiscal_synthetique: false,

@@ -7,7 +7,7 @@
  *  - Seules quelques lectures de configuration sans donnée métier sont autorisées (profil, apparence, notifications…).
  *  - Réservé aux administrateurs de station ; rien n'est conservé : recharger la page quitte le mode démonstration. */
 (function () {
-  const MANUAL = '/manuel/Manuel_Utilisation_Manager_Pro.pdf?v=9';
+  const MANUAL = '/manuel/Manuel_Utilisation_Manager_Pro.pdf?v=10';
   const state = { active: false, realFetch: null, lastToast: 0 };
 
   /* ===================== Données d'exemple (station fictive) ===================== */

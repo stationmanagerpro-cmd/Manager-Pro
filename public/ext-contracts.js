@@ -152,7 +152,7 @@
     comptabilite: { label: 'Comptabilité (6 cases)', keys: ['can_access_accounting', 'accounting_entries', 'accounting_assets', 'accounting_vat', 'accounting_closing', 'accounting_export'] },
     paie: { label: 'Paie (5 cases)', keys: ['payroll_amo', 'payroll_inps', 'payroll_its', 'payroll_charges', 'employee_portal_payslips'] },
     messagerie: { label: 'Messagerie (5 cases)', keys: ['can_use_messaging', 'messaging_attachments', 'messaging_groups', 'messaging_broadcast', 'messaging_support'] },
-    flotte_credit: { label: 'Clients, flottes et trésorerie', keys: ['module_customers', 'module_fleet', 'module_loyalty', 'module_portal', 'module_treasury'] }
+    flotte_credit: { label: 'Clients, flottes et trésorerie', keys: ['module_customers', 'module_fleet', 'module_loyalty', 'module_portal', 'module_treasury', 'module_profit', 'module_mobile'] }
   };
   window.applyModuleGroup = function (code, on) {
     const g = MODULE_GROUPS[code]; if (!g) return;
@@ -216,6 +216,8 @@
       ['module_loyalty', '② Fidélité clients', 's', YN],
       ['module_portal', '② Espace client (liens privés)', 's', YN],
       ['module_treasury', '② Trésorerie et créances/dettes', 's', YN],
+      ['module_profit', '② Marges et rentabilité', 's', YN],
+      ['module_mobile', '② Alertes application mobile', 's', YN],
       // ═══ RH / PAIE ═══
       ['can_access_hr', '③ Module RH (accès)', 's', YN],
       ['can_manage_hr', '③ Module RH (gestion complète)', 's', YN],
@@ -305,6 +307,8 @@
       module_loyalty: mod('loyalty'),
       module_portal: mod('portal'),
       module_treasury: mod('treasury'),
+      module_profit: mod('profit'),
+      module_mobile: mod('mobile'),
       can_access_hr: on(f.can_access_hr === false || m.hr === false ? false : true),
       can_manage_hr: on(f.can_manage_hr),
       payroll_amo: mod('payroll_amo'),
@@ -416,6 +420,8 @@
         loyalty: t('module_loyalty'),
         portal: t('module_portal'),
         treasury: t('module_treasury'),
+        profit: t('module_profit'),
+        mobile: t('module_mobile'),
         hr: t('can_access_hr'),
         finance: t('can_access_finance'),
         reports: t('can_view_reports'),

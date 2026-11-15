@@ -163,10 +163,22 @@
       try { const cu = await G('/shifts/current'); open = !!(cu && (cu.id || cu.number) && !cu.closed_at); } catch (_) { open = false; }
       if (open) items.push(['vente', '＋', '+ Vente']);
     }
+    if (!glob && typeof addS === 'function' && typeof addX === 'function' && typeof openQ === 'function' && (canDo('sale.create') || canDo('shift.open'))) items.push(['pompiste', '⛽', 'Mode pompiste']);
     items.push(['moi', '👤', 'Profil']);
     menu.innerHTML = items.map(([k, i, l]) => `<button type="button" role="menuitem" data-a="${k}"><span aria-hidden="true">${i}</span>${l}</button>`).join('');
     menu.classList.add('open'); btn.setAttribute('aria-expanded', 'true');
     const first = menu.querySelector('button'); if (first) first.focus();
+  }
+  // Mode pompiste : trois gros boutons pour les actions de tous les jours.
+  async function pompiste() {
+    let open = false;
+    try { const cu = await G('/shifts/current'); open = !!(cu && (cu.id || cu.number) && !cu.closed_at); } catch (_) { open = false; }
+    const B = (fn, ico, lab, on) => '<button type="button" class="btn" ' + (on ? '' : 'disabled ') + 'onclick="closeM();' + fn + '" style="display:block;width:100%;font-size:20px;padding:22px 12px;margin:10px 0;border-radius:14px' + (on ? '' : ';opacity:.45') + '">' + ico + ' ' + lab + '</button>';
+    modal('<h3>⛽ Mode pompiste</h3><p style="color:var(--m);margin:0 0 6px">' + (open ? 'Un quart est ouvert.' : 'Aucun quart ouvert : ouvrez-en un pour vendre.') + '</p>'
+      + B('openQ()', '🕘', 'Ouvrir mon quart', canDo('shift.open') && !open)
+      + B('addS()', '＋', 'Enregistrer une vente', canDo('sale.create') && open)
+      + B('addX()', '💸', 'Enregistrer une dépense', canDo('expense.create'))
+      + '<button type="button" class="btn" onclick="closeM()" style="width:100%;margin-top:6px">Fermer</button>');
   }
   function runShortcut(a) {
     closeMenu();
@@ -176,6 +188,7 @@
       else if (a === 'quart') openQ();
       else if (a === 'vente') addS();
       else if (a === 'moi') go('moi');
+      else if (a === 'pompiste') pompiste();
     } catch (e) { typeof toast === 'function' && toast('Action indisponible : ' + (e && e.message || e)); }
   }
 

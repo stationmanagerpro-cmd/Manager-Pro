@@ -314,6 +314,7 @@ const visible = k => V[k] && (typeof canView === 'function' ? canView(k) : can(V
       if (n > prev && prev !== undefined && b.dataset.init === '1') {   // nouvelle notification : la cloche sonne (animation)
         const bell = document.getElementById('bell');
         if (bell && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) { bell.classList.remove('ring'); void bell.offsetWidth; bell.classList.add('ring'); setTimeout(() => bell.classList.remove('ring'), 3200); }
+        if (typeof window.smpBellBeep === 'function') window.smpBellBeep();
       }
       b.dataset.init = '1';
       b.setAttribute('aria-label', n + ' notification(s) non lue(s)');

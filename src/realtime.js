@@ -65,7 +65,15 @@ async function notifyConversation(convId, extra) {
     publish(rows.map(r => r.user_id), 'message', Object.assign({ conversation_id: Number(convId) }, extra || {}));
     // Appareils hors application (aucun flux ouvert) : notification push, sauf l'expéditeur.
     const offline = rows.map(r => Number(r.user_id)).filter(id => id !== Number(extra && extra.sender_id) && !isOnline(id));
-    if (offline.length) require('./push').pushToUsers(offline);
+    if (offline.length) {
+      // Texte réel uniquement pour les alertes automatiques ; message privé : texte générique (confidentialité).
+      let payload = { title: 'Manager PRO', body: 'Vous avez un nouveau message.', url: '/' };
+      try {
+        const { rows: [m] } = await pool.query('SELECT is_system, body FROM messages WHERE conversation_id = $1 AND deleted_at IS NULL ORDER BY id DESC LIMIT 1', [convId]);
+        if (m && m.is_system && m.body) payload = { title: 'Alerte Manager PRO', body: String(m.body).replace(/\s+/g, ' ').slice(0, 140), url: '/' };
+      } catch (_) { /* texte générique */ }
+      require('./push').pushToUsers(offline, payload);
+    }
   } catch (_) { /* le rafraîchissement périodique rattrape un évènement manqué */ }
 }
 

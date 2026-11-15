@@ -188,7 +188,7 @@ app.use('/api', async (req, res, next) => {
         return res.status(403).json({ error: 'La facturation n’est pas incluse dans votre contrat.', code: 'FEATURE_DISABLED', feature: 'can_use_billing' });
       }
       // Modules commercialisables (activables par contrat / pack) — actifs par défaut pour les contrats existants
-      for (const [prefixes, mod, label] of [[['/fleet'], 'fleet', 'Cartes carburant / flottes'], [['/tanks'], 'tanks', 'Cuves et jaugeage'], [['/loyalty'], 'loyalty', 'Fidélité clients'], [['/portal'], 'portal', 'Espace client'], [['/treasury', '/debts'], 'treasury', 'Trésorerie et créances/dettes']]) {
+      for (const [prefixes, mod, label] of [[['/fleet'], 'fleet', 'Cartes carburant / flottes'], [['/tanks'], 'tanks', 'Cuves et jaugeage'], [['/loyalty'], 'loyalty', 'Fidélité clients'], [['/portal'], 'portal', 'Espace client'], [['/treasury', '/debts'], 'treasury', 'Trésorerie et créances/dettes'], [['/reports/client-profit'], 'profit', 'Marges et rentabilité'], [['/mobile'], 'mobile', 'Alertes application mobile']]) {
         if (prefixes.some(isPath) && !featureOn(contract, 'module:' + mod)) {
           return res.status(403).json({ error: 'Module ' + label + ' non inclus dans votre contrat.', code: 'FEATURE_DISABLED', feature: mod });
         }
@@ -252,6 +252,8 @@ app.use('/api', require('./market'));          // rapprochement Mobile Money ↔
 app.use('/api', require('./gaps'));            // transferts de stock, historique compteurs, prêts, SMTP, licences, préférences dashboard
 app.use('/api', require('./client_portal'));   // liens d'espace client (gestion)
 app.use('/api', require('./treasury').r);   // Trésorerie + Créances & dettes (agrégats)
+app.use('/api', require('./usage_report').r);  // rapport d'utilisation (PDF, envoi mensuel)
+app.use('/api', require('./usage').r);      // temps d'utilisation (battement de l'application ouverte)
 app.use('/api', require('./push').r);       // abonnements aux notifications push (téléphone / navigateur)
 app.use('/api', require('./fleet').r);      // Cartes carburant / flottes
 app.use('/api', require('./tanks').r);      // Cuves : jauges et réconciliation du stock en cuve

@@ -270,6 +270,7 @@ const contractAllowsView = k => {
   if (['exports', 'archive', 'auditx', 'rapports', 'direction', 'eod', 'profit'].includes(k)) {
     if (k === 'direction') return modOn('direction', true) && flagOn('can_view_reports', true);
     if (k === 'eod') return modOn('eod', true) && flagOn('can_view_reports', true);
+    if (k === 'profit') return modOn('profit', true) && flagOn('can_view_reports', true);
     return flagOn('can_view_reports', true);
   }
   // Messagerie (toujours visible : guide si OFF)

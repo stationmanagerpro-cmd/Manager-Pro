@@ -21,6 +21,8 @@
     { id: 'license_expiring', label: 'Licence bientôt expirée', desc: 'Avertissement avant expiration du contrat.', needsThreshold: true, units: [['days', 'Jours']] },
     { id: 'daily_summary', label: 'Résumé du soir', desc: 'Chaque jour, à partir de l’heure choisie : ventes par pompe, quarts, écarts de caisse et anomalies du jour. L’alerte doit d’abord être activée.', needsThreshold: true, units: [['hours', 'Heure d’envoi (1 à 23)']] },
     { id: 'tank_runout', label: 'Rupture de cuve prévue', desc: 'Prévient quand le stock estimé d’un carburant ne couvre plus que X jours de vente (moyenne des 7 derniers jours).', needsThreshold: true, units: [['days', 'Jours']] },
+    { id: 'shift_long', label: 'Quart ouvert trop longtemps', desc: 'Prévient quand un quart reste ouvert plus de X heures sans être clôturé.', needsThreshold: true, units: [['hours', 'Heures']] },
+    { id: 'login_unusual', label: 'Connexion de nuit', desc: 'Prévient le gérant quand un compte se connecte entre 23 h et 5 h (heure du serveur).', needsThreshold: false },
     { id: 'backup_failure', label: 'Échec de sauvegarde', desc: 'La sauvegarde automatique a échoué.', needsThreshold: false }
   ];
 

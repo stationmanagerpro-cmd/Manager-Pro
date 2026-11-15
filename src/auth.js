@@ -64,6 +64,15 @@ pub.post('/login', limiter, require('./access_keys').requireGate, body(z.object(
     `INSERT INTO user_sessions(user_id, ip_address, expires_at) VALUES ($1,$2, now() + make_interval(hours => $3::int)) RETURNING id`, [u.id, req.ip, hours]);
   await pool.query('UPDATE users SET failed_logins = 0, lockout_until = NULL, last_login_at = now(), successful_login_count = COALESCE(successful_login_count, 0) + 1 WHERE id = $1', [u.id]);
   await audit(pool, { user: u, ip: req.ip }, 'auth', 'Connexion de ' + u.login);
+  // Connexion de nuit (23 h – 5 h, heure du serveur UTC) : alerte au gérant si la règle « login_unusual » est active.
+  try {
+    const hh = new Date().getUTCHours();
+    if (!u.is_global && u.client_id && (hh >= 23 || hh < 5)) {
+      require('./messaging').sendSystemAlert({ clientId: u.client_id, actorUserId: u.id, kind: 'login_unusual',
+        body: `Connexion de nuit : le compte « ${u.login} » s’est connecté à ${String(hh).padStart(2, '0')} h ${String(new Date().getUTCMinutes()).padStart(2, '0')} (IP ${req.ip || 'inconnue'}).`,
+        refTable: 'login_night', refId: u.id }).catch(() => {});
+    }
+  } catch (_) { /* alerte facultative */ }
   const token = jwt.sign({ uid: u.id, sid: s.id }, process.env.JWT_SECRET, { expiresIn: hours + 'h' });
   res.json({ token, user: { id: u.id, login: u.login, role: u.role } });
 }));
