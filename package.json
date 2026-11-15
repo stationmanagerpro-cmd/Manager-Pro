@@ -75,6 +75,7 @@
     "test:shift-attribution-message": "node test/shift-attribution-message-unit.js",
     "test:shift-closer-message": "node test/shift-closer-message-unit.js",
     "test:export-by": "node test/export-by-static.js",
+    "test:tank-controls": "node test/tank-controls-unit.js",
     "test:focus-mode": "node test/focus-mode-harness.js",
     "test:pdf-engine": "node test/pdf-engine-stub.js",
     "test:report-ui": "node test/report-ui-harness.js",

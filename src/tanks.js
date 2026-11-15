@@ -2,8 +2,10 @@
 /** Cuves : liste, création, saisie des jauges et réconciliation du stock en cuve par produit (logique : tank_logic.js). */
 const express = require('express');
 const { z } = require('zod');
-const { pool, HttpError, wrap, body, need, audit } = require('./core');
-const { reconcileProduct, tolerancePct } = require('./tank_logic');
+const { pool, HttpError, wrap, body, need, audit, setting } = require('./core');
+const { reconcileProduct, tolerancePct, resolveTolerancePct, blockMode, blockingProducts } = require('./tank_logic');
+/** Tolérance de la station (réglage « tank_tolerance_pct »), à défaut 0,5 %. */
+const stationTolerance = async sid => resolveTolerancePct(await setting(pool, sid, 'tank_tolerance_pct', null));
 
 const r = express.Router();
 const rows = (sql, p) => pool.query(sql, p).then(x => x.rows);
@@ -102,7 +104,7 @@ async function reconcileStation(sid, from, to, onlyProduct = null) {
   const mvBy = Object.fromEntries(mv.map(x => [x.product_id, x])), pBy = Object.fromEntries(pumpedRows.map(x => [x.product_id, Number(x.liters)]));
   const byProduct = new Map();
   for (const t of tanks) { if (!byProduct.has(t.product_id)) byProduct.set(t.product_id, { product_id: t.product_id, product_name: t.product_name, tanks: [] }); byProduct.get(t.product_id).tanks.push(t); }
-  const tolPct = tolerancePct();
+  const tolPct = await stationTolerance(sid);
   const products = [...byProduct.values()].map(g => ({
     product_id: g.product_id, product_name: g.product_name,
     tanks: g.tanks.map(t => ({ id: t.id, name: t.name, opening: t.opening == null ? null : Number(t.opening), closing: t.closing == null ? null : Number(t.closing) })),
@@ -112,12 +114,37 @@ async function reconcileStation(sid, from, to, onlyProduct = null) {
   return products;
 }
 
+/** Contrôle de cuve à la clôture d'un quart (fenêtre = durée du quart). Une jauge prise PENDANT le quart est indispensable : sans elle
+ *  le contrôle est « incomplet » et ne bloque jamais. Litres pompés = ceux du quart qui se clôture (pas encore « fermé » en base).
+ *  mode : 'off' | 'critical' | 'warning' (réglage tank_close_block). Retourne { mode, tolerance_pct, products, blocking }. */
+async function tankCloseCheck(c, sid, { from, to, pumpedByProduct, mode }) {
+  const m = blockMode(mode);
+  if (m === 'off') return { mode: 'off', products: [], blocking: [] };
+  const tolPct = resolveTolerancePct(await setting(c, sid, 'tank_tolerance_pct', null));
+  const { rows: tanks } = await c.query(
+    `SELECT t.id, t.name, t.product_id, p.name AS product_name,
+            (SELECT quantity FROM tank_measurements WHERE tank_id = t.id AND measured_at <= $2 ORDER BY measured_at DESC, id DESC LIMIT 1) AS opening,
+            (SELECT quantity FROM tank_measurements WHERE tank_id = t.id AND measured_at <= $3 AND measured_at > $2 ORDER BY measured_at DESC, id DESC LIMIT 1) AS closing
+       FROM tanks t JOIN products p ON p.id = t.product_id WHERE t.station_id = $1 AND t.active AND t.deleted_at IS NULL ORDER BY p.name, t.name`, [sid, from, to]);
+  const { rows: mv } = await c.query(
+    `SELECT product_id, COALESCE(SUM(quantity) FILTER (WHERE kind IN ('achat','entree')), 0) AS received,
+            COALESCE(SUM(quantity) FILTER (WHERE kind IN ('perte','casse','correction','transfert','retour')), 0) AS other
+       FROM stock_movements WHERE station_id = $1 AND created_at > $2 AND created_at <= $3 GROUP BY product_id`, [sid, from, to]);
+  const mvBy = Object.fromEntries(mv.map(x => [x.product_id, x]));
+  const by = new Map();
+  for (const t of tanks) { if (!by.has(t.product_id)) by.set(t.product_id, { product_id: t.product_id, product_name: t.product_name, tanks: [] }); by.get(t.product_id).tanks.push(t); }
+  const products = [...by.values()].map(g => ({ product_id: g.product_id, product_name: g.product_name,
+    ...reconcileProduct({ tanks: g.tanks, received: Number(mvBy[g.product_id]?.received || 0), other: Number(mvBy[g.product_id]?.other || 0),
+      pumped: Number(pumpedByProduct[g.product_id] || 0), tolPct }) }));
+  return { mode: m, tolerance_pct: tolPct, products, blocking: blockingProducts(products, m) };
+}
+
 r.get('/tanks/reconcile', need('report.view'), wrap(async (req, res) => {
   const to = ts(req.query.to, new Date()), from = ts(req.query.from, new Date(to.getTime() - 864e5));
   if (from >= to) throw new HttpError(400, 'La date de début doit précéder la date de fin');
   const products = await reconcileStation(req.sid, from, to);
   const rank = { critical: 3, warning: 2, ok: 1, info: 0 };
-  res.json({ from, to, tolerance_pct: tolerancePct(), level: products.reduce((a, p) => rank[p.level] > rank[a] ? p.level : a, 'info'), products });
+  res.json({ from, to, tolerance_pct: await stationTolerance(req.sid), level: products.reduce((a, p) => rank[p.level] > rank[a] ? p.level : a, 'info'), products });
 }));
 
-module.exports = { r, reconcileStation };
+module.exports = { r, reconcileStation, stationTolerance, tankCloseCheck };

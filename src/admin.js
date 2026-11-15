@@ -57,6 +57,11 @@ const KEYS = {
 
   tolerance_fuel_liters: { perm: 'settings.edit', def: 5, schema: z.number().min(0) },
   fuel_amount_entry_allowed: { perm: 'settings.edit', def: true, schema: z.boolean() },
+  // Cuves : tolérance d'écart (% des litres pompés), blocage optionnel de la clôture, seuils de récidive des écarts par employé
+  tank_tolerance_pct: { perm: 'settings.edit', def: 0.5, schema: z.number().min(0.05).max(10) },
+  tank_close_block: { perm: 'settings.edit', def: 'off', schema: z.enum(['off', 'critical', 'warning']) },
+  gap_recurrence_days: { perm: 'settings.edit', def: 30, schema: z.number().int().min(7).max(365) },
+  gap_recurrence_min: { perm: 'settings.edit', def: 3, schema: z.number().int().min(2).max(50) },
   backup_emails: { perm: 'settings.edit', def: { primary: null, secondary: [], max_secondary: 2 }, schema: z.object({ primary: z.string().email().nullable().optional(), secondary: z.array(z.string().email()).max(2).optional(), max_secondary: z.number().int().max(2).optional() }).passthrough() },
   accounting_complete: { perm: 'settings.edit', def: false, schema: z.boolean() },
   expense_categories: { perm: 'settings.edit', def: ['Salaires', 'Primes et indemnités', 'Électricité', 'Eau', 'Télécommunications et Internet', 'Entretien et réparation', 'Transport', 'Carburant consommé par l\'entreprise', 'Fournitures', 'Frais bancaires', 'Frais administratifs', 'Impôts et taxes', 'Loyers', 'Prestations et services', 'Autres charges'], schema: z.array(z.string().min(1).max(60)).min(1).max(40) },

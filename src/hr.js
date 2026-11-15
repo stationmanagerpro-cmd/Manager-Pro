@@ -115,6 +115,20 @@ r.get('/hr/gaps', need('hr.view', 'hr.gaps'), wrap(async (req, res) => {
     [req.sid, req.query.status || null, req.query.employee_id ? +req.query.employee_id : null, req.query.unassigned === '1']);
   res.json(rows);
 }));
+// Récidive : employés ayant des écarts sur plusieurs quarts dans la fenêtre (réglages gap_recurrence_days / gap_recurrence_min). Signal à examiner, jamais une sanction.
+r.get('/hr/gaps/recurrence', need('hr.view', 'hr.gaps'), wrap(async (req, res) => {
+  const days = Math.min(Math.max(parseInt(req.query.days, 10) || Number(await getSetting(req.sid, 'gap_recurrence_days')) || 30, 7), 365);
+  const min = Math.min(Math.max(parseInt(req.query.min, 10) || Number(await getSetting(req.sid, 'gap_recurrence_min')) || 3, 2), 50);
+  const { rows: gaps } = await pool.query(
+    `SELECT g.employee_id, e.first_name || ' ' || e.last_name AS employee, g.shift_id, g.kind, g.amount, g.created_at
+       FROM employee_gaps g JOIN employees e ON e.id = g.employee_id
+      WHERE g.station_id = $1 AND g.employee_id IS NOT NULL AND g.created_at >= now() - ($2::int * interval '1 day')`, [req.sid, days]);
+  const { rows: w } = await pool.query(
+    `SELECT se.employee_id, COUNT(DISTINCT se.shift_id)::int AS n FROM shift_employees se JOIN shifts sh ON sh.id = se.shift_id
+      WHERE sh.station_id = $1 AND sh.status = 'ferme' AND sh.closed_at >= now() - ($2::int * interval '1 day') GROUP BY se.employee_id`, [req.sid, days]);
+  const employees = require('./gap_recurrence').recurrence({ gaps, worked: Object.fromEntries(w.map(x => [x.employee_id, x.n])), minShifts: min });
+  res.json({ days, min_shifts: min, employees, recurrent: employees.filter(e => e.recurrent).length });
+}));
 r.get('/hr/employees/:id/gaps', wrap(async (req, res) => {
   const e = await emp(req, req.params.id);
   const { rows } = await pool.query(`${GAP_SQL} WHERE g.station_id = $1 AND g.employee_id = $2 ORDER BY g.id DESC`, [req.sid, e.id]);

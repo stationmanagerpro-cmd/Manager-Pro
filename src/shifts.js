@@ -657,7 +657,14 @@ r.post('/:id/close', need('shift.close'), body(closeSchema), wrap(async (req, re
         employees: employeesReport, unassigned, shared: multi,
         attribution_check: { checked_sales: attrCheck.checked, mismatches: 0 },
       };
+      // Contrôle de cuve (réglage station « tank_close_block », désactivé par défaut) : écart critique/à surveiller sans justification = clôture refusée.
+      const tankCheck = await require('./tanks').tankCloseCheck(c, req.sid, {
+        from: s.opened_at, to: resolvedClosedAt || new Date(), mode: await setting(c, req.sid, 'tank_close_block', 'off'),
+        pumpedByProduct: Object.fromEntries(Object.entries(fuel).map(([pid, o]) => [pid, o.liters])) });
+      if (tankCheck.mode !== 'off') report.tank_check = { mode: tankCheck.mode, tolerance_pct: tankCheck.tolerance_pct, products: tankCheck.products.filter(p => p.status === 'calcule') };
       if (req.query.preview) throw new Preview(report); // annule tout : simple aperçu
+      if (tankCheck.blocking.length && !String(b.justification || '').trim())
+        throw new HttpError(422, 'Justification obligatoire : écart de cuve ' + tankCheck.blocking.map(p => `${p.product_name} (${p.variance > 0 ? '+' : ''}${p.variance} L, tolérance ${p.tolerance} L)`).join(', '), tankCheck.blocking);
 
       if (an.length && !b.justification.trim())
         throw new HttpError(422, 'Justification obligatoire : des anomalies ont été détectées', anomalies);

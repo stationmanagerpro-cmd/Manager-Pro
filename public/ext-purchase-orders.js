@@ -217,6 +217,12 @@
     const d = await G('/purchase-orders/' + id);
     const sel = await methodsSelect('rc_m');
     const open = d.lines.filter(l => l.qty_remaining > 0);
+    // Jauge avant / après déchargement (facultative) : une ligne par cuve des produits livrés
+    let tks = []; try { tks = (await G('/tanks')).filter(t => open.some(l => Number(l.product_id) === Number(t.product_id))); } catch (_) { }
+    const dipsHtml = tks.length ? '<fieldset style="border:1px solid #8884;padding:8px;border-radius:8px"><legend><b>Jauge de cuve avant / après déchargement (facultatif)</b></legend>' +
+      '<p class="muted" style="margin:0 0 6px">Renseignez les deux jauges (litres) pour contrôler que la quantité reçue correspond à ce qui est entré en cuve.</p>' +
+      tks.map(t => '<div class="g"><label>' + esc(t.name) + ' — avant<input class="dip-b" data-t="' + t.id + '" type="number" min="0" step="0.001"></label>' +
+        '<label>après<input class="dip-a" data-t="' + t.id + '" type="number" min="0" step="0.001"></label></div>').join('') + '</fieldset>' : '';
     modal('<h3 style="margin-top:0">Réception — ' + esc(d.order_no) + '</h3>' +
       '<p class="muted">Saisissez les quantités réellement reçues (partielles possibles ; le reste demeure en attente).</p>' +
       T(['Produit', 'Commandé', 'Déjà reçu', 'Reste', 'Reçu maintenant'], open.map(l => [esc(l.product), q(l.qty_ordered), q(l.qty_received), q(l.qty_remaining),
@@ -227,7 +233,8 @@
       (canPay() ? '<label style="display:block"><input type="radio" name="rc_mode" value="immediat"> Règlement immédiat — débit du compte choisi</label>' +
         '<div id="rc_imm" style="display:none;margin-top:6px"><div class="g"><label>Compte / mode de paiement' + sel + '</label>' +
         '<label>Montant payé<input id="rc_amt" type="number" min="0.01" step="0.01"></label></div></div>' : '<p class="muted">Le règlement immédiat nécessite la permission de payer les fournisseurs.</p>') +
-      '</fieldset><label>Note<input id="rc_n"></label>' +
+      '</fieldset>' + dipsHtml +
+      '<label>Note<input id="rc_n"></label>' +
       '<label>📷 Bon de livraison / facture fournisseur (photo ou PDF, facultatif)<input id="rc_f" type="file" accept="image/*,application/pdf"></label>' +
       '<div class="r"><button class="b2" onclick="closeM()">Annuler</button>' + (hasScanner() ? '<button class="b2" onclick="AndroidBridge.scan()">📷 Scanner</button>' : '') + '<button id="rc_ok">Valider la réception</button></div>');
     const inputs = () => [...document.querySelectorAll('.rc-q')];
@@ -261,13 +268,18 @@
         if (!body.method) return toast('Sélectionnez le compte / mode de paiement', 'error');
         body.amount = +document.getElementById('rc_amt').value || undefined;
       }
+      const dips = [...document.querySelectorAll('.dip-b')].map(b => ({ b, a: document.querySelector('.dip-a[data-t="' + b.dataset.t + '"]') }))
+        .filter(x => x.b.value !== '' || x.a.value !== '');
+      for (const x of dips) { if (x.b.value === '' || x.a.value === '') return toast('Renseignez la jauge avant ET après pour chaque cuve jaugée', 'error'); if (+x.a.value < +x.b.value) return toast('La jauge après déchargement doit être supérieure à la jauge avant', 'error'); }
+      if (dips.length) body.tank_dips = dips.map(x => ({ tank_id: +x.b.dataset.t, before: +x.b.value, after: +x.a.value }));
       this.disabled = true;
       try {
         const done = await Po('/purchase-orders/' + id + '/receive', body);
+        const bad = (done.delivery_check || []).filter(x => x.level !== 'ok');
         const file = (document.getElementById('rc_f') || {}).files && document.getElementById('rc_f').files[0];
         let warn = '';
         if (file) { try { await uploadAttachment(id, file, (done.receipts[done.receipts.length - 1] || {}).id); } catch (e) { warn = ' — pièce jointe non enregistrée : ' + e.message; } }
-        toast('Réception enregistrée' + warn, warn ? 'error' : undefined); closeM(); go('bcommande');
+        toast('Réception enregistrée' + warn + (bad.length ? ' — ⚠ écart de livraison : ' + bad.map(x => (x.variance < 0 ? 'manque ' : 'excédent ') + Math.abs(x.variance) + ' L').join(', ') : ''), (warn || bad.length) ? 'error' : undefined); closeM(); go('bcommande');
       }
       catch (e) { toast(e.message, 'error'); this.disabled = false; }
     };

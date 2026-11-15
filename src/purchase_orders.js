@@ -5,7 +5,8 @@
 // lisent donc les mêmes tables sans double comptage (réception = qty_received ; dette = invoice_total ; règlement = supplier_payments).
 const express = require('express');
 const { z } = require('zod');
-const { pool, tx, fl, f3, HttpError, wrap, body, need, audit, stockMove, settle } = require('./core');
+const { pool, tx, fl, f3, HttpError, wrap, body, need, audit, stockMove, settle, setting } = require('./core');
+const { resolveTolerancePct, deliveryVariance } = require('./tank_logic');
 const { swallow } = require('./safe');
 const { recordPriceChange } = require('./product_profile');
 const r = express.Router();
@@ -215,7 +216,9 @@ r.post('/purchase-orders/:id/receive', need('purchase.manage'), body(z.object({
   method: z.string().trim().min(1).optional().nullable(),
   amount: z.number().positive().optional().nullable(),
   note: z.string().max(1000).optional().nullable(),
-  client_ref: z.string().trim().min(1).max(128).optional().nullable()
+  client_ref: z.string().trim().min(1).max(128).optional().nullable(),
+  // Jauge avant / après déchargement (facultative) : une entrée par cuve ; la quantité reçue de la jauge = après − avant
+  tank_dips: z.array(z.object({ tank_id: z.number().int().positive(), before: z.number().min(0), after: z.number().min(0) })).max(20).optional()
 })), wrap(async (req, res) => {
   const b = req.body;
   if (b.payment_mode !== 'differe' && b.payment_mode !== 'immediat') throw new HttpError(400, 'Choisissez le mode de règlement (différé ou immédiat) avant de valider la réception.');
@@ -265,6 +268,39 @@ r.post('/purchase-orders/:id/receive', need('purchase.manage'), body(z.object({
       await c.query('UPDATE products SET buy_price = $2 WHERE id = $1 AND station_id = $3', [d.product_id, d.unit_cost, req.sid]);
       if (prev) await recordPriceChange(c, { station: req.sid, product: d.product_id, type: 'buy', oldPrice: prev.buy_price, newPrice: d.unit_cost, by: req.user.id, note: 'Réception ' + p.order_no });
     }
+    // Jauge avant/après : écart de livraison par produit (somme des cuves du produit) ; alerte interne si hors tolérance. Ne bloque jamais la réception.
+    let delivery = [];
+    if (b.tank_dips && b.tank_dips.length) {
+      const ids = b.tank_dips.map(x => Number(x.tank_id));
+      if (new Set(ids).size !== ids.length) throw new HttpError(400, 'Une même cuve ne peut être jaugée qu\'une fois par réception.');
+      const { rows: tk } = await c.query('SELECT id, name, product_id FROM tanks WHERE station_id = $1 AND id = ANY($2) AND deleted_at IS NULL', [req.sid, ids]);
+      if (tk.length !== ids.length) throw new HttpError(400, 'Cuve inconnue pour cette station.');
+      const recvByProduct = {};
+      for (const { d, qty } of done) recvByProduct[d.product_id] = f3((recvByProduct[d.product_id] || 0) + qty);
+      const byProduct = {};
+      for (const x of b.tank_dips) {
+        const t = tk.find(k => Number(k.id) === Number(x.tank_id));
+        if (recvByProduct[t.product_id] == null) throw new HttpError(400, `La cuve ${t.name} ne correspond à aucun produit reçu.`);
+        if (x.after < x.before) throw new HttpError(400, `Jauge après déchargement inférieure à la jauge avant (cuve ${t.name}).`);
+        (byProduct[t.product_id] ??= []).push({ t, x });
+      }
+      const tolPct = resolveTolerancePct(await setting(c, req.sid, 'tank_tolerance_pct', null));
+      for (const [pid, list] of Object.entries(byProduct)) {
+        const before = list.reduce((a, e) => a + e.x.before, 0), after = list.reduce((a, e) => a + e.x.after, 0);
+        const dv = deliveryVariance({ before, after, received: recvByProduct[pid], tolPct });
+        if (!dv) continue;
+        for (const e of list) await c.query(
+          `INSERT INTO receipt_tank_dips(station_id, receipt_id, tank_id, product_id, before_qty, after_qty, received_qty, measured_qty, variance, level, created_by)
+           VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`, [req.sid, rc.id, e.t.id, pid, e.x.before, e.x.after, dv.received, dv.measured, dv.variance, dv.level, req.user.id]);
+        delivery.push({ product_id: Number(pid), tanks: list.map(e => e.t.name), ...dv });
+      }
+      const bad = delivery.filter(d => d.level !== 'ok');
+      if (bad.length) {
+        const text = `Écart de livraison (${p.order_no}) : ` + bad.map(d => `${d.variance < 0 ? 'manque' : 'excédent'} de ${Math.abs(d.variance)} L (reçu ${d.received} L, mesuré en cuve ${d.measured} L, tolérance ${d.tolerance} L)`).join(' ; ');
+        await c.query("INSERT INTO notifications(station_id, level, kind, message, ref_table, ref_id) VALUES ($1,$2,'ecart_livraison',$3,'purchases',$4)",
+          [req.sid, bad.some(d => d.level === 'critical') ? 'warning' : 'info', text, p.id]);
+      }
+    }
     const { rows: [left] } = await c.query('SELECT COUNT(*)::int AS n FROM purchase_details WHERE purchase_id = $1 AND qty_received < qty_ordered', [p.id]);
     const status = left.n ? 'partiel' : 'recu';
     // La valeur reçue devient la dette (invoice_total cumule les réceptions : la compta ne la poste qu'une fois).
@@ -278,7 +314,8 @@ r.post('/purchase-orders/:id/receive', need('purchase.manage'), body(z.object({
     if (paidNow > 0) await payOut(c, req, p, paidNow, b.method, rc.id, null);
     await audit(c, req, 'achats', `Réception ${p.order_no} (${status}) — ${b.payment_mode === 'immediat' ? 'réglée' : 'à crédit'}`, 'purchases', p.id,
       { statut: recvStatus(p.status) }, { statut: recvStatus(status), valeur: value, regle: paidNow });
-    return loadDetail(c, req.sid, p.id);
+    const detail = await loadDetail(c, req.sid, p.id);
+    return delivery.length ? { ...detail, delivery_check: delivery } : detail;
   });
   const replay = Boolean(out._idempotent_replay); delete out._idempotent_replay;
   res.status(replay ? 200 : 201).json(out);
