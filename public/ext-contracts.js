@@ -146,8 +146,30 @@
     });
     el.innerHTML = '<b>' + yes + '</b> autorisation(s) activée(s) · <b>' + no + '</b> désactivée(s)';
   };
+  /* Groupes de modules : un clic active ou coupe toutes les cases d'une même famille (au lieu de cocher une à une). */
+  const MODULE_GROUPS = {
+    fiscalite: { label: 'Fiscalité (15 cases)', keys: ['can_access_fiscal', 'can_fiscal_estimates', 'can_fiscal_exports', 'can_fiscal_prepare', 'can_fiscal_deadlines', 'fiscal_tva', 'fiscal_synthetique', 'fiscal_ibic', 'fiscal_is', 'fiscal_its', 'fiscal_cfe', 'fiscal_tfp', 'fiscal_logement', 'fiscal_retenues', 'fiscal_autres'] },
+    comptabilite: { label: 'Comptabilité (6 cases)', keys: ['can_access_accounting', 'accounting_entries', 'accounting_assets', 'accounting_vat', 'accounting_closing', 'accounting_export'] },
+    paie: { label: 'Paie (5 cases)', keys: ['payroll_amo', 'payroll_inps', 'payroll_its', 'payroll_charges', 'employee_portal_payslips'] },
+    messagerie: { label: 'Messagerie (5 cases)', keys: ['can_use_messaging', 'messaging_attachments', 'messaging_groups', 'messaging_broadcast', 'messaging_support'] },
+    flotte_credit: { label: 'Clients, flottes et trésorerie', keys: ['module_customers', 'module_fleet', 'module_loyalty', 'module_portal', 'module_treasury'] }
+  };
+  window.applyModuleGroup = function (code, on) {
+    const g = MODULE_GROUPS[code]; if (!g) return;
+    let n = 0;
+    g.keys.forEach(k => { const el = document.getElementById('f_' + k); if (el) { el.value = on ? 'true' : 'false'; n++; } });
+    if (typeof toast === 'function') toast(g.label.replace(/ \(.*\)/, '') + ' : ' + (on ? 'tout activé' : 'tout désactivé') + ' (' + n + ' cases)', 'success');
+    try { updateAuthSummary(); } catch (_) {}
+  };
+  function moduleGroupsHtml() {
+    return '<div class="card" style="margin:12px 0;padding:12px"><b>Groupes de modules</b>' +
+      '<p class="muted" style="font-size:12px;margin:4px 0 8px">Activez ou coupez toute une famille en un clic, puis ajustez au besoin.</p>' +
+      Object.keys(MODULE_GROUPS).map(c => '<div class="r" style="flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0"><span style="min-width:190px">' + MODULE_GROUPS[c].label + '</span>' +
+        '<button type="button" class="b2" onclick="applyModuleGroup(\'' + c + '\',true)">Tout activer</button>' +
+        '<button type="button" class="b2" onclick="applyModuleGroup(\'' + c + '\',false)">Tout couper</button></div>').join('') + '</div>';
+  }
   function authPacksExtraHtml() {
-    return '<div class="card" style="margin:12px 0;padding:12px">' +
+    return moduleGroupsHtml() + '<div class="card" style="margin:12px 0;padding:12px">' +
       '<b>Packs d\'autorisations</b> ' +
       '<p class="muted" style="font-size:12px;margin:4px 0 8px">Appliquez un profil, puis ajustez case par case.</p>' +
       '<div class="r" style="flex-wrap:wrap;gap:6px">' +
