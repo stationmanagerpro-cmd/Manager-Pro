@@ -39,3 +39,9 @@ Branche : feat/rapport-whatsapp-signature-raccourci → fusion dans main (pas de
 - Hors requête authentifiée (tâche planifiée) : aucune ligne ajoutée, aucun nom inventé.
 - Fichiers : src/docs.js, exports.js, accounting.js, ops_plus.js, fleet.js, platform.js ; test/export-by-static.js (4 contrôles OK, exceljs/pdfkit simulés) ; suites statiques/unitaires identiques à la référence.
 - Non vérifié : fichiers réels ouverts dans Excel ; un CSV ré-importé dans un outil comptable verra une ligne de pied supplémentaire.
+
+## Déploiement — 2026-11-15
+- Render (service Manager-Pro, plan free) : déploiement manuel dep-dbsp6lbl550s73938mrg, commit 6b32893, statut « live » à 11:12 (UTC). Aucune erreur dans les journaux après la mise en ligne.
+- Auto-déploiement non déclenché par le push : déploiement lancé à la demande de l'utilisateur.
+- Retour arrière : annuler le commit 6b32893 / b8d1287 / 9864994 ou redéployer bac9885.
+- Vérification sur le site réel : NON effectuée (accès réseau bloqué) — à confirmer par l'utilisateur.
