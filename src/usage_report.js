@@ -163,7 +163,7 @@ r.get('/admin/platform/usage.pdf', needPrincipal, wrap(async (req, res) => {
   res.set({ 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="rapport_utilisation_' + days + 'j.pdf"' }).send(pdf);
 }));
 
-r.get('/admin/platform/usage-report/:id.pdf', needPrincipal, wrap(async (req, res) => {
+r.get('/admin/platform/usage-report/file/:id', needPrincipal, wrap(async (req, res) => {
   const { rows: [x] } = await pool.query('SELECT pdf, label FROM usage_reports WHERE id = $1', [parseInt(req.params.id, 10) || 0]);
   if (!x) throw new HttpError(404, 'Rapport introuvable');
   res.set({ 'Content-Type': 'application/pdf', 'Content-Disposition': 'attachment; filename="rapport_utilisation_' + req.params.id + '.pdf"' }).send(x.pdf);

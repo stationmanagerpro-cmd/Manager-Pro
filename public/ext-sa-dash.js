@@ -57,7 +57,7 @@
     } catch (e) { toast('Téléchargement impossible : ' + (e.message || e)); }
   }
   window.sadUsagePdf = () => dl('/admin/platform/usage.pdf?days=' + ((lastUsage && lastUsage.days) || 30), 'rapport_utilisation.pdf');
-  window.sadRepDl = id => dl('/admin/platform/usage-report/' + id + '.pdf', 'rapport_utilisation_' + id + '.pdf');
+  window.sadRepDl = id => dl(`/admin/platform/usage-report/file/${id}`, 'rapport_utilisation_' + id + '.pdf');
   async function repLoad() {
     const box = document.getElementById('sad_rep_body'); if (!box) return;
     let d; try { d = await G('/admin/platform/usage-report/settings'); } catch (e) { box.textContent = 'Indisponible : ' + (e.message || e); return; }
