@@ -1040,10 +1040,10 @@ r.get('/messaging/alert-config', need('settings.edit', 'user.manage'), wrap(asyn
 const ALERT_KINDS = new Set([
   'cash_variance', 'shift_close', 'counter_anomaly', 'stock_anomaly', 'purchase_variance',
   'absence', 'late_arrival', 'account_inactive', 'account_locked',
-  'payroll_anomaly', 'payroll_pending', 'incident_note', 'license_expiring', 'backup_failure', 'stock_low', 'tank_variance', 'daily_summary', 'tank_runout'
+  'payroll_anomaly', 'payroll_pending', 'incident_note', 'license_expiring', 'backup_failure', 'stock_low', 'tank_variance', 'daily_summary', 'tank_runout', 'shift_long', 'login_unusual'
 ]);
 const THRESHOLD_KINDS = new Set(['cash_variance', 'shift_close', 'counter_anomaly', 'stock_anomaly', 'purchase_variance', 'late_arrival']);
-const CONFIG_THRESHOLD_KINDS = new Set([...THRESHOLD_KINDS, 'account_inactive', 'license_expiring', 'tank_runout', 'daily_summary']);
+const CONFIG_THRESHOLD_KINDS = new Set([...THRESHOLD_KINDS, 'account_inactive', 'license_expiring', 'tank_runout', 'daily_summary', 'shift_long']);
 const ALERT_UNITS = new Set(['XOF', 'percent', 'litres', 'units', 'days', 'minutes', 'hours']);
 
 r.put('/messaging/alert-config', need('settings.edit', 'user.manage'), body(z.object({
@@ -1073,7 +1073,7 @@ r.put('/messaging/alert-config', need('settings.edit', 'user.manage'), body(z.ob
       ? ['XOF', 'percent']
       : b.alert_kind === 'counter_anomaly' ? ['litres', 'percent']
       : b.alert_kind === 'stock_anomaly' ? ['units', 'litres', 'percent']
-      : b.alert_kind === 'late_arrival' ? ['minutes'] : b.alert_kind === 'daily_summary' ? ['hours'] : ['days'];
+      : b.alert_kind === 'late_arrival' ? ['minutes'] : b.alert_kind === 'daily_summary' || b.alert_kind === 'shift_long' ? ['hours'] : ['days'];
     if (b.alert_kind === 'daily_summary' && !(Number.isInteger(b.threshold_value) && b.threshold_value >= 1 && b.threshold_value <= 23)) throw new HttpError(400, 'L’heure d’envoi du résumé doit être un nombre entier entre 1 et 23.');
     if (!allowedUnits.includes(b.threshold_unit)) throw new HttpError(400, 'Unité incompatible avec ce type d’alerte.');
   } else {

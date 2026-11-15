@@ -154,9 +154,24 @@
   setInterval(function () {
     try {
       if (document.visibilityState !== 'visible' || !window.TK || (typeof ME !== 'undefined' && ME && ME.is_global)) return;
-      Po('/usage/ping', {}).catch(function () {});
+      Po('/usage/ping', { view: window.__smpView || '' }).catch(function () {});
     } catch (_) { /* mesure facultative */ }
   }, 60000);
+
+  if (typeof window.go === 'function' && !window.__smpGoWrapped) {
+    window.__smpGoWrapped = true;
+    const prevGo = window.go;
+    window.go = function (k) { try { if (typeof k === 'string') window.__smpView = k.replace(/[^a-z0-9_]/gi, '').slice(0, 30); } catch (_) { /* suivi facultatif */ } return prevGo.apply(this, arguments); };
+  }
+  window.smpTeamUsage = async function (days) {
+    let d; try { d = await G('/usage/team?days=' + (days || 30)); } catch (e) { return toast('Indisponible : ' + (e.message || e)); }
+    const hm = function (s) { s = Number(s) || 0; const h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60); return h ? h + ' h ' + String(m).padStart(2, '0') : m + ' min'; };
+    const ago = function (x) { if (!x) return 'jamais'; const m = Math.round((Date.now() - new Date(x)) / 60000); return m < 2 ? 'à l’instant' : m < 60 ? 'il y a ' + m + ' min' : m < 1440 ? 'il y a ' + Math.round(m / 60) + ' h' : 'il y a ' + Math.round(m / 1440) + ' j'; };
+    modal('<h3>Activité de l’équipe <select onchange="smpTeamUsage(this.value)" style="font-size:13px;margin-left:8px"><option value="7"' + (d.days == 7 ? ' selected' : '') + '>7 jours</option><option value="30"' + (d.days == 30 ? ' selected' : '') + '>30 jours</option><option value="90"' + (d.days == 90 ? ' selected' : '') + '>90 jours</option></select></h3>'
+      + '<div style="overflow:auto;max-height:60vh"><table style="width:100%"><thead><tr><th>#</th><th>Utilisateur</th><th>Temps passé</th><th>Connexions</th><th>Dernière activité</th></tr></thead><tbody>'
+      + d.users.map(function (u, i) { return '<tr><td>' + (i + 1) + '</td><td><b>' + esc(u.display_name) + '</b><br><small>' + esc(u.login) + '</small></td><td>' + hm(u.seconds) + '</td><td>' + u.logins + '</td><td>' + ago(u.last_activity) + '</td></tr>'; }).join('')
+      + '</tbody></table></div><p style="font-size:12px;color:var(--m)">Le temps passé est mesuré quand l’application est ouverte et visible.</p><div style="text-align:right"><button class="btn" onclick="closeM()">Fermer</button></div>');
+  };
 
   // ── Son de cloche (facultatif, par appareil) ──
   function soundOn() { try { return localStorage.getItem('smp_bell_sound') === '1'; } catch (_) { return false; } }
@@ -197,6 +212,7 @@
       + row('Messages (24 h)', d.messages && d.messages.last_24h != null ? d.messages.last_24h + ' dont ' + d.messages.system_24h + ' alerte(s) auto' : '—')
       + row('Dernier message', fmt(d.messages && d.messages.last_at))
       + row('Actions journalisées (24 h)', d.activity && d.activity.audit_24h != null ? d.activity.audit_24h : '—')
+      + (function () { const b = d.backup || {}; const old = !b.last_ok || (Date.now() - new Date(b.last_ok)) > 26 * 3600 * 1000; return row('Dernière sauvegarde réussie', fmt(b.last_ok) + (b.failed_7d ? ' — ' + b.failed_7d + ' échec(s) sur 7 j' : ''), !old && b.last_status !== 'failed'); })()
       + row('Heure du serveur', fmt(d.time))
       + '</table><div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end"><button class="btn" onclick="smpSystemStatus()">↻ Actualiser</button><button class="btn" onclick="closeM()">Fermer</button></div>');
   };
@@ -227,6 +243,12 @@
       b.textContent = soundOn() ? '🔊 Son de la cloche : ON' : '🔈 Son de la cloche : OFF';
       b.onclick = function () { if (typeof closeUserMenu === 'function') closeUserMenu(); smpToggleBellSound(); b.textContent = soundOn() ? '🔊 Son de la cloche : ON' : '🔈 Son de la cloche : OFF'; };
       um.appendChild(b);
+    }
+    if (um && !document.getElementById('team-usage-link') && typeof ME !== 'undefined' && ME && ME.role === 'ADMIN' && !ME.is_global) {
+      const t = document.createElement('a');
+      t.id = 'team-usage-link'; t.setAttribute('role', 'menuitem'); t.tabIndex = 0; t.textContent = '📊 Activité de l’équipe';
+      t.onclick = function () { if (typeof closeUserMenu === 'function') closeUserMenu(); smpTeamUsage(30); };
+      um.appendChild(t);
     }
     if (um && !document.getElementById('sys-status-link') && typeof ME !== 'undefined' && ME && ME.is_global) {
       const c = document.createElement('a');

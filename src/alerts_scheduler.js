@@ -6,7 +6,7 @@ const { pool } = require('./core');
 const { swallow } = require('./safe');
 const { sendSystemAlert } = require('./messaging');
 
-const SCANNED_KINDS = ['stock_low', 'account_inactive', 'license_expiring', 'payroll_pending', 'daily_summary', 'tank_runout'];
+const SCANNED_KINDS = ['stock_low', 'account_inactive', 'license_expiring', 'payroll_pending', 'daily_summary', 'tank_runout', 'shift_long'];
 const extra = require('./alerts_extra');
 let running = false;
 let lastRunAt = null;
@@ -110,6 +110,20 @@ async function scanStation(station) {
         refTable: 'tank_runout', refId: t.product_id
       });
     }
+  }
+
+  if (configByKind.has('shift_long')) {
+    const cfg = configByKind.get('shift_long');
+    const hrs = Math.max(1, Math.min(72, Math.floor(Number(cfg.threshold_value) || 12)));
+    const { rows } = await pool.query(
+      `SELECT id, number, opened_at, EXTRACT(EPOCH FROM now() - opened_at) / 3600 AS h
+         FROM shifts WHERE station_id = $1 AND status = 'ouvert' AND opened_at IS NOT NULL
+          AND opened_at < now() - make_interval(hours => $2::int) LIMIT 20`, [station.station_id, hrs]
+    ).catch(swallow('alerts_scheduler:shift_long', { rows: [] }));
+    for (const sh of rows) await fire('shift_long', {
+      body: `Quart n° ${sh.number} ouvert depuis ${Math.floor(sh.h)} h (seuil ${hrs} h) : pensez à le clôturer.`,
+      refTable: 'shift_long', refId: sh.id
+    });
   }
 
   if (configByKind.has('payroll_pending')) {

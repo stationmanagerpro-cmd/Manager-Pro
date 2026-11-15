@@ -72,7 +72,29 @@ r.get('/admin/platform/usage', needPrincipal, wrap(async (req, res) => {
             COALESCE((SELECT ROUND(SUM(x.seconds) / 3600.0, 2)::float FROM user_usage x WHERE x.day = d.day), 0) AS hours
        FROM d ORDER BY d.day`, [Math.min(days, 90)]);
   const { rows: [tr] } = await pool.query(`SELECT MIN(day) AS since FROM user_usage`);
-  res.json({ days, clients, users, daily, tracking_since: tr && tr.since });
+  // Période précédente (même durée) pour l'évolution en %
+  const { rows: prev } = await pool.query(
+    `SELECT u.client_id,
+            COALESCE((SELECT SUM(x.seconds) FROM user_usage x JOIN users uu ON uu.id = x.user_id WHERE uu.client_id = u.client_id AND x.day <= CURRENT_DATE - $1::int AND x.day > CURRENT_DATE - 2 * $1::int), 0)::int AS seconds,
+            COALESCE((SELECT COUNT(*) FROM user_sessions s JOIN users uu ON uu.id = s.user_id WHERE uu.client_id = u.client_id AND s.created_at < now() - make_interval(days => $1::int) AND s.created_at >= now() - make_interval(days => 2 * $1::int)), 0)::int AS logins
+       FROM users u WHERE u.client_id IS NOT NULL GROUP BY u.client_id`, [days]);
+  const pm = new Map(prev.map(p => [Number(p.client_id), p]));
+  const pct = (a, b) => b > 0 ? Math.round((a - b) * 100 / b) : null;
+  for (const c of clients) {
+    const p = pm.get(Number(c.client_id)) || { seconds: 0, logins: 0 };
+    c.prev_seconds = p.seconds; c.prev_logins = p.logins;
+    c.seconds_change_pct = pct(c.seconds, p.seconds); c.logins_change_pct = pct(c.logins, p.logins);
+    c.days_since_activity = c.last_activity ? Math.floor((Date.now() - new Date(c.last_activity)) / 86400000) : null;
+    c.inactive = c.days_since_activity == null || c.days_since_activity >= 7;
+  }
+  const { rows: hourly } = await pool.query(
+    `SELECT EXTRACT(HOUR FROM s.created_at AT TIME ZONE 'UTC')::int AS h, COUNT(*)::int AS n
+       FROM user_sessions s JOIN users u ON u.id = s.user_id
+      WHERE u.is_global = false AND s.created_at >= now() - make_interval(days => $1::int) GROUP BY 1`, [days]);
+  const hours = Array.from({ length: 24 }, (_, h) => (hourly.find(x => x.h === h) || { n: 0 }).n);
+  const { rows: views } = await pool.query(
+    `SELECT view, SUM(minutes)::int AS minutes FROM view_usage WHERE day > CURRENT_DATE - $1::int GROUP BY view ORDER BY 2 DESC LIMIT 12`, [days]).catch(swallow('platform:views', { rows: [] }));
+  res.json({ days, clients, users, daily, hours, views, tracking_since: tr && tr.since });
 }));
 
 // État du système (Superadmin) : version, base de données, abonnements push, activité récente.
@@ -88,6 +110,7 @@ r.get('/admin/system-status', needPrincipal, wrap(async (req, res) => {
   await one('messages', `SELECT COUNT(*) FILTER (WHERE created_at > now() - interval '24 hours')::int AS last_24h, COUNT(*) FILTER (WHERE is_system AND created_at > now() - interval '24 hours')::int AS system_24h, MAX(created_at) AS last_at FROM messages WHERE deleted_at IS NULL`);
   await one('activity', `SELECT COUNT(*) FILTER (WHERE created_at > now() - interval '24 hours')::int AS audit_24h, MAX(created_at) AS last_at FROM audit_logs`);
   await one('clients', `SELECT COUNT(*)::int AS n FROM clients`);
+  await one('backup', `SELECT (SELECT MAX(finished_at) FROM backup_logs WHERE status = 'ok') AS last_ok, (SELECT status FROM backup_logs ORDER BY started_at DESC LIMIT 1) AS last_status, (SELECT COUNT(*)::int FROM backup_logs WHERE status = 'failed' AND started_at > now() - interval '7 days') AS failed_7d`);
   res.json(out);
 }));
 

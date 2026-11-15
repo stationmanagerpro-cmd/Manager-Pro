@@ -46,19 +46,35 @@
 
   const hm = s => { s = Number(s) || 0; const h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60); return h ? h + ' h ' + String(m).padStart(2, '0') : m + ' min'; };
   const ago = d => { if (!d) return 'jamais'; const m = Math.round((Date.now() - new Date(d)) / 60000); return m < 2 ? 'à l’instant' : m < 60 ? 'il y a ' + m + ' min' : m < 1440 ? 'il y a ' + Math.round(m / 60) + ' h' : 'il y a ' + Math.round(m / 1440) + ' j'; };
-  let usageCharts = [];
+  let usageCharts = [], lastUsage = null;
+  const chg = p => p == null ? '<small style="color:var(--m)">—</small>' : `<small style="color:${p >= 0 ? '#16a34a' : '#dc2626'}">${p >= 0 ? '▲ +' : '▼ '}${p} %</small>`;
+  const VIEWS = { quart: 'Quart', ventes: 'Ventes', pompes: 'Pompes', prod: 'Produits', stock: 'Stock', cuves: 'Cuves', four: 'Fournisseurs', cli: 'Clients', caisse: 'Caisse', emp: 'Employés', rapports: 'Rapports', msg: 'Messagerie', dash: 'Tableau de bord', moi: 'Profil', treso: 'Trésorerie', clot: 'Clôture' };
+  window.sadUsageCsv = function () {
+    const d = lastUsage; if (!d) return;
+    const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+    const L = [['Client', 'Temps (min)', 'Connexions', 'Utilisateurs actifs', 'Utilisateurs', 'Evolution temps %', 'Dernière activité'].map(q).join(';')];
+    d.clients.forEach(c => L.push([c.client_name, Math.round(c.seconds / 60), c.logins, c.active_users, c.users, c.seconds_change_pct, c.last_activity || ''].map(q).join(';')));
+    L.push(''); L.push(['Utilisateur', 'Login', 'Client', 'Temps (min)', 'Connexions', 'Jours actifs', 'Dernière activité'].map(q).join(';'));
+    d.users.forEach(u => L.push([u.display_name, u.login, u.client_name, Math.round(u.seconds / 60), u.logins, u.active_days, u.last_activity || ''].map(q).join(';')));
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['\ufeff' + L.join('\n')], { type: 'text/csv;charset=utf-8' }));
+    a.download = 'utilisation_plateforme_' + d.days + 'j_' + new Date().toISOString().slice(0, 10) + '.csv'; document.body.appendChild(a); a.click(); a.remove();
+  };
   window.sadUsage = async function (days) {
     const box = document.getElementById('sad_usage_body'); if (!box) return;
     let d; try { d = await G('/admin/platform/usage?days=' + (days || 30)); } catch (e) { box.textContent = 'Statistiques indisponibles : ' + (e.message || e); return; }
+    lastUsage = d;
     usageCharts.forEach(c => { try { c.destroy(); } catch (_) { /* déjà détruit */ } }); usageCharts = [];
     const totS = d.clients.reduce((a, c) => a + c.seconds, 0), totL = d.clients.reduce((a, c) => a + c.logins, 0);
     const act = d.users.filter(u => u.logins > 0 || u.seconds > 0).length;
     const since = d.tracking_since ? new Date(d.tracking_since).toLocaleDateString('fr-FR') : null;
-    box.innerHTML = `<div class="sad-kpis2" style="margin-bottom:10px">${mini('⏱', 'Temps total', hm(totS))}${mini('🔑', 'Connexions', totL)}${mini('🧑‍💼', 'Utilisateurs actifs', act + ' / ' + d.users.length)}${mini('🏢', 'Clients actifs', d.clients.filter(c => c.logins || c.seconds).length + ' / ' + d.clients.length)}</div>
+    box.innerHTML = `<div class="sad-kpis2" style="margin-bottom:10px">${mini('⏱', 'Temps total', hm(totS))}${mini('🔑', 'Connexions', totL)}${mini('🧑‍💼', 'Utilisateurs actifs', act + ' / ' + d.users.length)}${mini('🏢', 'Clients actifs', d.clients.filter(c => c.logins || c.seconds).length + ' / ' + d.clients.length)}${mini('😴', 'Clients inactifs (7 j+)', d.clients.filter(c => c.inactive).length)}</div>
       <div class="sad-row r21"><div><h4 style="margin:4px 0">Temps passé par client (heures)</h4><div class="sad-chart sm"><canvas id="sad_u_cli"></canvas></div></div>
       <div><h4 style="margin:4px 0">Activité par jour</h4><div class="sad-chart sm"><canvas id="sad_u_day"></canvas></div></div></div>
+      <div class="sad-row r21"><div><h4 style="margin:4px 0">Heures de pointe (connexions par heure, UTC)</h4><div class="sad-chart sm"><canvas id="sad_u_hour"></canvas></div></div>
+      <div><h4 style="margin:4px 0">Écrans les plus utilisés (minutes)</h4><div class="sad-chart sm"><canvas id="sad_u_view"></canvas></div></div></div>
+      <div style="text-align:right;margin:6px 0"><button class="b2" onclick="sadUsageCsv()">⬇ Exporter le rapport (CSV)</button></div>
       <h4 style="margin:10px 0 4px">Classement des clients</h4>
-      <div style="overflow:auto"><table><thead><tr><th>#</th><th>Client</th><th>Temps passé</th><th>Connexions</th><th>Utilisateurs actifs</th><th>Dernière activité</th></tr></thead><tbody>${d.clients.map((c, i) => `<tr><td>${i + 1}</td><td><b>${esc(c.client_name)}</b></td><td>${hm(c.seconds)}</td><td>${c.logins}</td><td>${c.active_users} / ${c.users}</td><td>${ago(c.last_activity)}</td></tr>`).join('') || '<tr><td colspan="6">Aucun client</td></tr>'}</tbody></table></div>
+      <div style="overflow:auto"><table><thead><tr><th>#</th><th>Client</th><th>Temps passé</th><th>Évolution</th><th>Connexions</th><th>Utilisateurs actifs</th><th>Dernière activité</th></tr></thead><tbody>${d.clients.map((c, i) => `<tr><td>${i + 1}</td><td><b>${esc(c.client_name)}</b>${c.inactive ? ' <span class="sad-pill" style="background:#fee2e2;color:#b91c1c">inactif</span>' : ''}</td><td>${hm(c.seconds)}</td><td>${chg(c.seconds_change_pct)} <small>temps</small><br>${chg(c.logins_change_pct)} <small>conn.</small></td><td>${c.logins}</td><td>${c.active_users} / ${c.users}</td><td>${ago(c.last_activity)}</td></tr>`).join('') || '<tr><td colspan="7">Aucun client</td></tr>'}</tbody></table></div>
       <h4 style="margin:12px 0 4px">Utilisateurs, du plus fréquent au moins fréquent</h4>
       <div style="overflow:auto;max-height:420px"><table><thead><tr><th>#</th><th>Utilisateur</th><th>Client</th><th>Temps passé</th><th>Connexions</th><th>Jours actifs</th><th>Dernière activité</th></tr></thead><tbody>${d.users.map((u, i) => `<tr><td>${i + 1}</td><td><b>${esc(u.display_name)}</b><br><small>${esc(u.login)}</small></td><td>${esc(u.client_name)}</td><td>${hm(u.seconds)}</td><td>${u.logins}</td><td>${u.active_days}</td><td>${ago(u.last_activity)}</td></tr>`).join('') || '<tr><td colspan="7">Aucun utilisateur</td></tr>'}</tbody></table></div>
       <p style="font-size:12px;margin:8px 0 0">Les connexions sont comptées depuis l’historique des sessions. Le temps passé est mesuré uniquement quand l’application est ouverte et visible${since ? ', depuis le ' + since : ' ; aucune mesure enregistrée pour l’instant (elle démarre à la prochaine ouverture de l’application par les clients)'}.</p>`;
@@ -66,6 +82,9 @@
     const top = d.clients.slice(0, 10);
     const a = document.getElementById('sad_u_cli'), b = document.getElementById('sad_u_day');
     if (a) usageCharts.push(new Chart(a, { type: 'bar', data: { labels: top.map(c => c.client_name), datasets: [{ data: top.map(c => Math.round(c.seconds / 36) / 100), backgroundColor: '#0ea5e9', borderRadius: 6, barThickness: 12 }] }, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } } } }));
+    const hc = document.getElementById('sad_u_hour'), vc = document.getElementById('sad_u_view');
+    if (hc) usageCharts.push(new Chart(hc, { type: 'bar', data: { labels: d.hours.map((_, h) => h + 'h'), datasets: [{ data: d.hours, backgroundColor: '#6366f1', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } }));
+    if (vc) usageCharts.push(new Chart(vc, { type: 'bar', data: { labels: (d.views || []).map(v => VIEWS[v.view] || v.view), datasets: [{ data: (d.views || []).map(v => v.minutes), backgroundColor: '#14b8a6', borderRadius: 6, barThickness: 12 }] }, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } } } }));
     if (b) usageCharts.push(new Chart(b, { type: 'line', data: { labels: d.daily.map(x => x.day.slice(5)), datasets: [{ label: 'Connexions', data: d.daily.map(x => x.logins), borderColor: '#22c55e', backgroundColor: '#22c55e33', tension: .3, yAxisID: 'y' }, { label: 'Heures', data: d.daily.map(x => x.hours), borderColor: '#f59e0b', backgroundColor: '#f59e0b33', tension: .3, yAxisID: 'y1' }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, position: 'left' }, y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false } } } } }));
   };
 

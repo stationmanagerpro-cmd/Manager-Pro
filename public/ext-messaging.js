@@ -435,9 +435,10 @@
     ['payroll_anomaly', 'Anomalie de paie'], ['payroll_pending', 'Bulletins de paie en attente'],
     ['incident_note', 'Note d’incident'], ['license_expiring', 'Licence bientôt expirée'],
     ['stock_low', 'Stock sous le minimum'], ['backup_failure', 'Échec de sauvegarde'],
-    ['daily_summary', 'Résumé du soir'], ['tank_runout', 'Rupture de cuve prévue']
+    ['daily_summary', 'Résumé du soir'], ['tank_runout', 'Rupture de cuve prévue'],
+    ['shift_long', 'Quart ouvert trop longtemps'], ['login_unusual', 'Connexion de nuit']
   ];
-  const thresholdKinds = new Set(['cash_variance', 'shift_close', 'counter_anomaly', 'stock_anomaly', 'purchase_variance', 'late_arrival', 'account_inactive', 'license_expiring', 'tank_runout', 'daily_summary']);
+  const thresholdKinds = new Set(['cash_variance', 'shift_close', 'counter_anomaly', 'stock_anomaly', 'purchase_variance', 'late_arrival', 'account_inactive', 'license_expiring', 'tank_runout', 'daily_summary', 'shift_long']);
 
   window.msgAlertCenterOpen = async function () {
     try {
@@ -511,8 +512,8 @@
     const thresholdFields = document.getElementById('alert-threshold-fields');
     const updateThresholdVisibility = () => {
       if (thresholdFields) thresholdFields.style.display = thresholdKinds.has(kindEl.value) ? 'block' : 'none';
-      const defaults = { cash_variance: 'XOF', shift_close: 'XOF', counter_anomaly: 'litres', stock_anomaly: 'units', purchase_variance: 'XOF', late_arrival: 'minutes', account_inactive: 'days', license_expiring: 'days', tank_runout: 'days', daily_summary: 'hours' };
-      const allowed = { cash_variance: ['XOF','percent'], shift_close: ['XOF','percent'], purchase_variance: ['XOF','percent'], counter_anomaly: ['litres','percent'], stock_anomaly: ['units','litres','percent'], late_arrival: ['minutes'], account_inactive: ['days'], license_expiring: ['days'], tank_runout: ['days'], daily_summary: ['hours'] };
+      const defaults = { cash_variance: 'XOF', shift_close: 'XOF', counter_anomaly: 'litres', stock_anomaly: 'units', purchase_variance: 'XOF', late_arrival: 'minutes', account_inactive: 'days', license_expiring: 'days', tank_runout: 'days', daily_summary: 'hours', shift_long: 'hours' };
+      const allowed = { cash_variance: ['XOF','percent'], shift_close: ['XOF','percent'], purchase_variance: ['XOF','percent'], counter_anomaly: ['litres','percent'], stock_anomaly: ['units','litres','percent'], late_arrival: ['minutes'], account_inactive: ['days'], license_expiring: ['days'], tank_runout: ['days'], daily_summary: ['hours'], shift_long: ['hours'] };
       const unitEl = document.getElementById('alert-unit');
       if (unitEl && allowed[kindEl.value] && !allowed[kindEl.value].includes(unitEl.value)) unitEl.value = defaults[kindEl.value];
     };
