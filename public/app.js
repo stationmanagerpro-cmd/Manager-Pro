@@ -914,7 +914,7 @@ async function vCaisse() {
   const [rg, mv] = await Promise.all([G('/cash/registers'), G('/cash/movements')]);
   return `<div class="cards">${rg.map(x => `<div class="card"><small>${esc(x.name)}</small><b>${f(x.balance)}</b></div>`).join('')}</div><div class="bar">${can('expense.create') ? `<button onclick="addX()">Nouvelle dépense</button>` : ''}${can('cash.manage') ? `<button class="b2" onclick="addM()">Mouvement de caisse</button>` : ''}</div>` + T(['Date', 'Type', 'Libellé', 'Montant'], mv.map(x => [dt(x.created_at), x.kind, esc(x.label), f(x.amount)]));
 }
-const addX = () => { notifyIfPastShift(); form('Dépense', [['category', 'Catégorie', 's', ['Carburant véhicule', 'Électricité', 'Eau', 'Salaires', 'Maintenance', 'Transport', 'Fournitures', 'Sécurité', 'Autres']], ['amount', 'Montant', 'number'], ['method', 'Mode', 's', pmOpts(['credit'])], ['beneficiary', 'Bénéficiaire'], ['comment', 'Commentaire']], {}, async d => { await Po('/expenses', d); closeM(); go(cur, arg); }); };
+const addX = () => { notifyIfPastShift(); form('Dépense', [['category', 'Catégorie', 's', ['Carburant véhicule', 'Électricité', 'Eau', 'Salaires', 'Maintenance', 'Transport', 'Fournitures', 'Sécurité', 'Autres']], ['amount', 'Montant', 'number'], ['method', 'Mode', 's', pmOpts(['credit'])], ['beneficiary', 'Bénéficiaire'], ['comment', 'Commentaire']], {}, async d => { const ex = await Po('/expenses', d); closeM(); if (ex && ex.id && typeof askExpenseReceipt === 'function') await askExpenseReceipt(ex.id); go(cur, arg); }); };
 const addM = async () => {
   let accOpts = [];
   try {

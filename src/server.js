@@ -257,7 +257,8 @@ app.use('/api', require('./platform_insights').r); // santé clients, comparaiso
 app.use('/api', require('./usage').r);      // temps d'utilisation (battement de l'application ouverte)
 app.use('/api', require('./push').r);       // abonnements aux notifications push (téléphone / navigateur)
 app.use('/api', require('./fleet').r);      // Cartes carburant / flottes
-app.use('/api', require('./my_day').r);    // « Ma journée » : synthèse, objectif mensuel, classement des employés
+app.use('/api', require('./my_day').r);
+app.use('/api', require('./manager_extras').r); // résumé hebdomadaire, justificatifs photo des dépenses    // « Ma journée » : synthèse, objectif mensuel, classement des employés
 app.use('/api', require('./tanks').r);      // Cuves : jauges et réconciliation du stock en cuve
 app.use('/api', require('./money_match').r);   // Rapprochement ligne à ligne des relevés Mobile Money / banque
 app.use('/api', require('./finance'));
@@ -279,6 +280,7 @@ const host = process.env.HOST || null;
 const onListening = () => {
   require('./branding').load().catch(() => {});   // préchauffe le cache d'identité
   console.log('Station Manager API sur ' + (host || 'toutes les interfaces') + ':' + port);
+  try { require('./manager_extras').startScheduler(); } catch (e) { console.warn('[résumé hebdo] planificateur :', e.message); }
   try { require('./backup').startScheduler(); } catch (e) { console.warn('[backup] planificateur :', e.message); }
   try { require('./platform_insights').startScheduler(); } catch (e) { console.warn('[relance-licence] planificateur :', e.message); }
   try { require('./alerts_scheduler').startScheduler(); } catch (e) { console.warn('[alertes-auto] planificateur :', e.message); }

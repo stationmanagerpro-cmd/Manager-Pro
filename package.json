@@ -77,6 +77,7 @@
     "test:export-by": "node test/export-by-static.js",
     "test:tank-controls": "node test/tank-controls-unit.js",
     "test:platform-insights": "node test/platform-insights-unit.js",
+    "test:manager-extras": "node test/manager-extras-unit.js",
     "test:focus-mode": "node test/focus-mode-harness.js",
     "test:pdf-engine": "node test/pdf-engine-stub.js",
     "test:report-ui": "node test/report-ui-harness.js",

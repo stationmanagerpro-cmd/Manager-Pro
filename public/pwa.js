@@ -167,10 +167,18 @@
       };
       document.body.appendChild(el);
     }
-    if (pending > 0 || failed > 0) {
+    var offline = navigator.onLine === false;
+    if (pending > 0 || failed > 0 || offline) {
       el.style.display = 'block';
-      el.textContent = (pending ? pending + ' hors-ligne' : '') + (pending && failed ? ' · ' : '') + (failed ? failed + ' refusée(s)' : '');
+      var parts = [];
+      if (offline) parts.push('Hors connexion');
+      if (pending) parts.push(pending + ' en attente d\'envoi');
+      if (failed) parts.push(failed + ' refusée(s) : à vérifier');
+      el.textContent = '⏳ ' + parts.join(' · ');
+      el.setAttribute('role', 'status');
+      el.setAttribute('aria-live', 'polite');
       el.style.background = failed ? '#b42318' : '';
+      el.style.color = failed ? '#fff' : '';
     } else {
       el.style.display = 'none';
     }
