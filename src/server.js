@@ -254,6 +254,7 @@ app.use('/api', require('./client_portal'));   // liens d'espace client (gestion
 app.use('/api', require('./treasury').r);   // Trésorerie + Créances & dettes (agrégats)
 app.use('/api', require('./usage_report').r);  // rapport d'utilisation (PDF, envoi mensuel)
 app.use('/api', require('./platform_insights').r); // santé clients, comparaison, journal d'erreurs, relances licence (Superadmin)
+app.use('/api', require('./manager_tools').r); // ma journée, objectifs, classement, résumé hebdomadaire, justificatifs de dépense
 app.use('/api', require('./usage').r);      // temps d'utilisation (battement de l'application ouverte)
 app.use('/api', require('./push').r);       // abonnements aux notifications push (téléphone / navigateur)
 app.use('/api', require('./fleet').r);      // Cartes carburant / flottes
@@ -279,6 +280,7 @@ const onListening = () => {
   require('./branding').load().catch(() => {});   // préchauffe le cache d'identité
   console.log('Station Manager API sur ' + (host || 'toutes les interfaces') + ':' + port);
   try { require('./backup').startScheduler(); } catch (e) { console.warn('[backup] planificateur :', e.message); }
+  try { require('./manager_tools').startScheduler(); } catch (e) { console.warn('[outils-gérant] planificateur :', e.message); }
   try { require('./platform_insights').startScheduler(); } catch (e) { console.warn('[relance-licence] planificateur :', e.message); }
   try { require('./alerts_scheduler').startScheduler(); } catch (e) { console.warn('[alertes-auto] planificateur :', e.message); }
   try { require('./scheduled_reports').startScheduler(); } catch (e) { console.warn('[rapports-programmes] planificateur :', e.message); }
