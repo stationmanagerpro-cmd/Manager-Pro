@@ -46,3 +46,11 @@
 
 ## Point à arbitrer
 - Le tableau des comptes affiche **tous les comptes du client** (gérant, comptable, caissier, pompiste), alors que la fiche utilisateurs ne montre que les administrateurs locaux. Confirmer ce choix au regard de la règle de séparation des rôles.
+
+## Mise à jour 2 — stations et lisibilité
+- **Stations** : migration 117 (`usage_detail.station_id`). Le battement lit l'en-tête `X-Station-Id`, retenu seulement si la station est affectée au compte et rattachée au même client ; sinon « Activité sans station identifiée ».
+- **Stations du client** : tableau par station (temps, comptes actifs / rattachés, jours, écrans, score). Filtre « Vue » pour le panneau entier.
+- **Comptes** : tous les comptes du client, avec stations rattachées et temps par station. En filtre station, temps et score de cette station uniquement.
+- **Textes** : titre « Accrochage à la plateforme · <client> » ; états explicites (connexions sans temps, aucune activité, score non calculé) au lieu de « Dormant » trompeur.
+- **Sources** : bloc « D’où viennent ces chiffres » avec tables utilisées, nombre d’enregistrements lus et heure du calcul (heure de Bamako).
+- Vérification E2E : le vrai gestionnaire de battement écrit dans PostgreSQL, le vrai calcul relit (somme des stations = total du client).

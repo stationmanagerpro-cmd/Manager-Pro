@@ -14,11 +14,15 @@ r.post('/usage/ping', wrap(async (req, res) => {
     await pool.query(`INSERT INTO view_usage(day, view, minutes) VALUES (CURRENT_DATE, $1, 1) ON CONFLICT (day, view) DO UPDATE SET minutes = view_usage.minutes + 1`, [view]).catch(() => {});
   }
   // Détail par client, heure (fuseau Bamako), compte et écran : alimente les agrégats par client.
+  // La station est retenue seulement si elle est affectée au compte et rattachée au même client ; sinon 0 (non identifiée).
+  const sid = parseInt(req.headers['x-station-id'], 10) || null;
   await pool.query(
-    `INSERT INTO usage_detail(day, hour, client_id, user_id, view, minutes)
-     VALUES (CURRENT_DATE, EXTRACT(HOUR FROM (now() AT TIME ZONE 'Africa/Bamako'))::int, $1, $2, $3, 1)
-     ON CONFLICT (day, hour, user_id, view) DO UPDATE SET minutes = usage_detail.minutes + 1`,
-    [req.user.client_id || null, req.user.id, view]).catch(() => {});
+    `INSERT INTO usage_detail(day, hour, client_id, user_id, view, station_id, minutes)
+     SELECT CURRENT_DATE, EXTRACT(HOUR FROM (now() AT TIME ZONE 'Africa/Bamako'))::int, $1, $2, $3,
+            COALESCE((SELECT st.id FROM user_stations us JOIN stations st ON st.id = us.station_id JOIN users u ON u.id = us.user_id
+                       WHERE us.user_id = $2 AND st.id = $4 AND st.active = true AND (u.client_id IS NULL OR st.client_id = u.client_id)), 0), 1
+     ON CONFLICT (day, hour, user_id, view, station_id) DO UPDATE SET minutes = usage_detail.minutes + 1`,
+    [req.user.client_id || null, req.user.id, view, sid]).catch(() => {});
   // Ajoute le temps écoulé depuis le battement précédent (plafonné à 120 s ; au-delà, l'application était fermée).
   await pool.query(
     `INSERT INTO user_usage(user_id, day, seconds, pings, last_ping_at) VALUES ($1, CURRENT_DATE, 0, 1, now())

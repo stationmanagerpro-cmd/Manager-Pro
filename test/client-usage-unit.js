@@ -73,15 +73,16 @@ Module._load = orig;
   await check('suivi : le ping enregistre le client, le compte, l’heure de Bamako et l’écran (chaîne simple seulement)', async () => {
     const ping = routes['post /usage/ping'];
     queries.length = 0;
-    await ping({ user: { id: 5, client_id: 1, is_global: false }, body: { view: 'stock' }, get: () => '' }, { json() {} });
+    await ping({ user: { id: 5, client_id: 1, is_global: false }, body: { view: 'stock' }, headers: { 'x-station-id': '7' }, get: () => '' }, { json() {} });
     const ud = queries.find(q => /INSERT INTO usage_detail/.test(q.sql));
     assert.ok(ud, 'insertion usage_detail');
-    assert.deepStrictEqual(ud.p, [1, 5, 'stock']);
+    assert.deepStrictEqual(ud.p, [1, 5, 'stock', 7], 'station lue dans l’en-tête X-Station-Id');
     assert.ok(/Africa\/Bamako/.test(ud.sql));
+    assert.ok(/user_stations/.test(ud.sql), 'la station n’est retenue que si elle est affectée au compte');
     queries.length = 0;
-    await ping({ user: { id: 5, client_id: 1, is_global: false }, body: { view: { stations: [] } }, get: () => '' }, { json() {} });
+    await ping({ user: { id: 5, client_id: 1, is_global: false }, body: { view: { stations: [] } }, headers: {}, get: () => '' }, { json() {} });
     const ud2 = queries.find(q => /INSERT INTO usage_detail/.test(q.sql));
-    assert.deepStrictEqual(ud2.p, [1, 5, ''], 'un objet n’est pas pris pour un écran');
+    assert.deepStrictEqual(ud2.p, [1, 5, '', null], 'un objet n’est pas pris pour un écran');
     assert.ok(!queries.some(q => /INSERT INTO view_usage/.test(q.sql)), 'pas de vue enregistrée pour un objet');
   });
 
