@@ -112,7 +112,7 @@ async function sendLicenseReminders(now = new Date()) {
   return sent;
 }
 function startScheduler() {
-  const tick = () => { sendLicenseReminders().catch(e => console.warn('[relance-licence]', e.message)); pool.query("DELETE FROM error_log WHERE occurred_at < now() - interval '30 days'").catch(() => {}); };
+  const tick = () => { sendLicenseReminders().catch(e => console.warn('[relance-licence]', e.message)); pool.query("DELETE FROM error_log WHERE occurred_at < now() - interval '30 days'").catch(() => {}); pool.query("DELETE FROM usage_detail WHERE day < CURRENT_DATE - 400").catch(() => {}); };
   const t0 = setTimeout(tick, 2 * 60 * 1000), t1 = setInterval(tick, 6 * 3600 * 1000);
   if (t0.unref) t0.unref(); if (t1.unref) t1.unref();
 }

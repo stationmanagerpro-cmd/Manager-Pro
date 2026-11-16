@@ -255,6 +255,7 @@ app.use('/api', require('./treasury').r);   // Trésorerie + Créances & dettes 
 app.use('/api', require('./usage_report').r);  // rapport d'utilisation (PDF, envoi mensuel)
 app.use('/api', require('./platform_insights').r); // santé clients, comparaison, journal d'erreurs, relances licence (Superadmin)
 app.use('/api', require('./usage').r);      // temps d'utilisation (battement de l'application ouverte)
+app.use('/api', require('./usage_client').r); // utilisation par client : modules, heures, comptes, score d'accrochage (Superadmin)
 app.use('/api', require('./push').r);       // abonnements aux notifications push (téléphone / navigateur)
 app.use('/api', require('./fleet').r);      // Cartes carburant / flottes
 app.use('/api', require('./my_day').r);

@@ -7,10 +7,18 @@ const r = express.Router();
 
 r.post('/usage/ping', wrap(async (req, res) => {
   if (!req.user || req.user.is_global) return res.json({ ok: true });
-  const view = String((req.body && req.body.view) || '');
-  if (/^[a-z0-9_]{1,30}$/i.test(view)) {
+  // Le client envoie le nom de l'écran courant ; seule une chaîne simple est retenue (window.__smpView peut être un objet ailleurs).
+  const raw = req.body && req.body.view;
+  const view = typeof raw === 'string' && /^[a-z0-9_]{1,30}$/i.test(raw) ? raw : '';
+  if (view) {
     await pool.query(`INSERT INTO view_usage(day, view, minutes) VALUES (CURRENT_DATE, $1, 1) ON CONFLICT (day, view) DO UPDATE SET minutes = view_usage.minutes + 1`, [view]).catch(() => {});
   }
+  // Détail par client, heure (fuseau Bamako), compte et écran : alimente les agrégats par client.
+  await pool.query(
+    `INSERT INTO usage_detail(day, hour, client_id, user_id, view, minutes)
+     VALUES (CURRENT_DATE, EXTRACT(HOUR FROM (now() AT TIME ZONE 'Africa/Bamako'))::int, $1, $2, $3, 1)
+     ON CONFLICT (day, hour, user_id, view) DO UPDATE SET minutes = usage_detail.minutes + 1`,
+    [req.user.client_id || null, req.user.id, view]).catch(() => {});
   // Ajoute le temps écoulé depuis le battement précédent (plafonné à 120 s ; au-delà, l'application était fermée).
   await pool.query(
     `INSERT INTO user_usage(user_id, day, seconds, pings, last_ping_at) VALUES ($1, CURRENT_DATE, 0, 1, now())
