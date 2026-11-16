@@ -559,7 +559,15 @@
 
   window.clNew = safe(async () => {
     const today = new Date().toISOString().slice(0, 10);
-    form('Nouveau client + licence', [
+    const featKeys = featureFormFields().map(f => f[0]);
+    const newSections = [
+      { title: 'Compte client', keys: ['name', 'manager_name', 'code', 'contact_email', 'contact_phone'] },
+      { title: 'Administrateur local', keys: ['owner_login', 'owner_password'] },
+      { title: 'Licence', keys: ['start_date', 'duration_preset', 'duration_unit', 'duration_value', 'max_users', 'max_stations', 'can_manage_users', 'can_create_station'] },
+      { title: 'Modules et droits du contrat', keys: featKeys },
+      { title: 'Notes', keys: ['notes'] }
+    ];
+    sectionedForm('Nouveau client + licence', [
       ['name', 'Nom entreprise / établissement *'],
       ['manager_name', 'Nom du contact / responsable déclaré (facultatif)'],
       ['code', 'Code client'],
@@ -648,14 +656,37 @@
       closeM();
       toast('Client créé' + (r.license ? ' — licence ' + (r.license.license_status || '') : '') + '. Les modules s’appliquent après reconnexion du compte client.', 'success');
       go('clients');
-    });
+    }, { sections: newSections, icon: '🤝', hint: 'Crée le compte client, sa station de départ et sa licence.' });
   });
+
+  function clLicenceBand(c, id, hist) {
+    const days = c.is_indefinite ? 'Indéfinie' : (c.days_remaining != null ? c.days_remaining + ' j. restants' : '—');
+    const exp = c.expires_at ? new Date(c.expires_at).toLocaleDateString('fr-FR') : '—';
+    const last = (hist || []).slice(0, 3).map(h => esc(h.operation) + ' (' + (h.performed_at ? new Date(h.performed_at).toLocaleDateString('fr-FR') : '') + ')').join(' · ');
+    return `<div class="sf-band"><div class="sf-meta"><span>Licence</span>${licTag(c.license_status)}<span>·</span><b>${esc(days)}</b><span>·</span><span>Expire le <b>${esc(exp)}</b></span></div>
+      <div class="sf-acts">
+        <button type="button" class="b2" onclick="closeM();clRenew(${id})">Renouveler</button>
+        <button type="button" class="b2" onclick="closeM();clExtend(${id})">Prolonger</button>
+        <button type="button" class="b2" onclick="closeM();clSetExpiry(${id})">Modifier l’échéance</button>
+        <button type="button" class="b2" onclick="closeM();clSuspend(${id})">Suspendre</button>
+        <button type="button" class="b2" onclick="closeM();clReactivate(${id})">Débloquer</button>
+        <button type="button" class="bd" onclick="closeM();clTerminate(${id})">Résilier le contrat</button>
+      </div>${last ? `<div style="width:100%;font-size:12px;color:var(--m,#64748b)">Dernières opérations : ${last}</div>` : ''}</div>`;
+  }
 
   window.clEdit = safe(async (id) => {
     const c = await G('/admin/clients/' + id + '/contract');
     const f = c.features || {};
     const hist = await G('/admin/clients/' + id + '/license/history').catch(() => []);
-    form('Gérer client #' + id + ' — ' + (c.client_name || ''), [
+    const featKeys = featureFormFields().map(f => f[0]);
+    const editSections = [
+      { title: 'Information administrative', keys: ['name', 'manager_name', 'contact_email', 'contact_phone', 'status_client', 'contract_type'] },
+      { title: 'Droits de création', keys: ['can_create_station', 'max_stations', 'can_manage_users', 'max_users'] },
+      { title: 'Modules et droits du contrat', keys: featKeys },
+      { title: 'Signature et notes', keys: ['forced_signature', 'notes'] }
+    ];
+    const band = clLicenceBand(c, id, hist);
+    sectionedForm('Gérer client #' + id + ' — ' + (c.client_name || ''), [
       ['name', 'Nom du compte client *'],
       ['manager_name', 'Nom du responsable'],
       ['contact_email', 'E-mail de contact'],
@@ -706,28 +737,7 @@
         await api('PATCH', '/admin/clients/' + id + '/status', { status: d.status_client });
       }
       closeM(); toast('Contrat enregistré. Le compte client doit se reconnecter pour appliquer les modules autorisés.', 'success'); go('clients');
-    });
-    // Afficher résumé licence sous le formulaire (après ouverture modal)
-    setTimeout(() => {
-      const m = document.querySelector('#m > div');
-      if (!m) return;
-      const info = document.createElement('div');
-      info.style.cssText = 'font-size:13px;margin:8px 0;padding:8px;background:var(--pl);border-radius:8px';
-      info.innerHTML = `<strong>Licence :</strong> ${licTag(c.license_status)}
-        · ${c.is_indefinite ? 'Indéfinie' : (c.days_remaining != null ? c.days_remaining + ' j. restants' : '')}
-        · Exp. ${c.expires_at ? new Date(c.expires_at).toLocaleString() : '—'}
-        <div style="margin-top:6px">
-          <button type="button" class="b2" onclick="closeM();clRenew(${id})">Renouveler</button>
-          <button type="button" class="b2" onclick="closeM();clExtend(${id})">Prolonger</button>
-          <button type="button" class="b2" onclick="closeM();clSetExpiry(${id})">Modifier l’échéance</button>
-          <button type="button" class="b2" onclick="closeM();clSuspend(${id})">Suspendre</button>
-          <button type="button" class="b2" onclick="closeM();clReactivate(${id})">Débloquer</button>
-          <button type="button" class="bd" onclick="closeM();clTerminate(${id})">Résilier le contrat</button>
-        </div>
-        ${hist && hist.length ? '<p style="margin:8px 0 0;font-size:12px;color:var(--m)">Dernières ops : ' +
-          hist.slice(0, 5).map(h => esc(h.operation) + ' (' + (h.performed_at ? new Date(h.performed_at).toLocaleDateString() : '') + ')').join(' · ') + '</p>' : ''}`;
-      m.insertBefore(info, m.firstChild.nextSibling);
-    }, 50);
+    }, { sections: editSections, band, icon: '🤝', hint: 'Fiche administrative et droits du contrat' });
   });
 
     window.clRenew = safe(async (id) => {
