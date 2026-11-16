@@ -24,7 +24,7 @@ r.get('/search', wrap(async (req, res) => {
     const { rows } = await pool.query(
       `SELECT id, name, code, contact_email, contact_phone, status
          FROM clients
-        WHERE deleted_at IS NULL
+        WHERE status <> 'archive'
           AND (name ILIKE $1 OR COALESCE(code,'') ILIKE $1
                OR COALESCE(contact_email,'') ILIKE $1
                OR COALESCE(contact_phone,'') ILIKE $1)

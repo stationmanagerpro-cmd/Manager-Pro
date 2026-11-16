@@ -279,7 +279,7 @@ async function loadDataset(kind, sid, from, to, req) {
         `SELECT 'vente' AS type, s.sold_at AS at, s.kind, s.total AS amount, COALESCE(s.invoice_no,'') AS ref, s.status
          FROM sales s WHERE s.station_id=$1 AND s.sold_at::date = $2::date
          UNION ALL
-         SELECT 'depense', e.spent_on::timestamp, e.category, e.amount, COALESCE(e.label,''), 'valide'
+         SELECT 'depense', e.spent_on::timestamp, e.category, e.amount, COALESCE(e.beneficiary, e.comment, ''), 'valide'
          FROM expenses e WHERE e.station_id=$1 AND e.deleted_at IS NULL AND e.spent_on = $2::date
          ORDER BY 2`, [sid, from]).catch(swallow('exports:281', { rows: [] }));
       return {
