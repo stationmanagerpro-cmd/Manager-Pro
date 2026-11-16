@@ -211,7 +211,7 @@ r.get('/stations/current', need('settings.edit', 'report.view', 'finance.view', 
     [req.sid]
   );
   if (!s) throw new HttpError(404, 'Station introuvable');
-  res.json(s);
+  res.json({ ...s, can_manage_access: await require('./ownership').canManageStation(pool, req.user, req.sid) });
 }));
 
 // Identité de la station
@@ -230,10 +230,7 @@ const GEO_SCHEMA = { latitude: geoNum(-90, 90, 'Latitude'), longitude: geoNum(-1
 // Suspension de l'accès d'une station (arrêt de travail) : bloque la station pour tous ses comptes, sans toucher aux comptes. Réversible.
 r.patch('/stations/:id/suspension', need('user.manage'), body(z.object({ suspended: z.boolean() })), wrap(async (req, res) => {
   const sid = Number(req.params.id);
-  if (!req.user.is_global) {
-    const { rowCount } = await pool.query('SELECT 1 FROM user_stations WHERE user_id = $1 AND station_id = $2', [req.user.id, sid]);
-    if (!rowCount) throw new HttpError(403, 'Station hors de votre accès');
-  }
+  if (!await require('./ownership').canManageStation(pool, req.user, sid)) throw new HttpError(403, 'Seul l\'administrateur local qui a créé cette station peut la suspendre.');
   const { rows: [before] } = await pool.query('SELECT id, name, suspended_at FROM stations WHERE id = $1 AND active = true', [sid]);
   if (!before) throw new HttpError(404, 'Station introuvable');
   const { rows: [after] } = await pool.query(
@@ -439,8 +436,8 @@ r.post('/stations', need('user.manage'), body(z.object({ name: z.string().min(1)
   }
   const st = await tx(async c => {
     const { rows: [s] } = await c.query(
-      'INSERT INTO stations(name, address, phone, currency, client_id, latitude, longitude) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id, name, client_id',
-      [req.body.name, req.body.address || null, req.body.phone || null, req.body.currency, clientId, req.body.latitude ?? null, req.body.longitude ?? null]
+      'INSERT INTO stations(name, address, phone, currency, client_id, latitude, longitude, created_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id, name, client_id',
+      [req.body.name, req.body.address || null, req.body.phone || null, req.body.currency, clientId, req.body.latitude ?? null, req.body.longitude ?? null, req.user.id]
     );
     await c.query("INSERT INTO cash_registers(station_id, name) VALUES ($1, 'Caisse principale')", [s.id]);
     await c.query(`INSERT INTO payment_methods(station_id, code, label, kind) VALUES ($1,'especes','Espèces','especes'),($1,'mobile_money','Mobile Money','mobile_money'),($1,'orange_money','Orange Money','mobile_money'),($1,'wave','Wave','mobile_money'),($1,'carte','Carte bancaire','carte'),($1,'banque','Virement / banque','banque'),($1,'credit','Crédit client','credit'),($1,'autre','Autre','autre')`, [s.id]);

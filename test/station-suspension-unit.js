@@ -27,7 +27,7 @@ check('le middleware bloque avec un message clair si la station est suspendue', 
 });
 check('route de suspension : droit user.manage, périmètre de la station et audit', () => {
   assert.match(admin, /r\.patch\('\/stations\/:id\/suspension', need\('user\.manage'\)/);
-  assert.match(admin, /SELECT 1 FROM user_stations WHERE user_id = \$1 AND station_id = \$2/);
+  assert.match(admin, /require\('\.\/ownership'\)\.canManageStation\(pool, req\.user, sid\)/);
   assert.match(admin, /await audit\(pool, req, 'stations'/);
 });
 check('migration additive et idempotente', () => {

@@ -28,7 +28,7 @@ const checks = [
   ['un identifiant de demande invalide est rejeté', /Identifiant de demande invalide/.test(contracts)],
   ['chaque compte client de la fiche Super Admin ouvre une fiche individuelle', /VM\.clientuserdetail\s*=/.test(ui) && /go\('clientuserdetail'/.test(ui)],
   ['la création client exige les identifiants d’un administrateur local', /owner_login: z\.string\(\)\.trim\(\)\.min\(3\)/.test(contracts) && /owner_password: z\.string\(\)\.min\(8\)/.test(contracts)],
-  ['le compte créé est un administrateur local non-global, et non un gérant par défaut', /SELECT id FROM roles WHERE code = 'ADMIN'/.test(contracts) && /VALUES \(\$1,\$2,\$3,FALSE,\$4\)/.test(contracts)],
+  ['le compte créé est un administrateur local non-global, et non un gérant par défaut', /SELECT id FROM roles WHERE code = 'ADMIN'/.test(contracts) && /VALUES \(\$1,\$2,\$3,FALSE,\$4,\$5\)/.test(contracts) && /created_by/.test(contracts)],
   ['le formulaire identifie explicitement l’administrateur local', /Identifiant de l’administrateur local/.test(contractsUi) && /Mot de passe initial de l’administrateur/.test(contractsUi)],
 ];
 let failed = 0;

@@ -187,6 +187,17 @@
     return `<p>Ouvrez la vue <button class="b2" onclick="go('clients')">Contrats clients</button>.</p>`;
   }
 
+  window.stationArchive = async function (sid, archived) {
+    const msg = archived
+      ? "Archiver cette station ?\nElle disparaîtra du sélecteur et ses accès seront fermés. Les données sont conservées ; vous pouvez la réactiver depuis cette page."
+      : 'Réactiver cette station ?';
+    if (!confirm(msg)) return;
+    await api('PATCH', `/stations/${sid}/archive`, { archived });
+    toast(archived ? 'Station archivée' : 'Station réactivée', 'success');
+    // Le sélecteur et les droits se recalculent au chargement (/me ne retient que les stations actives)
+    location.reload();
+  };
+
   window.stationSuspend = async function (sid, suspended) {
     const msg = suspended
       ? "Suspendre l'accès de la station ?\nTous les comptes de la station seront bloqués (aucune vente, clôture ni saisie) jusqu'au rétablissement. Les comptes et les données ne sont pas modifiés."
@@ -200,6 +211,7 @@
   async function renderStation() {
     if (!can('settings.edit')) return '';
     const st = await G('/stations/current').catch(() => null);
+    const archived = can('user.manage') ? await G('/stations/archived').catch(() => []) : [];
     if (!st) {
       // fallback via /me or settings
       return `<p>Impossible de charger la station. Vérifiez l'API <code>/stations/current</code>.</p>
@@ -220,9 +232,13 @@
       ${card('Logo', st.has_logo || st.photo_path ? 'Oui' : 'Non')}
       ${card('Accès de la station', st.suspended_at ? 'Suspendu depuis le ' + esc(String(st.suspended_at).slice(0, 10)) : 'Actif')}
     </div>
-    ${can('user.manage') ? `<div class="bar" style="margin-top:12px;flex-wrap:wrap;gap:8px">${st.suspended_at
+    ${st.can_manage_access ? `<div class="bar" style="margin-top:12px;flex-wrap:wrap;gap:8px">${st.suspended_at
       ? `<button onclick="stationSuspend(${Number(st.id)}, false)">Rétablir l'accès de la station</button>`
-      : `<button class="bd" onclick="stationSuspend(${Number(st.id)}, true)">Suspendre l'accès (arrêt de travail)</button>`}</div>` : ''}
+      : `<button class="bd" onclick="stationSuspend(${Number(st.id)}, true)">Suspendre l'accès (arrêt de travail)</button>`}
+      <button class="bd" onclick="stationArchive(${Number(st.id)}, true)">Archiver la station</button></div>` : ''}
+    ${archived.length ? `<h4 style="margin-top:18px">Stations archivées</h4><p class="muted">Elles n'apparaissent plus dans le sélecteur. Vous pouvez les réactiver.</p>
+      <div class="cards">${archived.map(a => `<div class="card"><small>${esc(a.address || '')}</small><b>${esc(a.name)}</b>
+        <div class="bar" style="margin-top:6px"><button onclick="stationArchive(${Number(a.id)}, false)">Réactiver</button></div></div>`).join('')}</div>` : ''}
     <div class="bar" style="margin-top:12px;flex-wrap:wrap;gap:8px">
       <button onclick="editStation(${JSON.stringify(st).replace(/"/g, '&quot;')})">Modifier</button>
       ${logoBtn}

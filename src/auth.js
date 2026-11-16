@@ -234,8 +234,8 @@ priv.post('/users', need('user.manage'), body(z.object({
     const hash = await bcrypt.hash(b.password, 12);
     const isGlobal = req.user.is_global ? !!b.is_global : false;
     const { rows: [n] } = await c.query(
-      'INSERT INTO users(login, password_hash, role_id, is_global, client_id, full_name, job_title) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id, login',
-      [b.login, hash, r.id, isGlobal, clientId, b.full_name || null, b.job_title || null]
+      'INSERT INTO users(login, password_hash, role_id, is_global, client_id, full_name, job_title, created_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id, login',
+      [b.login, hash, r.id, isGlobal, clientId, b.full_name || null, b.job_title || null, req.user.id]
     );
     for (const sid of b.station_ids) {
       // Gérant : stations du même client uniquement
@@ -438,6 +438,32 @@ priv.patch('/users/:id/role', need('role.assign', 'user.manage'), body(z.object(
   res.json({ id: targetId, role: newRole, position: synced.position || undefined });
 }));
 
+// Archivage d'une station (réversible) : elle sort du sélecteur et des accès. Seul son auteur (administrateur local) peut l'archiver ou la réactiver.
+// Routes placées avant le contrôle de station : une station archivée doit pouvoir être réactivée.
+priv.patch('/stations/:id/archive', need('user.manage'), body(z.object({ archived: z.boolean() })), wrap(async (req, res) => {
+  const sid = Number(req.params.id);
+  if (!await require('./ownership').canManageStation(pool, req.user, sid)) throw new HttpError(403, 'Seul l\'administrateur local qui a créé cette station peut l\'archiver ou la réactiver.');
+  const { rows: [before] } = await pool.query('SELECT id, name, active FROM stations WHERE id = $1', [sid]);
+  if (!before) throw new HttpError(404, 'Station introuvable');
+  await pool.query('UPDATE stations SET active = $2 WHERE id = $1', [sid, !req.body.archived]);
+  await audit(pool, req, 'stations', (req.body.archived ? 'Archivage' : 'Réactivation') + ' de la station ' + before.name, 'stations', sid,
+    { active: before.active }, { active: !req.body.archived });
+  res.json({ id: sid, archived: req.body.archived });
+}));
+
+// Stations archivées que l'administrateur local peut réactiver (même client, auteur = lui)
+priv.get('/stations/archived', need('user.manage'), wrap(async (req, res) => {
+  const { rows } = await pool.query(
+    `SELECT s.id, s.name, s.address FROM stations s
+       JOIN user_stations us ON us.station_id = s.id AND us.user_id = $1
+      WHERE s.active = false AND s.client_id = (SELECT client_id FROM users WHERE id = $1)
+      ORDER BY s.name`, [req.user.id]);
+  const own = require('./ownership');
+  const out = [];
+  for (const s of rows) if (await own.canManageStation(pool, req.user, s.id)) out.push(s);
+  res.json(out);
+}));
+
 priv.patch('/users/:id/active', need('user.manage'), body(z.object({
   active: z.boolean()
 })), wrap(async (req, res) => {
@@ -445,9 +471,13 @@ priv.patch('/users/:id/active', need('user.manage'), body(z.object({
   if (targetId === req.user.id) throw new HttpError(400, 'Vous ne pouvez pas désactiver votre propre compte.');
   await require('./roles_scope').assertSuperadminScope(req, targetId);
   const { rows: [target] } = await pool.query(
-    `SELECT u.id, u.login, u.is_global, u.client_id, u.active FROM users u WHERE u.id = $1 AND u.deleted_at IS NULL`, [targetId]
+    `SELECT u.id, u.login, u.is_global, u.client_id, u.active, u.created_by FROM users u WHERE u.id = $1 AND u.deleted_at IS NULL`, [targetId]
   );
   if (!target) throw new HttpError(404, 'Utilisateur introuvable');
+  // Sous-compte client : seul l'administrateur local qui l'a créé peut le désactiver ou le réactiver (le superadmin non)
+  if (target.client_id != null && !await require('./ownership').canManageUser(pool, req.user, target)) {
+    throw new HttpError(403, 'Seul l\'administrateur local qui a créé ce compte peut le désactiver ou le réactiver.');
+  }
   if (target.is_global && !req.user.is_global) throw new HttpError(403, 'Impossible de modifier un Administrateur Principal.');
   if (!req.user.is_global) {
     const { rows: [me] } = await pool.query('SELECT client_id FROM users WHERE id = $1', [req.user.id]);

@@ -512,7 +512,7 @@ r.get('/admin/licenses/dashboard', needPrincipal, wrap(async (req, res) => {
 // Station par défaut d'un client : caisse, moyens de paiement, tolérance carburant (mêmes valeurs que src/setup.js et POST /stations).
 // Corrige B1 (« Aucune station trouvée ») : sans station liée au gérant, /me renvoie une liste vide.
 async function seedDefaultStation(c, { clientId, name, ownerId }) {
-  const { rows: [s] } = await c.query('INSERT INTO stations(name, client_id) VALUES ($1,$2) RETURNING id, name', [name, clientId]);
+  const { rows: [s] } = await c.query('INSERT INTO stations(name, client_id, created_by) VALUES ($1,$2,$3) RETURNING id, name', [name, clientId, ownerId || null]);
   await c.query("INSERT INTO cash_registers(station_id, name) VALUES ($1, 'Caisse principale')", [s.id]);
   await c.query(`INSERT INTO payment_methods(station_id, code, label, kind) VALUES ($1,'especes','Espèces','especes'),($1,'mobile_money','Mobile Money','mobile_money'),($1,'orange_money','Orange Money','mobile_money'),($1,'wave','Wave','mobile_money'),($1,'carte','Carte bancaire','carte'),($1,'banque','Virement / banque','banque'),($1,'credit','Crédit client','credit'),($1,'autre','Autre','autre')`, [s.id]);
   await c.query("INSERT INTO settings(station_id, key, value) VALUES ($1, 'tolerance_fuel_liters', '5') ON CONFLICT DO NOTHING", [s.id]);
@@ -571,9 +571,9 @@ r.post('/admin/clients', needPrincipal, body(z.object({
       { const pwErr = require('./password_policy').checkPassword(b.owner_password, { role: 'ADMIN', isGlobal: false, login: b.owner_login }); if (pwErr) throw new HttpError(400, pwErr); }
       const hash = await bcrypt.hash(b.owner_password, 12);
       const { rows: [ou] } = await c.query(
-        `INSERT INTO users(login, password_hash, role_id, is_global, client_id)
-         VALUES ($1,$2,$3,FALSE,$4) RETURNING id`,
-        [b.owner_login.trim(), hash, role.id, cl.id]
+        `INSERT INTO users(login, password_hash, role_id, is_global, client_id, created_by)
+         VALUES ($1,$2,$3,FALSE,$4,$5) RETURNING id`,
+        [b.owner_login.trim(), hash, role.id, cl.id, req.user.id]
       );
       ownerId = ou.id;
       await c.query('UPDATE clients SET owner_user_id = $2 WHERE id = $1', [cl.id, ownerId]);
@@ -1315,9 +1315,9 @@ r.post('/admin/clients/:id/rescue-admin', needPrincipal, body(z.object({
     if (!role) throw new HttpError(500, 'Rôle ADMIN (administrateur local) introuvable');
     const temporaryPassword = crypto.randomBytes(12).toString('hex');
     const { rows: [nu] } = await c.query(
-      `INSERT INTO users(login, password_hash, role_id, is_global, client_id, full_name, job_title)
-       VALUES ($1,$2,$3,FALSE,$4,$5,'Administrateur local') RETURNING id, login`,
-      [req.body.login, await bcrypt.hash(temporaryPassword, 12), role.id, clientId, req.body.full_name || null]);
+      `INSERT INTO users(login, password_hash, role_id, is_global, client_id, full_name, job_title, created_by)
+       VALUES ($1,$2,$3,FALSE,$4,$5,'Administrateur local',$6) RETURNING id, login`,
+      [req.body.login, await bcrypt.hash(temporaryPassword, 12), role.id, clientId, req.body.full_name || null, req.user.id]);
     await c.query(
       `INSERT INTO user_stations(user_id, station_id) SELECT $1, id FROM stations WHERE client_id = $2 AND active ON CONFLICT DO NOTHING`, [nu.id, clientId]);
     // Propriétaire du compte client : repris par le nouvel administrateur seulement si l'ancien n'est plus un compte actif.
