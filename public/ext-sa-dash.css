@@ -84,3 +84,20 @@
 .sad-treso .rows b { font-weight: 700; }
 .sad-row.r2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 @media (max-width: 1100px) { .sad-row.r2 { grid-template-columns: minmax(0, 1fr); } }
+
+/* Fiches client / fournisseur / employé sur téléphone : cartes compactes, valeurs qui ne débordent pas, page moins haute */
+@media (max-width: 600px) {
+  .ps-wrap .sad-kpis, .ps-wrap .sad-kpis2 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-bottom: 8px; }
+  .ps-wrap .sad-kpi { flex-direction: column; align-items: flex-start; gap: 6px; padding: 12px; border-radius: 16px; }
+  .ps-wrap .sad-kpi b { font-size: 1rem; overflow-wrap: anywhere; }
+  .ps-wrap .sad-kpi small { font-size: 11px; }
+  .ps-wrap .sad-ico { width: 30px; height: 30px; font-size: 15px; }
+  .ps-wrap .sad-mini { padding: 9px 10px; border-radius: 14px; }
+  .ps-wrap .sad-mini small { font-size: 11px; }
+  .ps-wrap .sad-mini b { font-size: .95rem; overflow-wrap: anywhere; }
+  .ps-wrap .sad-row { gap: 8px; margin-bottom: 8px; }
+  .ps-wrap .sad-card { padding: 12px 14px; border-radius: 16px; }
+  .ps-wrap .sad-chart { height: 170px; }
+  .ps-wrap .sad-chart.sm { height: 150px; }
+  .ps-wrap .sad-treso .big { font-size: 1.6rem; overflow-wrap: anywhere; }
+}
