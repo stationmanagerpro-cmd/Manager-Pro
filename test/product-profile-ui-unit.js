@@ -16,12 +16,12 @@ const stats = (over = {}) => ({
 const line = (id, status, o, r) => ({ detail_id: id, purchase_id: id, order_no: 'BC-' + id, status, ordered_at: '2026-10-20', supplier_id: 3, supplier: 'Total', qty_ordered: o, qty_received: r, qty_remaining: ['commande', 'partiel'].includes(status) && r < o ? o - r : 0, unit_cost: 1000, line_total: o * 1000, received_total: r * 1000, open: ['commande', 'partiel'].includes(status) && r < o, waiting_days: 7 });
 let supplyLines = [line(1, 'commande', 20, 0), line(2, 'recu', 10, 10)];
 const API = {
-  '/products/12/prices': () => ({ product: { id: 12, name: 'Huile', unit: 'L', sell_price: 1500, buy_price: 1000, tax_rate: 0 }, margin_unit: 500, margin_pct: 33.3, can_edit: true, history: [
+  '/products/12/prices': () => ({ product: { id: 12, name: 'Huile', unit: 'L', sell_price: 1500, buy_price: 1000, tax_rate: 0 }, margin_unit: 500, margin_pct: 33.3, can_edit: true, can_cost: true, history: [
     { id: 2, type: 'sell', price: 1500, old_price: 1200, delta: 300, delta_pct: 25, from: '2026-10-01', to: null, note: 'hausse <i>x</i>', by: 'mod' }, { id: 1, type: 'sell', price: 1200, old_price: null, delta: null, delta_pct: null, from: '2026-08-01', to: '2026-10-01', note: null, by: null }] }),
   '/products/12/purchases': () => ({ lines: supplyLines, summary: { orders: 2, qty_ordered: 30, qty_received: 10, spent: 10000, avg_cost: 1000, min_cost: 1000, max_cost: 1000, open_count: supplyLines.filter(l => l.open).length, open_qty: 20, truncated: false } }),
   '/products/12/stock-history': () => ({ product: { id: 12, name: 'Huile', unit: 'L', stock: 40, min_stock: 10 }, rows: [{ id: 9, kind: 'achat', quantity: 20, balance_after: 40, comment: 'Réception <script>', at: '2026-10-20', by: 'mod', ref: { type: 'purchase', label: 'BC-5-00009', id: 9 } }, { id: 8, kind: 'perte', quantity: -2, balance_after: 20, comment: null, at: '2026-10-19', by: null, ref: null }], by_kind: [{ kind: 'achat', n: 1, qty: 20, qty_in: 20, qty_out: 0 }, { kind: 'perte', n: 1, qty: -2, qty_in: 0, qty_out: 2 }, { kind: 'correction', n: 2, qty: 1, qty_in: 3, qty_out: 2 }], truncated: false })
 };
-const fetched = [], posts = [], toasts = [], panes = {}; let clickHandler = null; let perms = new Set(['price.edit', 'stock.adjust', 'report.view', 'purchase.manage', 'supplier.view']);
+const fetched = [], posts = [], toasts = [], panes = {}; let clickHandler = null; let perms = new Set(['price.edit', 'stock.adjust', 'report.view', 'purchase.manage', 'supplier.view', 'cost.view']);
 const el = id => (panes[id] = panes[id] || { id, innerHTML: '', value: '', classList: { add() {}, remove() {} }, setAttribute() {}, scrollIntoView() {} });
 const ctx = {
   URLSearchParams, Number, Math, Intl, Date, JSON, Set,
@@ -56,7 +56,7 @@ const open = async key => { clickHandler({ target: { closest: () => ({ dataset: 
     const html = await ctx.VM.prodf();
     assert.ok(!html.includes('Historique dotation') && !html.includes('Historique des stocks') && html.includes('Gestion des prix'));
     assert.ok(!html.includes('ppEdit') && !html.includes('ppMove'));
-    perms = new Set(['price.edit', 'stock.adjust', 'report.view', 'purchase.manage', 'supplier.view']);
+    perms = new Set(['price.edit', 'stock.adjust', 'report.view', 'purchase.manage', 'supplier.view', 'cost.view']);
   });
   await check('Comportement : lecture rapide et graphiques', async () => {
     await ctx.VM.prodf(); await open('behavior');

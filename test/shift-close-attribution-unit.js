@@ -25,7 +25,7 @@ function Router() {
   return { stack, get: add('get'), post: add('post'), put: add('put'), patch: add('patch'), delete: add('delete'), use() {} };
 }
 const hooks = { afterClose: [] };
-const stubs = { './employee_actions': { afterClose: async (req, shiftId, number) => { hooks.afterClose.push([shiftId, number]); }, track: async () => {} }, './core': core, './notification_rules': { fireNotificationRules: async () => {} }, './messaging': messaging, '../services/emailService': emailService, express: { Router } };
+const stubs = { './tanks': { tankCloseCheck: async () => ({ mode: 'off', blocking: [], products: [] }) }, './employee_actions': { afterClose: async (req, shiftId, number) => { hooks.afterClose.push([shiftId, number]); }, track: async () => {} }, './core': core, './notification_rules': { fireNotificationRules: async () => {} }, './messaging': messaging, '../services/emailService': emailService, express: { Router } };
 const realLoad = Module._load;
 Module._load = function (request, parent) {
   if (parent && /src[\\/]shifts\.js$/.test(parent.filename) && Object.prototype.hasOwnProperty.call(stubs, request)) return stubs[request];
@@ -78,6 +78,8 @@ pool.query = async (sql, params) => {
   if (/^SELECT client_id FROM users/.test(q)) return { rows: [{ client_id: 7 }] };
   if (/^SELECT id, user_id FROM employees WHERE id = ANY/.test(q)) return { rows: DB.team.map(t => ({ id: t.id, user_id: t.user_id })) };
   if (/^SELECT name FROM stations/.test(q)) return { rows: [{ name: 'Station Test' }] };
+  if (/^SELECT pr.id AS product_id/.test(q)) return { rows: [] };
+  if (/^SELECT sa.kind, sa.description, sa.amount, sa.employee_id/.test(q)) return { rows: [] };
   throw new Error('requête inattendue : ' + q.slice(0, 140));
 };
 const shifts = require(path.join(__dirname, '..', 'src', 'shifts.js'));

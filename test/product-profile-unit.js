@@ -13,7 +13,7 @@ const client = { query: async (sql, params) => { calls.push({ sql, params: param
 const pool = client;
 const routes = {}; const audits = [];
 const chain = new Proxy(function () {}, { get: () => chain, apply: () => chain });
-const coreStub = { pool, tx: async fn => fn(client), HttpError, wrap: f => f, body: () => ({ body: true }), need: (...perms) => ({ gate: perms }), audit: async (...a) => { audits.push(a); } };
+const coreStub = { pool, tx: async fn => fn(client), HttpError, wrap: f => f, body: () => ({ body: true }), need: (...perms) => ({ gate: perms }), audit: async (...a) => { audits.push(a); }, canCost: req => !!(req.user && req.user.perms && req.user.perms.has('cost.view')) };
 const mkRouter = () => ({ get: (p, ...fns) => { routes['GET ' + p] = fns; }, post: (p, ...fns) => { routes['POST ' + p] = fns; } });
 const origLoad = Module._load;
 Module._load = function (request, parent) {
@@ -41,7 +41,7 @@ const base = extra => (sql, params) => {
   if (/AS from_date/.test(sql)) return [{ from_date: '2026-08-01', to_date: '2026-10-27' }];
   return (extra && extra(sql, params)) || [];
 };
-const FULL = ['price.edit', 'report.view'];
+const FULL = ['price.edit', 'report.view', 'cost.view'];
 
 (async () => {
   await check('toutes les routes sont déclarées avec une garde de permission', () => {
@@ -70,11 +70,11 @@ const FULL = ['price.edit', 'report.view'];
     handler = base();
     await assert.rejects(() => run('POST /products/:id/prices', req(['price.edit'], { body: {} })), e => e.status === 400);
     handler = (sql) => (/FOR UPDATE/.test(sql) ? [PRODUCT] : []);
-    await assert.rejects(() => run('POST /products/:id/prices', req(['price.edit'], { body: { sell_price: 1500, buy_price: 1000 } })), e => e.status === 400 && /identiques/.test(e.message));
+    await assert.rejects(() => run('POST /products/:id/prices', req(['price.edit', 'cost.view'], { body: { sell_price: 1500, buy_price: 1000 } })), e => e.status === 400 && /identiques/.test(e.message));
   });
   await check('POST prix : journalise vente ET achat, ne met à jour que les champs modifiés, audite', async () => {
     handler = (sql) => (/FOR UPDATE/.test(sql) ? [PRODUCT] : /UPDATE products/.test(sql) ? [{ sell_price: 1800, buy_price: 1100 }] : []);
-    const res = await run('POST /products/:id/prices', req(['price.edit'], { body: { sell_price: 1800, buy_price: 1100, note: 'Hausse fournisseur' } }));
+    const res = await run('POST /products/:id/prices', req(['price.edit', 'cost.view'], { body: { sell_price: 1800, buy_price: 1100, note: 'Hausse fournisseur' } }));
     assert.strictEqual(res.code, 201);
     const ins = calls.filter(c => /INSERT INTO price_history/.test(c.sql));
     assert.deepStrictEqual(ins.map(c => c.params[2]), ['sell', 'buy']);
