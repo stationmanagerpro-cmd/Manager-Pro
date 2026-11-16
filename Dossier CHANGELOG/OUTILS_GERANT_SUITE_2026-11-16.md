@@ -33,3 +33,16 @@ migrations/113_expense_receipts_weekly.sql ; src/manager_extras.js (weekTotals c
 ## Statut
 - Branche feat/outils-gerant-suite : commit des écrans, du correctif et des tests (voir hash dans l'historique git).
 - Fusion dans main et déploiement : en attente de votre accord.
+
+## Fusion et déploiement — 2026-11-16 01:38 UTC
+- Fusion : origin/main 97c6dff → 11ff351 (fast-forward, sans force-push). Point de retour : 97c6dff.
+- Note : le main local contient un commit non publié 897748f (« Manuel v9 + compléments, liens d'aide remappés ») qui n'est pas de ce lot. Il n'a été ni poussé ni supprimé.
+- Déploiement Render : lancé à la main (auto-déploiement désactivé sur le service). dep-dbt5t16c6qcc73aqrtqg, commit 11ff351, statut live (01:39:40 UTC).
+- Précédent déploiement actif : dep-dbt4hfui0phs73elsuv0 (commit f34bfd7) — point de retour de déploiement.
+- Migration 113 appliquée en production après sauvegarde vérifiée (smp-2026-11-16T01-38-38-761Z.sql.gz, 74 805 octets). Journal : « Base à jour. »
+- Journaux : aucune erreur (niveau error/fatal). Avertissements SSL de la bibliothèque PostgreSQL uniquement, sans lien avec ce lot.
+- Vérification HTTP du site : impossible depuis l'environnement de travail (proxy 403 sur le domaine). Affichage des écrans sur le site : non vérifié.
+
+## Procédure de retour arrière
+1. Code : redéployer dep-dbt4hfui0phs73elsuv0 (f34bfd7) depuis Render, ou annuler le commit 11ff351 par un commit `git revert` sur main puis redéployer. Pas de force-push.
+2. Base : la migration 113 est additive (tables expense_receipts et weekly_summaries_sent). Le code précédent l'ignore ; ne pas supprimer ces tables sans sauvegarde.
