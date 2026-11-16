@@ -207,7 +207,7 @@ r.post('/settings/reset/:key', wrap(async (req, res) => {       // réinitialisa
 // Identité de la station (lecture)
 r.get('/stations/current', need('settings.edit', 'report.view', 'finance.view', 'user.manage'), wrap(async (req, res) => {
   const { rows: [s] } = await pool.query(
-    'SELECT id, name, address, phone, email, currency, tax_id, latitude::float AS latitude, longitude::float AS longitude, client_id, active FROM stations WHERE id = $1',
+    'SELECT id, name, address, phone, email, currency, tax_id, latitude::float AS latitude, longitude::float AS longitude, client_id, active, suspended_at FROM stations WHERE id = $1',
     [req.sid]
   );
   if (!s) throw new HttpError(404, 'Station introuvable');
@@ -227,6 +227,21 @@ const geoNum = (min, max, label) => z.union([z.number(), z.string().trim()]).nul
 const GEO_SCHEMA = { latitude: geoNum(-90, 90, 'Latitude'), longitude: geoNum(-180, 180, 'Longitude') };
 
 // Identité de la station
+// Suspension de l'accès d'une station (arrêt de travail) : bloque la station pour tous ses comptes, sans toucher aux comptes. Réversible.
+r.patch('/stations/:id/suspension', need('user.manage'), body(z.object({ suspended: z.boolean() })), wrap(async (req, res) => {
+  const sid = Number(req.params.id);
+  if (!req.user.is_global) {
+    const { rowCount } = await pool.query('SELECT 1 FROM user_stations WHERE user_id = $1 AND station_id = $2', [req.user.id, sid]);
+    if (!rowCount) throw new HttpError(403, 'Station hors de votre accès');
+  }
+  const { rows: [before] } = await pool.query('SELECT id, name, suspended_at FROM stations WHERE id = $1 AND active = true', [sid]);
+  if (!before) throw new HttpError(404, 'Station introuvable');
+  const { rows: [after] } = await pool.query(
+    'UPDATE stations SET suspended_at = CASE WHEN $2 THEN COALESCE(suspended_at, now()) ELSE NULL END WHERE id = $1 RETURNING suspended_at', [sid, req.body.suspended]);
+  await audit(pool, req, 'stations', (req.body.suspended ? 'Suspension' : 'Rétablissement') + ' de l\'accès à la station ' + before.name, 'stations', sid,
+    { suspended_at: before.suspended_at }, { suspended_at: after.suspended_at });
+  res.json({ id: sid, suspended_at: after.suspended_at });
+}));
 r.patch('/stations/current', need('settings.edit'), body(z.object({ name: z.string().min(1), tagline: z.string().max(120).nullable(), address: z.string().nullable(), phone: z.string().nullable(), email: z.string().nullable(), currency: z.string().min(1).max(4), tax_id: z.string().nullable(), ...GEO_SCHEMA }).partial().strict()), wrap(async (req, res) => {
   const keys = Object.keys(req.body); if (!keys.length) throw new HttpError(400, 'Aucun champ');
   // Latitude et longitude vont toujours ensemble (les deux renseignées ou les deux vides)

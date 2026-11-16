@@ -80,8 +80,8 @@ const station = wrap(async (req, res, next) => {
   if (!sid) throw new HttpError(400, 'En-tête X-Station-Id requis');
   // Vérifie l'affectation, l'état actif et l'appartenance au même client.
   // Un compte historique sans client_id reste limité aux stations explicitement affectées.
-  const { rowCount } = await pool.query(
-    `SELECT 1
+  const { rows: [acc] } = await pool.query(
+    `SELECT st.suspended_at
        FROM user_stations us
        JOIN stations st ON st.id = us.station_id
        JOIN users u ON u.id = us.user_id
@@ -90,7 +90,10 @@ const station = wrap(async (req, res, next) => {
         AND (u.client_id IS NULL OR st.client_id = u.client_id)`,
     [req.user.id, sid]
   );
-  if (!rowCount) throw new HttpError(403, 'Accès à cette station refusé');
+  if (!acc) throw new HttpError(403, 'Accès à cette station refusé');
+  // Station suspendue par le gérant : seule la levée de suspension (et la lecture de l'identité, pour l'écran station) reste accessible.
+  const liftingOrReading = (req.method === 'PATCH' && /^\/stations\/\d+\/suspension\/?$/.test(req.path)) || (req.method === 'GET' && req.path === '/stations/current');
+  if (acc.suspended_at && !liftingOrReading) throw new HttpError(403, 'Accès à cette station suspendu par le gérant. Le gérant peut le rétablir depuis la fiche station.');
   req.sid = sid;
   // Plafond de permissions par station : il réduit les droits effectifs, sans modifier le rôle global.
   const { rows: caps } = await pool.query(
