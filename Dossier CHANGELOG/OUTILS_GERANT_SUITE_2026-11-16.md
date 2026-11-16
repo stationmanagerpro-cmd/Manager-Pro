@@ -1,23 +1,35 @@
 # Outils du gérant — suite (résumé hebdo, justificatifs, bandeau hors-ligne) — 2026-11-16
 
-Base : origin/main f34bfd7 (« Ma journée » déjà en place : synthèse, objectif mensuel, classement). Le WIP local de la branche précédente (ad3468d) est abandonné : doublon avec « Ma journée ».
+Base : origin/main 97c6dff (« Outils du gérant » déjà fusionné : résumé hebdo API, justificatifs API, bandeau hors-ligne). Le WIP local de la branche précédente (ad3468d) est abandonné : doublon avec « Ma journée » (f34bfd7).
 
 ## Réalisé
-- **Point 8 — Résumé hebdomadaire** : chaque lundi, une notification « résumé hebdomadaire » par station pour la semaine écoulée (ventes carburant + produits, litres, quarts clôturés, écart de caisse cumulé, meilleur vendeur, évolution vs semaine précédente). Une seule fois par station et semaine (table weekly_summaries_sent). Lecture à la demande : GET /reports/weekly-summary.
-- **Point 9 — Justificatif photo** : après la saisie d'une dépense, l'auteur peut joindre une photo (JPEG/PNG/WebP/PDF, 1,5 Mo, 4 max). Contenu vérifié (signature du fichier). Seul l'auteur peut joindre. Table expense_receipts (migration 113). API : POST/GET /expenses/:id/receipts.
-- **Point 10 — File hors-ligne visible** : le compteur existait mais était en bas à droite, sous le bouton ⚡. Il est maintenant un bandeau en haut, indique « Hors connexion » et « N en attente d'envoi », et « refusée(s) : à vérifier » en rouge.
-- **Point 11 — Sauvegarde restaurable** : déjà présent (copies isolées par client : /admin/clients/:id/isolated-backups et isolated-restore, avec mot de passe Superadmin). Rien de nouveau construit.
+- **Point 8 — Résumé hebdomadaire** : chaque lundi, une notification « résumé hebdomadaire » par station pour la semaine écoulée. Une seule fois par station et semaine (table weekly_summaries_sent). Lecture à la demande : GET /reports/weekly-summary.
+- **Correctif de calcul** : weekTotals comptait deux fois le carburant des quarts clôturés (somme de toutes les ventes carburant + relevés). Aligné sur la règle canonique d'aggregates.js : relevés des quarts « ferme » + ventes carburant des quarts « ouvert » uniquement.
+- **Point 9 — Justificatif photo** : après la saisie d'une dépense, l'auteur peut joindre une photo (JPEG/PNG/WebP/PDF, 1,5 Mo, 4 max). Contenu vérifié (signature du fichier). Table expense_receipts (migration 113). API : POST/GET /expenses/:id/receipts, GET /expenses/:id/receipts/:rid.
+- **Écran Synthèse hebdo** (nouveau, public/ext-manager-screens.js) : menu « Synthèse hebdo » (droits report.view / finance.view). Semaine écoulée par défaut, navigation précédente / suivante (pas de semaine future), indicateurs, texte du résumé copiable.
+- **Écran Justificatifs** (nouveau, même fichier) : menu « Justificatifs » (droits expense.create / report.view / finance.view). Liste des dépenses de la période (API /treasury/expenses), bouton « Justificatifs » par dépense, ouverture de chaque pièce dans un nouvel onglet (avec le jeton d'authentification). Consultation seule.
+- **Point 10 — File hors-ligne visible** : bandeau en haut, « Hors connexion », « N en attente d'envoi », « refusée(s) : à vérifier » en rouge.
+- **Point 11 — Sauvegarde restaurable** : déjà présent. Rien de nouveau construit.
 
 ## Fichiers
-migrations/113_expense_receipts_weekly.sql ; src/manager_extras.js (nouveau) ; src/server.js ; public/ext-manager-extras.js (nouveau) ; public/app.js (prompt après dépense) ; public/index.html ; public/pwa.js ; public/app.css ; test/manager-extras-unit.js (nouveau, 7 contrôles) ; test/links-audit-static.js (3 routes API seules documentées) ; sw.js.
+migrations/113_expense_receipts_weekly.sql ; src/manager_extras.js (weekTotals corrigé) ; src/server.js ; public/ext-manager-extras.js ; public/ext-manager-screens.js (nouveau) ; public/app.js ; public/index.html (script ajouté) ; public/pwa.js ; public/app.css ; public/sw.js (regénéré, 125 fichiers) ; test/manager-extras-unit.js (mocks mis à jour) ; test/manager-screens-unit.js (nouveau, 5 contrôles) ; test/links-audit-static.js (les 3 exceptions « API seule » retirées : les écrans existent).
 
-## Tests
-- manager-extras-unit : 7/7.
-- Suites statiques/unitaires : résultats identiques à origin/main (7 échecs pré-existants).
-- build sw --check OK ; node --check OK.
+## Tests et vérifications réelles
+- **PostgreSQL 16 réel** (instance de test locale, base jetable, aucune donnée de production) : migrations 001 à 113 appliquées sans erreur.
+- **163 requêtes SQL** extraites du code et préparées par PostgreSQL : aucune erreur de syntaxe ou de colonne.
+- **Requête weekTotals exécutée sur un scénario** (semaine du 9 au 16 novembre 2026) : carburant 120 000 (100 000 quart clôturé + 20 000 quart ouvert), litres 150, boutique 30 000, semaine précédente boutique 50 000. Valeurs conformes au calcul attendu. Avant correction, le carburant aurait été compté deux fois.
+- manager-extras-unit : 7/7. manager-screens-unit : 5/5.
+- links-audit-static : OK (959 appels front reliés, 7 routes API seules documentées).
+- Suite complète (188 suites statiques/unitaires) : les mêmes 7 échecs que origin/main (pdf-logo-columns-static, employee-actions-unit, product-profile-ui-unit, product-profile-unit, shift-close-attribution-unit, shift-report-share-unit, stock-movement-validation-unit). Aucune régression introduite.
+- build-sw --check : OK.
 
 ## NON vérifié / limites
-- Migration 113 et requêtes SQL non exécutées sur PostgreSQL réel.
-- Écrans non vus (bandeau, prompt justificatif). Le prompt ne s'affiche qu'après une dépense créée avec succès.
-- Consultation des justificatifs : API seule, pas d'écran (documenté dans links-audit). Le résumé hebdo n'a pas d'écran dédié (notification).
+- **Affichage réel des écrans dans le navigateur : non vérifié.** La base de test n'a pas de mot de passe utilisable pour se connecter ; les écrans sont testés par leur rendu HTML simulé, pas à l'écran.
+- Bandeau hors-ligne et prompt justificatif : non vus à l'écran (le prompt n'apparaît qu'après une dépense créée).
+- Écran Justificatifs : la liste s'appuie sur /treasury/expenses, réservé aux rôles trésorerie ou à expense.create. Un utilisateur avec seulement report.view ne verra pas la liste (erreur d'accès affichée).
+- Déploiement : **non déployé**. Fusion dans main non faite : elle déclenche le déploiement automatique Render.
 - Numérotation : 113 libre sur main à ce jour ; à surveiller si un autre intervenant pousse une 113.
+
+## Statut
+- Branche feat/outils-gerant-suite : commit des écrans, du correctif et des tests (voir hash dans l'historique git).
+- Fusion dans main et déploiement : en attente de votre accord.

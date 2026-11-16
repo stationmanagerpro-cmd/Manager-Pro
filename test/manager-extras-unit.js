@@ -31,8 +31,8 @@ const X = require('../src/manager_extras'); Module._load = orig;
       if (/FROM stations s JOIN clients/.test(sql)) return { rows: [{ id: 1, name: 'Nord' }] };
       if (/INSERT INTO weekly_summaries_sent/.test(sql)) { const k = p.join('|'); if (seen.has(k)) return { rowCount: 0, rows: [] }; seen.add(k); return { rowCount: 1, rows: [] }; }
       if (/INSERT INTO notifications/.test(sql)) { notifs.push(p); return { rows: [] }; }
-      if (/FROM sales sa WHERE/.test(sql)) return { rows: [{ fuel_amount: 100000, shop_amount: 20000, sales_count: 9 }] };
-      if (/sale_details/.test(sql)) return { rows: [{ liters: 500 }] };
+      if (/WITH f AS/.test(sql)) return { rows: [{ fuel_amount: 120000, liters: 500 }] };
+      if (/FROM sales sa WHERE/.test(sql)) return { rows: [{ shop_amount: 30000, sales_count: 3 }] };
       if (/FROM shifts/.test(sql)) return { rows: [{ cash_gap: -1500, shifts_closed: 4 }] };
       if (/GROUP BY e.id/.test(sql)) return { rows: [{ name: 'Awa Traoré', amount: 70000 }] };
       return { rows: [] };
@@ -40,7 +40,7 @@ const X = require('../src/manager_extras'); Module._load = orig;
     const mon = new Date('2026-11-16T06:00:00Z');
     assert.strictEqual(await X.runWeekly(mon), 1); assert.strictEqual(await X.runWeekly(mon), 0);
     assert.strictEqual(notifs.length, 1); assert.match(notifs[0][1], /Résumé de la semaine du 2026-11-09 au 2026-11-15 — Nord/);
-    assert.match(notifs[0][1], /120[\s\u202f\u00a0]000/); assert.match(notifs[0][1], /500 L/); assert.match(notifs[0][1], /écart de caisse cumulé -1[\s\u202f\u00a0]500/); assert.match(notifs[0][1], /Awa Traoré/);
+    assert.match(notifs[0][1], /ventes 150[\s\u202f\u00a0]000/); assert.match(notifs[0][1], /500 L/); assert.match(notifs[0][1], /écart de caisse cumulé -1[\s\u202f\u00a0]500/); assert.match(notifs[0][1], /Awa Traoré/);
   });
   await check('résumé : évolution calculée seulement avec une semaine précédente > 0', () => {
     const s = { week_start: '2026-11-09', week_end: '2026-11-15', amount: 120000, liters: 500, shifts_closed: 4, cash_gap: 0, top_seller: null, evolution_pct: 20 };

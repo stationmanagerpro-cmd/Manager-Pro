@@ -15,16 +15,21 @@ const isoDay = d => d.toISOString().slice(0, 10);
 function mondayOf(d) { const x = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())); return addDays(x, -((x.getUTCDay() + 6) % 7)); }
 const money = n => Math.round(num(n)).toLocaleString('fr-FR');
 
-/** Ventes de la semaine [from, to) : carburant (sales.kind = 'carburant') et produits (kind ≠ 'carburant'), valides seulement. */
+/** Ventes de la semaine [from, to), selon la règle de référence (src/aggregates.js « fuel ») :
+ *  carburant = compteurs des quarts CLÔTURÉS (meter_readings) + ventes carburant des quarts ENCORE OUVERTS ; produits = ventes produits valides.
+ *  Ainsi un quart clôturé n'est jamais compté deux fois. */
 async function weekTotals(sid, from, to) {
+  const { rows: [f] } = await pool.query(
+    `WITH f AS (
+        SELECT m.amount AS amt, m.liters AS lit FROM meter_readings m JOIN shifts sh ON sh.id = m.shift_id
+         WHERE sh.station_id = $1 AND sh.status = 'ferme' AND m.amount IS NOT NULL AND sh.closed_at >= $2 AND sh.closed_at < $3
+        UNION ALL
+        SELECT sa.total, NULL::numeric FROM sales sa JOIN shifts sh ON sh.id = sa.shift_id
+         WHERE sa.station_id = $1 AND sa.status = 'valide' AND sa.kind = 'carburant' AND sh.status = 'ouvert' AND sa.sold_at >= $2 AND sa.sold_at < $3)
+      SELECT COALESCE(SUM(amt), 0)::float8 AS fuel_amount, COALESCE(SUM(lit), 0)::float8 AS liters FROM f`, [sid, from, to]);
   const { rows: [t] } = await pool.query(
-    `SELECT COALESCE(SUM(sa.total) FILTER (WHERE sa.kind = 'carburant'), 0)::float8 AS fuel_amount,
-            COALESCE(SUM(sa.total) FILTER (WHERE sa.kind <> 'carburant'), 0)::float8 AS shop_amount,
-            COUNT(*)::int AS sales_count
+    `SELECT COALESCE(SUM(sa.total) FILTER (WHERE sa.kind = 'produits'), 0)::float8 AS shop_amount, COUNT(*)::int AS sales_count
        FROM sales sa WHERE sa.station_id = $1 AND sa.status = 'valide' AND sa.sold_at >= $2 AND sa.sold_at < $3`, [sid, from, to]);
-  const { rows: [l] } = await pool.query(
-    `SELECT COALESCE(SUM(d.quantity), 0)::float8 AS liters FROM sale_details d JOIN sales sa ON sa.id = d.sale_id
-      WHERE sa.station_id = $1 AND sa.status = 'valide' AND sa.kind = 'carburant' AND sa.sold_at >= $2 AND sa.sold_at < $3`, [sid, from, to]);
   const { rows: [g] } = await pool.query(
     `SELECT COALESCE(SUM(cash_gap), 0)::float8 AS cash_gap, COUNT(*)::int AS shifts_closed FROM shifts
       WHERE station_id = $1 AND status = 'ferme' AND closed_at >= $2 AND closed_at < $3`, [sid, from, to]);
@@ -33,8 +38,8 @@ async function weekTotals(sid, from, to) {
        FROM sales sa JOIN employees e ON e.id = sa.employee_id
       WHERE sa.station_id = $1 AND sa.status = 'valide' AND sa.sold_at >= $2 AND sa.sold_at < $3
       GROUP BY e.id, e.first_name, e.last_name ORDER BY SUM(sa.total) DESC LIMIT 1`, [sid, from, to]);
-  const amount = num(t.fuel_amount) + num(t.shop_amount);
-  return { fuel_amount: num(t.fuel_amount), shop_amount: num(t.shop_amount), amount, liters: num(l.liters), sales_count: t.sales_count,
+  const amount = num(f.fuel_amount) + num(t.shop_amount);
+  return { fuel_amount: num(f.fuel_amount), shop_amount: num(t.shop_amount), amount, liters: num(f.liters), sales_count: t.sales_count,
     cash_gap: num(g.cash_gap), shifts_closed: g.shifts_closed, top_seller: top[0] ? { name: top[0].name, amount: num(top[0].amount) } : null };
 }
 
