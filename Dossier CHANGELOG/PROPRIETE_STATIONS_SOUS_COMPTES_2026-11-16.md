@@ -32,3 +32,14 @@
 
 ## Déploiement
 Voir la section « Fusion et déploiement » ci-dessous.
+
+## Fusion et déploiement — 2026-11-16 02:33 UTC
+- Fusion : origin/main 35d656c → 4dce57a (fast-forward, sans force-push). Les commits de la branche : 4f4025e (affichage mobile), 7ae33e0 (suspension de station), 4dce57a (propriété, archivage).
+- Déploiement Render : lancé à la main (auto-déploiement désactivé). dep-dbt6mdoae00c739r11ig, commit 4dce57a, statut live (02:33:50 UTC).
+- Migrations 114 et 115 appliquées en production après sauvegarde vérifiée (smp-2026-11-16T02-32-49-766Z.sql.gz, 78 851 octets). Journal : « Base à jour. » Aucune erreur (niveau error/fatal).
+- Vérification HTTP du site : impossible depuis l'environnement (proxy 403). Écrans et routes sur le site : non vérifiés.
+
+## Procédure de retour arrière
+1. Code : redéployer le déploiement précédent dep-dbt5t16c6qcc73aqrtqg (commit 11ff351, Outils du gérant), ou annuler les commits par `git revert` sur main puis redéployer. Pas de force-push.
+2. Base : les migrations 114 et 115 sont additives (colonnes suspended_at, created_by). Le code précédent les ignore. Ne pas les supprimer sans sauvegarde.
+3. Effet d'un retour arrière : les stations archivées restent inactives et les auteurs enregistrés restent renseignés ; la gestion revient à l'ancien comportement (tout administrateur du client).
