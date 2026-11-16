@@ -281,7 +281,7 @@ async function loadDataset(kind, sid, from, to, req) {
          UNION ALL
          SELECT 'depense', e.spent_on::timestamp, e.category, e.amount, COALESCE(e.beneficiary, e.comment, ''), 'valide'
          FROM expenses e WHERE e.station_id=$1 AND e.deleted_at IS NULL AND e.spent_on = $2::date
-         ORDER BY 2`, [sid, from]).catch(swallow('exports:281', { rows: [] }));
+         ORDER BY 2`, [sid, from]);
       return {
         head: ['Type', 'Date', 'Catégorie', 'Montant', 'Réf.', 'Statut'],
         rows: (sales || []).map(x => [x.type, docs.fmtDate(x.at), x.kind, +x.amount, x.ref, x.status]),

@@ -279,13 +279,16 @@ r.post('/notifications/email-digest', need('user.manage'), body(z.object({
     const { rows: [rev] } = await pool.query(
       `SELECT COALESCE(SUM(total),0)::float AS product_sales FROM sales
        WHERE station_id=$1 AND status='valide' AND sold_at::date = CURRENT_DATE`, [req.sid]);
-    let fuel = { fuel_amount: 0, fuel_liters: 0 };
-    try {
-      const fr = await pool.query(
-        `SELECT COALESCE(SUM(amount),0)::float AS fuel_amount, COALESCE(SUM(liters),0)::float AS fuel_liters
-         FROM fuel_sales WHERE station_id=$1 AND sold_at::date = CURRENT_DATE`, [req.sid]);
-      fuel = fr.rows[0] || fuel;
-    } catch (_) { /* table optionnelle */ }
+    // Carburant du jour : règle canonique (même définition que aggregates.js) — relevés des quarts clôturés aujourd'hui + ventes carburant des quarts encore ouverts
+    const { rows: [fr] } = await pool.query(
+      `SELECT COALESCE(SUM(amt),0)::float AS fuel_amount, COALESCE(SUM(lit),0)::float AS fuel_liters FROM (
+         SELECT m.amount AS amt, m.liters AS lit FROM meter_readings m JOIN shifts sh ON sh.id = m.shift_id
+          WHERE sh.station_id = $1 AND sh.status = 'ferme' AND m.amount IS NOT NULL AND sh.closed_at::date = CURRENT_DATE
+         UNION ALL
+         SELECT sa.total, NULL::numeric FROM sales sa JOIN shifts sh ON sh.id = sa.shift_id
+          WHERE sa.station_id = $1 AND sa.status = 'valide' AND sa.kind = 'carburant' AND sh.status = 'ouvert' AND sa.sold_at::date = CURRENT_DATE
+       ) f`, [req.sid]);
+    const fuel = fr || { fuel_amount: 0, fuel_liters: 0 };
     let expenses = 0;
     try {
       const er = await pool.query(

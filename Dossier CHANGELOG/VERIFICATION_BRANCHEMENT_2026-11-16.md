@@ -31,3 +31,13 @@
 
 ## Tests
 Suite complète : 190 suites, mêmes 7 échecs préexistants qu'origin/main ; aucune régression.
+
+## Décisions métier appliquées (2026-11-16, sur délégation)
+1. **Sauvegardes** (src/contracts.js) : le bloc affiche le journal de la plateforme (backup_logs n'est pas par client). Seules les sauvegardes réussies (status = ok) comptent ; dernière date = fin de la dernière sauvegarde réussie. Le libellé affiché n'a pas changé : il faut savoir qu'il s'agit de la plateforme.
+2. **Carburant du jour** (src/ops_plus.js, digest direction) : règle canonique, identique à aggregates.js : relevés des quarts clôturés aujourd'hui + ventes carburant des quarts encore ouverts. Remplace la lecture d'une table inexistante qui renvoyait zéro.
+3. **Export fin de journée** (src/exports.js) : la protection silencieuse est retirée ; une erreur de requête remonte désormais à l'utilisateur au lieu d'un export vide. Colonne « Réf. » des dépenses = bénéficiaire (ou commentaire) — choix validé par délégation.
+
+Vérifié : les trois requêtes sont préparées puis exécutées sur PostgreSQL 16 (base complète). Suite : 190 suites, mêmes 7 échecs préexistants.
+
+## Défauts non traités (volontairement)
+- Les autres ~145 protections swallow() restent : elles journalisent déjà l'erreur (avertissement rate-limité dans les journaux Render) et renvoient un résultat vide. À traiter au cas par cas, module par module.

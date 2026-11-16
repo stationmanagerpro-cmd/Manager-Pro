@@ -1738,8 +1738,9 @@ r.get('/admin/clients/:id/situation.pdf', needPrincipal, wrap(async (req, res) =
       ORDER BY u.login`, [clientId]
   ).catch(swallow('contracts:1624', { rows: [] }));
   const { rows: [backupInfo] } = await pool.query(
-    `SELECT COUNT(*)::int AS n, MAX(created_at) AS last_at
-       FROM backup_logs WHERE client_id = $1`, [clientId]
+    // Journal des sauvegardes de la plateforme (backup_logs n'est pas par client) : seules les sauvegardes réussies (status ok) comptent
+    `SELECT COUNT(*) FILTER (WHERE status = 'ok')::int AS n, MAX(finished_at) FILTER (WHERE status = 'ok') AS last_at
+       FROM backup_logs`
   ).catch(swallow('contracts:1628', { rows: [{ n: 0, last_at: null }] }));
   const { rows: renewals } = await pool.query(
     `SELECT status, requested_at, processed_at FROM license_renewal_requests
