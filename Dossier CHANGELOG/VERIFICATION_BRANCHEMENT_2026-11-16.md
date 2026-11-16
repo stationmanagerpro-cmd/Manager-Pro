@@ -41,3 +41,9 @@ Vérifié : les trois requêtes sont préparées puis exécutées sur PostgreSQL
 
 ## Défauts non traités (volontairement)
 - Les autres ~145 protections swallow() restent : elles journalisent déjà l'erreur (avertissement rate-limité dans les journaux Render) et renvoient un résultat vide. À traiter au cas par cas, module par module.
+
+## Déploiement — 2026-11-16 19:37 UTC
+- Fusion : origin/main 4dce57a/c386f66 → 00c9779 (fast-forward).
+- Render : dep-dbtlm7p5efls73e4kotg, commit 00c9779, live. Journaux : aucune erreur ; seuls les avertissements SSL connus.
+- Retour arrière : redéployer dep-dbtfd5m7bikc73cg6r2g (commit c386f66). Aucune migration dans ce lot.
+- Vérification HTTP du site : impossible depuis l'environnement (proxy 403).
