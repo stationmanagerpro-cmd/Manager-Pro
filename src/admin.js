@@ -420,7 +420,7 @@ r.get('/stations/performance', need('user.manage', 'settings.edit', 'report.view
   });
 }));
 
-r.post('/stations', need('user.manage'), body(z.object({ name: z.string().min(1), address: z.string().optional(), phone: z.string().optional(), currency: z.string().max(4).default('FCFA'), latitude: GEO_SCHEMA.latitude.optional(), longitude: GEO_SCHEMA.longitude.optional() }).refine(d => (d.latitude == null) === (d.longitude == null), { message: 'Renseignez la latitude ET la longitude (ou aucune des deux).' })), wrap(async (req, res) => {
+r.post('/stations', need('user.manage'), body(z.object({ name: z.string().min(1), client_id: z.coerce.number().int().positive().optional(), address: z.string().optional(), phone: z.string().optional(), currency: z.string().max(4).default('FCFA'), latitude: GEO_SCHEMA.latitude.optional(), longitude: GEO_SCHEMA.longitude.optional() }).refine(d => (d.latitude == null) === (d.longitude == null), { message: 'Renseignez la latitude ET la longitude (ou aucune des deux).' })), wrap(async (req, res) => {
   const { loadContractForUser, countClientStations } = require('./contracts');
   let clientId = null;
   if (!req.user.is_global) {
@@ -433,6 +433,12 @@ r.post('/stations', need('user.manage'), body(z.object({ name: z.string().min(1)
       throw new HttpError(403, `Limite de stations prévue par votre contrat atteinte (${n}/${contract.max_stations}).`);
     }
     clientId = contract.client_id;
+  } else {
+    // Superadmin : une station ne peut pas exister sans client (plus de station orpheline).
+    clientId = req.body.client_id || null;
+    if (!clientId) throw new HttpError(400, 'Une station doit être rattachée à un client : indiquez le client.');
+    const { rows: [cl] } = await pool.query("SELECT id FROM clients WHERE id = $1 AND status <> 'archive'", [clientId]);
+    if (!cl) throw new HttpError(400, 'Client introuvable ou archivé.');
   }
   const st = await tx(async c => {
     const { rows: [s] } = await c.query(

@@ -8,7 +8,7 @@
     identity: { label: 'Identité', tabs: [['identity', 'Identité de l\'application']] },
     access:   { label: 'Accès', tabs: [['users', 'Utilisateurs'], ['roles', 'Rôles & permissions'], ['contracts', 'Contrats']] },
     station:  { label: 'Station', tabs: [['station', 'Station'], ['settings', 'Paramètres'], ['dashboard', 'Dashboard']] },
-    pilotage: { label: 'Pilotage', tabs: [['health', 'Santé des clients'], ['compare', 'Comparaison'], ['errors', 'Erreurs']] },
+    pilotage: { label: 'Pilotage', tabs: [['health', 'Santé des clients'], ['errors', 'Erreurs'], ['rules', 'Règle des notification']] },
     system:   { label: 'Système', tabs: [['backups', 'Sauvegardes'], ['system', 'Système']] }
   };
   const TABS = Object.values(AGROUPS).flatMap(g => g.tabs);
@@ -20,7 +20,7 @@
 
   function tabAllowed(tab) {
     if (ME?.is_global && ['station','settings','dashboard'].includes(tab)) return false;
-    if (!ME?.is_global && ['health','compare','errors'].includes(tab)) return false;
+    if (!ME?.is_global && ['health','errors','rules'].includes(tab)) return false;
     return true;
   }
   function tabBar(active) {
@@ -79,7 +79,8 @@
       else if (tab === 'dashboard') body = await renderDashLink();
       else if (tab === 'backups') body = await renderBackups();
       else if (tab === 'system') body = await renderSystem();
-      else if (['health', 'compare', 'errors'].includes(tab) && window.renderPlatformInsights) body = await window.renderPlatformInsights(tab);
+      else if (tab === 'rules') body = window.renderSaRules ? await window.renderSaRules() : '';
+      else if (['health', 'errors'].includes(tab) && window.renderPlatformInsights) body = await window.renderPlatformInsights(tab);
       else body = await renderHub();
     } catch (e) {
       body = `<p class="warn">Erreur : ${esc(e.message || String(e))}</p>`;

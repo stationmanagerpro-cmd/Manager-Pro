@@ -14,7 +14,7 @@
     } catch (_) { /* jamais d'erreur dans le rapporteur */ }
   }
   window.addEventListener('error', function (e) { report(e.message, e.error && e.error.stack); });
-  window.addEventListener('unhandledrejection', function (e) { var r = e.reason; report(r && r.message ? r.message : String(r), r && r.stack); });
+  window.addEventListener('unhandledrejection', function (e) { var r = e && e.reason; report(r && r.message ? r.message : String(r || 'Promesse rejetée'), r && r.stack); });
 
   var dt = function (d) { return d ? new Date(d).toLocaleString('fr-FR') : '—'; };
   var lvl = { bon: ['Bon', '#16a34a'], a_surveiller: ['À surveiller', '#f59e0b'], a_risque: ['À risque', '#ef4444'] };
@@ -35,14 +35,6 @@
   }
   window.piRunReminders = async function () { try { var r = await Po('/admin/platform/license-reminders/run', {}); toast(r.sent + ' relance(s) envoyée(s)', 'success'); goAdminTab('health'); } catch (e) { toast(e.message, 'error'); } };
 
-  async function compare() {
-    var days = window.__piDays || 30, named = !!window.__piNamed, d = await G('/admin/platform/compare?days=' + days + (named ? '&names=1' : ''));
-    var m = function (v) { return typeof fmtN === 'function' ? fmtN(v) : String(Math.round(v)); };
-    return '<h2 style="margin-top:0">Comparaison des stations</h2><p class="muted">Classement par ventes sur la période. Marge : ' + esc(d.margin_scope) + '. Écart de caisse : somme des écarts des quarts clôturés (négatif = manque).</p>' + bar(days, 'compare') +
-      '<div class="bar"><label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" ' + (named ? 'checked' : '') + ' onchange="window.__piNamed=this.checked;goAdminTab(\'compare\')"> Afficher les noms (sinon anonymisé)</label></div>' +
-      T(['Rang', 'Station', 'Ventes', 'Marge boutique', 'Écart de caisse', 'Quarts clôturés'], d.stations.map(function (s) { return [s.rank, esc(s.label), m(s.sales), m(s.shop_margin), '<span style="color:' + (s.cash_gap < 0 ? '#dc2626' : 'inherit') + '">' + m(s.cash_gap) + '</span>', s.shifts_closed]; }));
-  }
-
   async function errors() {
     var hours = window.__piHours || 72, d = await G('/admin/platform/errors?hours=' + hours);
     return '<h2 style="margin-top:0">Journal des erreurs</h2><p class="muted">Erreurs du serveur (500, base de données) et erreurs d\'écran des utilisateurs, regroupées. Conservées 30 jours.</p>' +
@@ -52,5 +44,5 @@
       })) : '<p>Aucune erreur sur la période. ✅</p>');
   }
 
-  window.renderPlatformInsights = async function (tab) { return tab === 'health' ? health() : tab === 'compare' ? compare() : errors(); };
+  window.renderPlatformInsights = async function (tab) { return tab === 'health' ? health() : errors(); };
 })();

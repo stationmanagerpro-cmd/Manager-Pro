@@ -57,29 +57,6 @@
     } catch (e) { toast('Téléchargement impossible : ' + (e.message || e)); }
   }
   window.sadUsagePdf = () => dl('/admin/platform/usage.pdf?days=' + ((lastUsage && lastUsage.days) || 30), 'rapport_utilisation.pdf');
-  window.sadRepDl = id => dl(`/admin/platform/usage-report/file/${id}`, 'rapport_utilisation_' + id + '.pdf');
-  async function repLoad() {
-    const box = document.getElementById('sad_rep_body'); if (!box) return;
-    let d; try { d = await G('/admin/platform/usage-report/settings'); } catch (e) { box.textContent = 'Indisponible : ' + (e.message || e); return; }
-    const c = d.settings;
-    box.innerHTML = `<label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="rep_on" ${c.enabled ? 'checked' : ''}> Activer l’envoi automatique chaque mois</label>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;margin:8px 0;align-items:end"><label>Jour du mois<br><input type="number" id="rep_day" min="1" max="28" value="${c.day}" style="width:70px"></label>
-      <label>Heure (UTC)<br><input type="number" id="rep_hour" min="0" max="23" value="${c.hour}" style="width:70px"></label>
-      <label style="flex:1;min-width:200px">E-mail du destinataire<br><input type="email" id="rep_mail" value="${esc(c.email || '')}" placeholder="vous@exemple.com" style="width:100%"></label>
-      <button class="b2" onclick="sadRepSave()">Enregistrer</button><button class="b2" onclick="sadRepNow()">Envoyer maintenant</button></div>
-      <small>${d.email_available ? 'E-mail disponible.' : '⚠ E-mail non configuré sur le serveur (SMTP) : le rapport est seulement archivé ci-dessous.'} Dernier envoi automatique : ${c.last_sent || 'aucun'}.</small>
-      ${d.reports.length ? '<div style="margin-top:8px"><b>Rapports archivés</b><ul style="margin:4px 0 0;padding-left:18px">' + d.reports.map(r => `<li>${esc(r.label)} — ${new Date(r.created_at).toLocaleString('fr-FR')}${r.emailed_to ? ' — envoyé à ' + esc(r.emailed_to) : ''} <a href="#" onclick="sadRepDl(${r.id});return false">PDF</a></li>`).join('') + '</ul></div>' : ''}`;
-  }
-  window.sadRepSave = async function () {
-    try {
-      await Pu('/admin/platform/usage-report/settings', { enabled: document.getElementById('rep_on').checked, day: +document.getElementById('rep_day').value || 1, hour: +document.getElementById('rep_hour').value || 0, email: document.getElementById('rep_mail').value.trim() });
-      toast('Réglage enregistré'); repLoad();
-    } catch (e) { toast('Erreur : ' + (e.message || e)); }
-  };
-  window.sadRepNow = async function () {
-    try { const r = await Po('/admin/platform/usage-report/send-now', {}); toast(r.emailed ? 'Rapport envoyé à ' + r.emailed : 'Rapport généré et archivé' + (r.mail_error ? ' (e-mail : ' + r.mail_error + ')' : '')); repLoad(); }
-    catch (e) { toast('Erreur : ' + (e.message || e)); }
-  };
   window.sadUsageCsv = function () {
     const d = lastUsage; if (!d) return;
     const q = v => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
@@ -94,7 +71,6 @@
     const box = document.getElementById('sad_usage_body'); if (!box) return;
     let d; try { d = await G('/admin/platform/usage?days=' + (days || 30)); } catch (e) { box.textContent = 'Statistiques indisponibles : ' + (e.message || e); return; }
     lastUsage = d;
-    setTimeout(repLoad, 50);
     usageCharts.forEach(c => { try { c.destroy(); } catch (_) { /* déjà détruit */ } }); usageCharts = [];
     const totS = d.clients.reduce((a, c) => a + c.seconds, 0), totL = d.clients.reduce((a, c) => a + c.logins, 0);
     const act = d.users.filter(u => u.logins > 0 || u.seconds > 0).length;
@@ -105,7 +81,6 @@
       <div class="sad-row r21"><div><h4 style="margin:4px 0">Heures de pointe (connexions par heure, UTC)</h4><div class="sad-chart sm"><canvas id="sad_u_hour"></canvas></div></div>
       <div><h4 style="margin:4px 0">Écrans les plus utilisés (minutes)</h4><div class="sad-chart sm"><canvas id="sad_u_view"></canvas></div></div></div>
       <div style="text-align:right;margin:6px 0;display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap"><button class="b2" onclick="sadUsagePdf()">⬇ Rapport PDF</button><button class="b2" onclick="sadUsageCsv()">⬇ Export CSV</button></div>
-      <div id="sad_rep" style="border:1px solid var(--bd,#e2e8f0);border-radius:12px;padding:10px 12px;margin:8px 0"><b>📬 Rapport mensuel automatique</b><div id="sad_rep_body" style="margin-top:6px;color:var(--m)">Chargement…</div></div>
       <h4 style="margin:10px 0 4px">Classement des clients</h4>
       <div style="overflow:auto"><table><thead><tr><th>#</th><th>Client</th><th>Temps passé</th><th>Évolution</th><th>Connexions</th><th>Utilisateurs actifs</th><th>Dernière activité</th></tr></thead><tbody>${d.clients.map((c, i) => `<tr><td>${i + 1}</td><td><b>${esc(c.client_name)}</b>${c.inactive ? ' <span class="sad-pill" style="background:#fee2e2;color:#b91c1c">inactif</span>' : ''}</td><td>${hm(c.seconds)}</td><td>${chg(c.seconds_change_pct)} <small>temps</small><br>${chg(c.logins_change_pct)} <small>conn.</small></td><td>${c.logins}</td><td>${c.active_users} / ${c.users}</td><td>${ago(c.last_activity)}</td></tr>`).join('') || '<tr><td colspan="7">Aucun client</td></tr>'}</tbody></table></div>
       <h4 style="margin:12px 0 4px">Utilisateurs, du plus fréquent au moins fréquent</h4>
@@ -119,6 +94,24 @@
     if (hc) usageCharts.push(new Chart(hc, { type: 'bar', data: { labels: d.hours.map((_, h) => h + 'h'), datasets: [{ data: d.hours, backgroundColor: '#6366f1', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } }));
     if (vc) usageCharts.push(new Chart(vc, { type: 'bar', data: { labels: (d.views || []).map(v => VIEWS[v.view] || v.view), datasets: [{ data: (d.views || []).map(v => v.minutes), backgroundColor: '#14b8a6', borderRadius: 6, barThickness: 12 }] }, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } } } }));
     if (b) usageCharts.push(new Chart(b, { type: 'line', data: { labels: d.daily.map(x => x.day.slice(5)), datasets: [{ label: 'Connexions', data: d.daily.map(x => x.logins), borderColor: '#22c55e', backgroundColor: '#22c55e33', tension: .3, yAxisID: 'y' }, { label: 'Heures', data: d.daily.map(x => x.hours), borderColor: '#f59e0b', backgroundColor: '#f59e0b33', tension: .3, yAxisID: 'y1' }] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, position: 'left' }, y1: { beginAtZero: true, position: 'right', grid: { drawOnChartArea: false } } } } }));
+  };
+
+  // Rattachement d'une station orpheline à un client (route existante POST /admin/clients/:id/assign-station)
+  window.saAssignStations = async function () {
+    let st = [], cl = [];
+    try { st = (await G('/admin/platform/overview')).unassigned_stations || []; } catch (e) { return toast(e.message || 'Liste indisponible', 'error'); }
+    cl = await G('/admin/clients').catch(() => []);
+    if (!st.length) return toast('Aucune station sans client.');
+    if (!cl.length) return toast('Aucun client disponible : créez d\'abord le client.', 'error');
+    modal(`<h3>Rattacher une station à un client</h3><p class="muted">Chaque station doit appartenir à un client.</p>
+      <label>Station<select id="sa_st">${st.map(s => `<option value="${s.id}">${esc(s.name)}${s.active ? '' : ' (inactive)'}</option>`).join('')}</select></label>
+      <label>Client<select id="sa_cl">${cl.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('')}</select></label>
+      <div class="bar"><button class="b2" onclick="closeM()">Annuler</button><button onclick="saAssignDo()">Rattacher</button></div>`);
+  };
+  window.saAssignDo = async function () {
+    var sid = +document.getElementById('sa_st').value, cid = +document.getElementById('sa_cl').value;
+    try { await Po('/admin/clients/' + cid + '/assign-station', { station_id: sid }); closeM(); toast('Station rattachée.'); if (typeof go === 'function' && typeof cur !== 'undefined') go(cur); }
+    catch (e) { toast(e.message || 'Échec du rattachement', 'error'); }
   };
 
   window.renderSaDashboard = async function () {
@@ -145,7 +138,7 @@
       checks.push({ ok: pt.clients === t.clients, title: 'Clients : licences = plateforme', txt: `${t.clients} / ${pt.clients} client(s) des deux côtés` });
       checks.push({ ok: pt.active_stations + pt.inactive_stations === pt.stations, title: 'Stations actives + inactives = total', txt: `${pt.active_stations} + ${pt.inactive_stations} = ${pt.stations}` });
       const un = (plat.unassigned_stations || []).length;
-      if (un) checks.push({ ok: false, title: 'Stations sans client', txt: `${un} station(s) non rattachée(s) à un client` });
+      if (un) checks.push({ ok: false, title: 'Stations sans client', txt: `${un} station(s) non rattachée(s) à un client`, action: '<button class="b2" style="margin-left:8px" onclick="saAssignStations()">Rattacher à un client</button>' });
     }
     const nAlert = checks.filter(c => !c.ok).length;
 
@@ -196,6 +189,6 @@
 
     <div class="sad-card"><h3>Cohérence des agrégats ${nAlert ? `<span class="sad-pill">${nAlert} alerte(s)</span>` : '<span class="sad-pill">Tout est cohérent</span>'}</h3>
       <p style="margin:0 0 6px;font-size:12px;color:var(--m)">Recoupement automatique entre licences, clients, stations, comptes et finance plateforme.</p>
-      <ul class="sad-coh">${checks.map(c => `<li class="${c.ok ? 'ok' : 'ko'}"><span class="dot">${c.ok ? '✓' : '!'}</span><span><b>${esc(c.title)}</b>${esc(c.txt)}</span></li>`).join('')}</ul></div>`;
+      <ul class="sad-coh">${checks.map(c => `<li class="${c.ok ? 'ok' : 'ko'}"><span class="dot">${c.ok ? '✓' : '!'}</span><span><b>${esc(c.title)}</b>${esc(c.txt)}${c.action || ''}</span></li>`).join('')}</ul></div>`;
   };
 })();

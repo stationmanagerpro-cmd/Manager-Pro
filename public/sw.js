@@ -4,10 +4,14 @@
  * - Navigation HTML → network-first, fallback cache index si offline total
  */
 <<<<<<< HEAD
-const CACHE = 'smp-static-bbadbe6a93c';
+<<<<<<< HEAD
+const CACHE = 'smp-static-b4abd0e2f4b';
 =======
 const CACHE = 'smp-static-b3c9ef34e6c';
 >>>>>>> 7fb82f1 (Menu compte client : regroupement en sous-rubriques, reconcile sans doublon)
+=======
+const CACHE = 'smp-static-b98003ceb66';
+>>>>>>> d442dbe (Pilotage superadmin : règle des notifications, alertes configurables, corrections)
 
 /* PRECACHE:BEGIN (généré par scripts/build-sw.js — ne pas modifier à la main) */
 const PRECACHE = [
@@ -104,6 +108,7 @@ const PRECACHE = [
   '/ext-roles.js',
   '/ext-sa-dash.css',
   '/ext-sa-dash.js',
+  '/ext-sa-rules.js',
   '/ext-sale-shift.js',
   '/ext-sectioned-form.js',
   '/ext-shell.css',

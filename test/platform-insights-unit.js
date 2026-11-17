@@ -61,11 +61,6 @@ const call = async (key, req = {}) => { let out; await routes[key]({ query: {}, 
     handler = sql => (/FROM clients c JOIN client_contracts/.test(sql) ? { rows: [{ id: 6, name: 'Y', expires_at: far, contract_status: 'actif' }] } : /INSERT INTO license_reminders/.test(sql) ? (ins++, { rowCount: 1, rows: [] }) : { rows: [] });
     assert.strictEqual(await PI.sendLicenseReminders(), 0); assert.strictEqual(ins, 0);
   });
-  await check('comparaison : anonymisée par défaut, nominative sur demande ; classement par ventes', async () => {
-    handler = () => ({ rows: [{ id: 1, station: 'Nord', client: 'Alpha', sales: '100', shop_margin: '10', cash_gap: '-5', shifts_closed: 3 }, { id: 2, station: 'Sud', client: 'Beta', sales: '900', shop_margin: '90', cash_gap: '0', shifts_closed: 9 }] });
-    const anon = await call('get /admin/platform/compare'); assert.strictEqual(anon.stations[0].sales, 900); assert.match(anon.stations[0].label, /^Station A$/); assert.ok(!JSON.stringify(anon).includes('Alpha') && !JSON.stringify(anon).includes('Sud'));
-    const named = await call('get /admin/platform/compare', { query: { names: '1' } }); assert.strictEqual(named.stations[0].label, 'Beta — Sud');
-  });
   await check('santé (route) : tri du plus fragile au plus sain', async () => {
     handler = sql => /FROM clients c LEFT JOIN client_contracts/.test(sql) ? { rows: [{ id: 1, name: 'Sain', expires_at: new Date(Date.now() + 200 * 864e5).toISOString() }, { id: 2, name: 'Dormant', expires_at: new Date(Date.now() - 864e5).toISOString() }] }
       : /FROM user_usage/.test(sql) ? { rows: [{ client_id: 1, active_days: 25 }] } : /FROM shifts sh/.test(sql) ? { rows: [{ client_id: 1, opened: 20, closed: 20, stale: 0, gaps: 0 }] } : { rows: [] };

@@ -1486,3 +1486,7 @@ input[type=color]::-moz-color-swatch { border: 0; border-radius: 8px; }
 #bell.ring #bell-n { animation: bellPulse 1.1s ease-in-out 3; }
 @keyframes bellPulse { 50% { transform: scale(1.35); } }
 @media (prefers-reduced-motion: reduce) { #bell.ring, #bell.ring #bell-n { animation: none; } }
+
+/* Sélecteur de station de l'en-tête : le nom long reste dans sa case (tronqué avec …), y compris sur petit écran. */
+#stsel { max-width: min(260px, 44vw); min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 720px) { #stsel { max-width: min(170px, 36vw); font-size: 13px; } }

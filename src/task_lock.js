@@ -6,7 +6,8 @@ const TASK_LOCKS = {
   ALERTS: 74120318,         // src/alerts_scheduler.js
   REPORTS: 74120319,        // src/scheduled_reports.js
   BACKUP: 74120321,         // src/backup.js (cycle de 30 min)
-  NOTIFICATIONS: 74120322   // src/notification_rules.js (cycle de 60 s)
+  NOTIFICATIONS: 74120322,  // src/notification_rules.js (cycle de 60 s)
+  PLATFORM_ALERTS: 74120323 // src/platform_alerts.js (règles d'alerte Superadmin, cycle de 15 min)
 };
 
 /**

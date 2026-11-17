@@ -45,22 +45,6 @@ r.get('/admin/platform/health', needPrincipal, wrap(async (req, res) => {
   res.json({ days, clients: items, at_risk: items.filter(i => i.level === 'a_risque').length, watch: items.filter(i => i.level === 'a_surveiller').length });
 }));
 
-// ---------- 4. Comparaison des stations (anonymisée par défaut) ----------
-r.get('/admin/platform/compare', needPrincipal, wrap(async (req, res) => {
-  const days = daysParam(req.query.days), named = req.query.names === '1';
-  const { rows } = await pool.query(
-    `SELECT s.id, s.name AS station, c.name AS client,
-       COALESCE((SELECT SUM(mr.amount) FROM meter_readings mr JOIN shifts sh ON sh.id = mr.shift_id WHERE sh.station_id = s.id AND sh.status = 'ferme' AND sh.closed_at >= now() - ($1::int * interval '1 day')), 0)
-     + COALESCE((SELECT SUM(x.total) FROM sales x WHERE x.station_id = s.id AND x.status = 'valide' AND x.kind = 'produits' AND x.sold_at >= now() - ($1::int * interval '1 day')), 0) AS sales,
-       COALESCE((SELECT SUM(d.amount - d.quantity * d.unit_cost) FROM sale_details d JOIN sales x ON x.id = d.sale_id WHERE x.station_id = s.id AND x.status = 'valide' AND x.kind = 'produits' AND x.sold_at >= now() - ($1::int * interval '1 day')), 0) AS shop_margin,
-       COALESCE((SELECT SUM(sh.cash_gap) FROM shifts sh WHERE sh.station_id = s.id AND sh.status = 'ferme' AND sh.closed_at >= now() - ($1::int * interval '1 day')), 0) AS cash_gap,
-       COALESCE((SELECT COUNT(*) FROM shifts sh WHERE sh.station_id = s.id AND sh.status = 'ferme' AND sh.closed_at >= now() - ($1::int * interval '1 day')), 0)::int AS shifts_closed
-      FROM stations s JOIN clients c ON c.id = s.client_id WHERE s.active = TRUE AND c.status <> 'archive'`, [days]);
-  const list = rows.map(x => ({ ...x, sales: Number(x.sales), shop_margin: Number(x.shop_margin), cash_gap: Number(x.cash_gap) })).sort((a, b) => b.sales - a.sales)
-    .map((x, i) => ({ rank: i + 1, label: named ? `${x.client} — ${x.station}` : `Station ${String.fromCharCode(65 + (i % 26))}${i >= 26 ? Math.floor(i / 26) : ''}`,
-      sales: x.sales, shop_margin: x.shop_margin, cash_gap: x.cash_gap, shifts_closed: x.shifts_closed }));
-  res.json({ days, named, margin_scope: 'boutique (ventes de produits) : la marge carburant n\'est pas calculée', stations: list });
-}));
 
 // ---------- 3. Journal des erreurs ----------
 const clip = (s, n) => (s == null ? null : String(s).slice(0, n));

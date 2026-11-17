@@ -153,7 +153,8 @@
   // ── Temps d'utilisation : un battement par minute tant que l'application est ouverte et visible ──
   setInterval(function () {
     try {
-      if (document.visibilityState !== 'visible' || !window.TK || (typeof ME !== 'undefined' && ME && ME.is_global)) return;
+      // TK et ME sont déclarés avec « let » dans app.js : ils ne sont pas des propriétés de window.
+      if (document.visibilityState !== 'visible' || !(typeof TK !== 'undefined' && TK) || (typeof ME !== 'undefined' && ME && ME.is_global)) return;
       Po('/usage/ping', { view: window.__smpView || '' }).catch(function () {});
     } catch (_) { /* mesure facultative */ }
   }, 60000);
@@ -256,6 +257,8 @@
       c.onclick = function () { if (typeof closeUserMenu === 'function') closeUserMenu(); smpSystemStatus(); };
       um.appendChild(c);
     }
+    // Déconnexion reste toujours en dernier, même après les entrées ajoutées ci-dessus.
+    if (um) { const lo = um.querySelector('.um-danger'); if (lo) um.appendChild(lo); }
   };
 
   // Auto-start if already enabled

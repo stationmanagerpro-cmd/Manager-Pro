@@ -1048,6 +1048,9 @@ function stationOptions() {
   sel.style.display = !ME?.is_global && stations.length > 1 ? '' : 'none';
   sel.innerHTML = stations.map(s => `<option value="${esc(s.id)}" ${String(s.id) === String(SID) ? 'selected' : ''}>${esc(s.name)}</option>`).join('');
   sel.disabled = !!ME?.is_global || stations.length < 2;
+  // Nom complet au survol : le sélecteur tronque les noms longs sur petit écran.
+  const curSt = stations.find(s => String(s.id) === String(SID));
+  sel.title = curSt ? curSt.name : '';
 }
 async function chSt(v) {
   // La sélection côté navigateur n'accorde aucun droit : seuls les identifiants déjà présents dans /me sont recevables.
