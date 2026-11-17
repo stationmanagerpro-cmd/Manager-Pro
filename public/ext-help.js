@@ -6,7 +6,9 @@
   // Mêmes clés que HELP_KEYS côté serveur (src/help_guides.js).
   const HELP_MODULES = ['dash', 'quart', 'ventes', 'prod', 'pompes', 'cli', 'four', 'caisse', 'emp', 'alert', 'audit', 'param'];
 
-  V.aide = ["Besoin d'aide", '*'];
+  // Clé propre : « aide » désigne déjà le manuel (ext-aide-demo.js), qui écraserait cette vue.
+  V.besoin_aide = ["Besoin d'aide", '*'];
+  SUPERADMIN_VIEWS.add('besoin_aide');
 
   const isHttps = u => /^https:\/\/\S+$/.test(String(u || ''));
 
@@ -26,7 +28,7 @@
       </article>`;
   }
 
-  VM.aide = async function () {
+  VM.besoin_aide = async function () {
     let data = { guides: [], is_superadmin: false };
     try { data = await G('/help-guides'); } catch (e) { /* contenu indisponible : cartes vides, sans erreur bloquante */ }
     const byKey = Object.fromEntries((data.guides || []).map(g => [g.module_key, g]));
@@ -62,7 +64,7 @@
       await Pu('/help-guides/' + encodeURIComponent(k), { procedure, video_url });
       closeM();
       toast('Aide enregistrée', 'success');
-      if (typeof go === 'function') go('aide');
+      if (typeof go === 'function') go('besoin_aide');
     } catch (e) { toast(errMsg(e)); }
   };
   // Le bouton doit rester présent : si un rendu ultérieur retire la bannière ou son contenu, on le remet en place.
@@ -73,7 +75,7 @@
     b.type = 'button'; b.id = 'help-top-btn'; b.className = 'help-top-btn';
     b.textContent = "Besoin d'aide ?";
     b.setAttribute('aria-label', "Besoin d'aide : procédures et vidéos");
-    b.addEventListener('click', () => { if (typeof go === 'function') go('aide'); });
+    b.addEventListener('click', () => { if (typeof go === 'function') go('besoin_aide'); });
     right.insertBefore(b, right.firstChild);
   }
   let helpTimer = null;
