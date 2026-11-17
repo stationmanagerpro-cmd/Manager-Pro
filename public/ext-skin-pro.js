@@ -44,8 +44,9 @@
   }
   function crumbGo(a) {
     var k = a && a.getAttribute('data-go'); if (!k || typeof go !== 'function') return;
+    var ar = a.getAttribute('data-arg');
     try { var nav = document.getElementById('nav'); if (nav) nav.querySelectorAll('.nav-node.open').forEach(function (n) { n.classList.remove('open'); }); } catch (_) {}
-    go(k);
+    go(k, ar == null ? undefined : ar);
   }
   function paintCrumbs() {
     var pg = document.getElementById('pg'); if (!pg || d.dataset.skin !== 'pro') return;
@@ -57,11 +58,11 @@
     }
     var ttl = document.getElementById('ttl'), title = ttl ? ttl.textContent.trim() : '';
     var node = document.querySelector('#nav .nav-node.has-active'), lab = node && node.querySelector(':scope > .nav-parent .nav-label'), sec = lab ? lab.textContent.trim() : '';
-    var first = node && node.querySelector(':scope > .flyout a.nav-link[data-go]'), secKey = first ? first.getAttribute('data-go') : '';   // la rubrique ouvre sa première page
     var date = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
-    var link = function (k, txt, label) { return '<a class="skin-crumb-link" role="link" tabindex="0" data-go="' + esc(k) + '" title="' + esc(label) + '" aria-label="' + esc(label) + '">' + txt + '</a>'; };
+    // Le nom de rubrique ouvre sa page hub (même nom), jamais une page enfant.
+    var link = function (k, txt, label, arg) { return '<a class="skin-crumb-link" role="link" tabindex="0" data-go="' + esc(k) + '"' + (arg != null ? ' data-arg="' + esc(arg) + '"' : '') + ' title="' + esc(label) + '" aria-label="' + esc(label) + '">' + txt + '</a>'; };
     var html = '<div class="skin-crumb">' + link(homeKey(), '<span aria-hidden="true">⌂</span>', 'Accueil') + '<span>›</span>'
-      + (sec && sec !== title ? (secKey ? link(secKey, esc(sec), 'Ouvrir ' + sec) : '<span>' + esc(sec) + '</span>') + '<span>›</span>' : '')
+      + (sec && sec !== title ? link('secthub', esc(sec), 'Ouvrir la rubrique ' + sec, sec) + '<span>›</span>' : '')
       + '<b>' + esc(title) + '</b></div><div class="skin-datepill"><span class="skin-date">' + esc(date.charAt(0).toUpperCase() + date.slice(1)) + '</span><b class="skin-time"></b></div>';
     if (bar.__h !== html) { bar.innerHTML = html; bar.__h = html; }
     tickTime(); if (!window.__skinClock) window.__skinClock = setInterval(tickTime, 1000);

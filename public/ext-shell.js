@@ -173,6 +173,35 @@ const visible = k => V[k] && (typeof canView === 'function' ? canView(k) : can(V
   }
   window.navGo = function (k) { closeAll(); closeNavDrawer(); go(k); return false; };
 
+  /* Page hub d'une rubrique (fil d'Ariane « Administration », « Ressources humaines »…) :
+     elle porte le nom de la rubrique cliquée et liste les pages accessibles de cette rubrique.
+     Chaque page garde ses propres contrôles de droits. */
+  function sectionPages(label) {
+    const g = treeFor().find(x => x.label === label);
+    if (!g) return [];
+    const keys = [];
+    const collect = n => { (n.keys || []).forEach(k => keys.push(k)); (n.children || []).forEach(collect); };
+    collect(g);
+    return [...new Set(keys)].filter(visible);
+  }
+  window.navSectionPages = sectionPages;
+  if (typeof TITLES === 'object') TITLES.secthub = 'Rubrique';
+  if (typeof VM === 'object') VM.secthub = async function () {
+    const label = (typeof arg === 'string' && arg) || 'Rubrique';
+    const ttl = document.getElementById('ttl'); if (ttl) ttl.textContent = label;
+    const cards = sectionPages(label).map(k => `<button type="button" class="sec-hub-card" onclick="go('${k}')"><span class="sec-hub-ico">${ico(k)}</span><b>${esc(V[k][0])}</b></button>`).join('');
+    return `<style>
+      .sec-hub{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:14px}
+      .sec-hub-card{display:flex;align-items:center;gap:10px;text-align:left;padding:14px;border-radius:14px;border:1px solid var(--bd);background:var(--c,#fff);cursor:pointer;font:inherit;color:inherit}
+      .sec-hub-card:hover{border-color:var(--p);box-shadow:0 6px 18px -10px rgba(0,0,0,.3)}
+      .sec-hub-ico{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border-radius:10px;background:var(--pl,#eef2ff);flex:none}
+      .sec-hub-ico .nav-svg{width:20px;height:20px}
+    </style>
+    <h2 style="margin-top:0">${esc(label)}</h2>
+    <p class="muted">Choisissez une page de cette rubrique.</p>
+    <div class="sec-hub">${cards || '<p class="muted">Aucune page accessible dans cette rubrique.</p>'}</div>`;
+  };
+
   function bindNav(nav) {
     nav.querySelectorAll('.nav-node').forEach(n => {
       n.addEventListener('mouseenter', () => {
