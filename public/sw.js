@@ -3,15 +3,7 @@
  * - /api/** → network-only (jamais de cache : auth JWT, données métier)
  * - Navigation HTML → network-first, fallback cache index si offline total
  */
-<<<<<<< HEAD
-<<<<<<< HEAD
 const CACHE = 'smp-static-bbb3f99e008';
-=======
-const CACHE = 'smp-static-b3c9ef34e6c';
->>>>>>> 7fb82f1 (Menu compte client : regroupement en sous-rubriques, reconcile sans doublon)
-=======
-const CACHE = 'smp-static-b98003ceb66';
->>>>>>> d442dbe (Pilotage superadmin : règle des notifications, alertes configurables, corrections)
 
 /* PRECACHE:BEGIN (généré par scripts/build-sw.js — ne pas modifier à la main) */
 const PRECACHE = [
