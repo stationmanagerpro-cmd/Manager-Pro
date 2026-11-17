@@ -1,6 +1,12 @@
 # Regroupement du menu compte client — 2026-11-17
 
-Branche : feat/regroupement-menu-client (locale, base 40fcd9e = main). **Non poussée, non fusionnée, non déployée.**
+Branche : feat/regroupement-menu-client (base 40fcd9e). Intégré sur `main` en `d8ac8dc`. **Déployé en production** (Render, `dep-dbtsqaqfngtc73a4gh9g`, statut `live` vérifié le 2026-11-17 à 03:43 UTC).
+
+## Déploiement
+- Commit déployé : `d8ac8dc`. Déclenchement manuel ; aucune migration ni variable d'environnement modifiée.
+- Version précédente : `bb34603` (`dep-dbtrpuon74is73eltoag`, désactivée) — cible du retour arrière.
+- Retour arrière : redéployer `dep-dbtrpuon74is73eltoag`, ou revert du commit `d8ac8dc` sur `main`, sans force-push.
+- Vérification en production (navigateur, sous-menus bureau et téléphone) : **non effectuée** à ce jour.
 
 ## Réalisé
 Restructuration de `TREE` dans `public/ext-shell.js` uniquement : données de navigation, sans changement de vue, de clé, d'URL ni de droit (la visibilité reste calculée par vue).
