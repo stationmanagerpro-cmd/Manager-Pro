@@ -866,6 +866,21 @@ window.rhrPrev = safe(async kind => {
 });
 
 /* ---------- Activation progressive paie Mali (AMO / INPS / ITS) ---------- */
+/* Interrupteur Actif / Inactif placé dans l'en-tête de chaque module.
+   Actif = activation manuelle (taux + motif) ; Inactif = désactivation. */
+function pmSwitchHtml(m) {
+  const code = esc(m.code);
+  const label = esc(m.label);
+  if (!m.authorized) {
+    return `<span class="pm-sw" title="Non autorisé par le SuperAdmin" aria-label="Non autorisé par le SuperAdmin : ${label}">
+      <button type="button" class="pm-seg pm-on dim" disabled>Actif</button><button type="button" class="pm-seg pm-off dim" disabled>Inactif</button></span>`;
+  }
+  const on = !!m.flag_on;
+  return `<span class="pm-sw" role="group" aria-label="Statut de ${label}">
+    <button type="button" class="pm-seg pm-on ${on ? 'sel' : 'dim'}" aria-pressed="${on}" ${on ? 'disabled' : ''} onclick="openPayrollActivate('${code}')" title="${on ? 'Module déjà actif' : 'Activer : saisir les taux et le motif'}">Actif</button>
+    <button type="button" class="pm-seg pm-off ${on ? 'dim' : 'sel'}" aria-pressed="${!on}" ${on ? '' : 'disabled'} onclick="payrollDeactivate('${code}')" title="${on ? 'Désactiver ce module' : 'Module déjà inactif'}">Inactif</button></span>`;
+}
+
 async function vAct() {
   const d = await G('/hr/payroll-modules').catch(e => ({ error: e.message || String(e), modules: [] }));
   if (d.error && !(d.modules || []).length) {
@@ -874,17 +889,12 @@ async function vAct() {
       <div class="bar"><button class="b2" onclick="go('rh')">Retour RH</button></div>`;
   }
   const cards = (d.modules || []).map(m => {
-    const status = !m.authorized
-      ? '<span class="tag x">Non autorisé SuperAdmin</span>'
-      : (m.flag_on ? '<span class="tag ok">Actif</span>' : '<span class="tag x">Inactif</span>');
+    const status = pmSwitchHtml(m);
     let actions = '';
     if (!m.authorized) {
       actions = `<p style="font-size:12px;color:var(--m)">Demandez au SuperAdmin d'autoriser « ${esc(m.label)} » sur votre contrat client.</p>`;
-    } else if (!m.flag_on) {
-      actions = `<button onclick="openPayrollActivate('${m.code}')">Activer…</button>`;
-    } else {
-      actions = `<button class="b2" onclick="openPayrollActivate('${m.code}', true)">Reconfigurer les taux</button>
-        <button class="bd" onclick="payrollDeactivate('${m.code}')">Désactiver</button>`;
+    } else if (m.flag_on) {
+      actions = `<button class="b2" onclick="openPayrollActivate('${m.code}', true)">Reconfigurer les taux</button>`;
     }
     const cfg = m.config || {};
     const cfgSummary = m.flag_on && cfg.effective_from
@@ -900,16 +910,36 @@ async function vAct() {
     </div>`;
   }).join('');
   const sources = (d.sources || []).map(s => `<li>${esc(s)}</li>`).join('');
-  return `<h2 style="margin-top:0">Modules de paie (AMO, INPS, ITS)</h2>
+  const authorizedMods = (d.modules || []).filter(m => m.authorized);
+  const activeCount = authorizedMods.filter(m => m.flag_on).length;
+  const canActivateAll = authorizedMods.some(m => !m.flag_on);
+  const globalBar = `<div class="pm-global">
+      <div><b>Activation globale</b>
+        <div style="font-size:12px;color:var(--m)">${activeCount} sur ${authorizedMods.length} module(s) autorisé(s) actif(s). Vous pouvez aussi activer ou désactiver chaque module séparément, avec le bouton Actif / Inactif de son en-tête.</div></div>
+      <button onclick="payrollActivateAll()" ${canActivateAll ? '' : 'disabled'}>Tout activer</button>
+    </div>`;
+  return `<style>
+      .pm-sw{display:inline-flex;border-radius:4px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,.18);flex-shrink:0}
+      .pm-seg{border:0;margin:0;padding:7px 14px;min-width:76px;font-size:13px;font-weight:600;font-family:inherit;line-height:1;color:#fff;border-radius:0;cursor:pointer;transition:opacity .15s,filter .15s}
+      .pm-on{background:#5e9e3a}
+      .pm-off{background:#e11d1d;font-style:italic}
+      .pm-seg.sel{opacity:1}
+      .pm-seg.dim{opacity:.4}
+      .pm-seg:disabled{cursor:default}
+      .pm-seg:not(:disabled):hover{filter:brightness(1.1)}
+      .pm-seg:focus-visible{outline:2px solid #1d4ed8;outline-offset:1px}
+      .pm-global{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#eef3fb;border-left:4px solid #2563eb;border-radius:6px;padding:12px 14px;margin-bottom:12px}
+    </style>
+    <h2 style="margin-top:0">Modules de paie (AMO, INPS, ITS)</h2>
     <div class="warn" style="margin-bottom:12px">
       <b>Processus en 2 étapes</b><br>
       1. Le <b>SuperAdmin</b> autorise le module sur le contrat client.<br>
       2. Le <b>client</b> active manuellement et saisit les taux / paramètres de calcul (modifiables à tout moment).
     </div>
     <p style="font-size:13px;color:var(--m)">${esc(d.note || '')}</p>
+    ${authorizedMods.length ? globalBar : ''}
     ${cards || '<p>Aucun module disponible.</p>'}
     <div class="bar" style="flex-wrap:wrap;gap:8px">
-      <button onclick="payrollActivateAll()">Activer tous les modules autorisés</button>
       <button class="b2" onclick="go('rh')">Retour RH</button>
       <button class="b2" onclick="go('rhr')">Rapports paie</button>
     </div>
