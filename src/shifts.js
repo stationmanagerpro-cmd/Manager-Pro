@@ -543,7 +543,8 @@ r.post('/:id/close', need('shift.close'), body(closeSchema), wrap(async (req, re
         an.push(['ecart_compteur', `Ventes carburant déclarées par ${r.name} supérieures aux compteurs de ses pompes (de ${fmtQ(r.overdeclared)} FCFA)`, -r.overdeclared, r.employee_id]);
 
       // B. Ventes : carburant réparti par moyen de paiement, autres ventes déjà enregistrées
-      let { mobile_money: mm, card, credit, credit_customer_id: cid } = b.non_cash;
+      // Valeurs par défaut explicites : sans elles, un champ absent donne NaN et la garde « Aucune pompe sans employé » ne se déclenche pas.
+      let { mobile_money: mm = 0, card = 0, credit = 0, credit_customer_id: cid } = b.non_cash;
       if (multi) {   // quart partagé : les paiements non espèces sont ceux saisis par chaque employé pour SES pompes
         // Quart partagé : paiements non espèces de chaque employé (pour SES pompes) + ceux saisis globalement = pompes sans employé
         const t = empCl.non_cash_total;
