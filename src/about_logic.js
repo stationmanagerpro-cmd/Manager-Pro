@@ -101,7 +101,7 @@ function defaultDoc() {
     downloads: {
       title: 'MANAGER PRO VOUS ACCOMPAGNE PARTOUT',
       subtitle: 'Retrouvez nos solutions sur vos appareils mobiles et profitez d’une expérience de gestion adaptée à votre environnement de travail.',
-      android_url: '/telechargements/Ika-So.apk', ios_url: ''
+      android_url: '/downloads/Manager_Pro-debug-2026-11-17.apk', ios_url: ''
     },
     contact: { email: '', phone: '', website: '', address: '' },
     signature: { name: 'MANAGER PRO', tagline: 'Des solutions intelligentes pour chaque métier.', slogan: '« Votre gestion, notre priorité ! »' }
@@ -126,13 +126,13 @@ function lines(v, maxItems, maxLen, label) {
   if (out.length > maxItems) throw new AboutError(label + ' : ' + maxItems + ' lignes maximum');
   return out;
 }
-// Lien de téléchargement : vide (= « Bientôt disponible ») ou adresse https:// ou fichier interne /telechargements/… (jamais javascript:, data:, http:).
-const SAME_SITE_RE = /^\/telechargements\/[A-Za-z0-9._-]+$/;
+// Lien de téléchargement : vide (= « Bientôt disponible ») ou adresse https:// ou fichier interne /downloads/… (jamais javascript:, data:, http:).
+const SAME_SITE_RE = /^\/downloads\/[A-Za-z0-9._-]+$/;
 function httpsUrl(v, label) {
   const s = text(v, LIMITS.url, label);
   if (!s) return '';
-  if (SAME_SITE_RE.test(s)) return s;   // fichier hébergé par l’application elle-même (public/telechargements/)
-  let u; try { u = new URL(s); } catch (_) { throw new AboutError(label + ' : adresse invalide (https:// ou /telechargements/…)'); }
+  if (SAME_SITE_RE.test(s)) return s;   // fichier hébergé par l’application elle-même (public/downloads/)
+  let u; try { u = new URL(s); } catch (_) { throw new AboutError(label + ' : adresse invalide (https:// ou /downloads/…)'); }
   if (u.protocol !== 'https:' || /\s/.test(s)) throw new AboutError(label + ' : l’adresse doit commencer par https://');
   return s;
 }
