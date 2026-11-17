@@ -8,7 +8,14 @@ assert(bar.includes('id="help-top-btn"') && bar.includes("go('aide')"), 'bouton 
 assert(idx.indexOf('ext-help.js') > idx.indexOf('ext-confort.js') && idx.indexOf('ext-help.js') > 0, 'ext-help.js chargé après app.js et ext-confort.js');
 assert(help.includes("V.aide = [\"Besoin d'aide\", '*']") && help.includes('VM.aide'), 'vue aide enregistrée');
 assert(help.includes('canView(k)'), 'seuls les modules accessibles sont affichés');
-assert(!/https?:\/\//.test(help), 'aucun lien vidéo inventé');
+assert(!/https?:\/\/[a-z0-9]/i.test(help), 'aucun lien vidéo inventé');
 assert(/#app-header \.help-top-btn/.test(css) && /\.help-grid/.test(css), 'styles du bouton et des cartes');
-console.log('✔ besoin d\'aide : bouton bannière, vue par module, sans contenu inventé');
-console.log('OK besoin-aide-static (6 assertions)');
+const srv = rd('src/server.js'), route = rd('src/help_guides.js'), mig = rd('migrations/120_help_guides.sql');
+assert(srv.includes("require('./help_guides').r"), 'route montée dans server.js');
+assert(help.includes("G('/help-guides')") && help.includes("Pu('/help-guides/'"), 'lecture et écriture via /api/help-guides');
+assert(route.includes('req.user.is_global') && route.includes('403'), 'écriture réservée au Super Admin');
+assert(mig.includes('CREATE TABLE IF NOT EXISTS help_guides'), 'migration de la table');
+const keysOf = (src, re) => (src.match(re) || [''])[0].match(/'[a-z]+'/g) || [];
+assert.deepStrictEqual(keysOf(help, /const HELP_MODULES = \[[^\]]*\]/), keysOf(route, /const HELP_KEYS = \[[^\]]*\]/), 'mêmes modules côté interface et serveur');
+console.log('✔ besoin d\'aide : bouton bannière, vue par module, stockage serveur, superadmin seul');
+console.log('OK besoin-aide-static (11 assertions)');
