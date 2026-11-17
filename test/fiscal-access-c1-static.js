@@ -9,9 +9,10 @@ const server = fs.readFileSync(path.join(root, 'src/fiscal.js'), 'utf8');
 const migration = fs.readFileSync(path.join(root, 'migrations/057_fiscal_access_permission.sql'), 'utf8');
 const roleFix = fs.readFileSync(path.join(root, 'migrations/058_fiscalite_admin_platform_only.sql'), 'utf8');
 function ok(condition, message) { if (!condition) throw new Error(message); }
-ok(shell.includes("{ label: 'La Fiscalité', icon: '⚖️'"), 'La Fiscalité doit avoir son propre groupe de menu');
-const finance = shell.match(/\{ label: 'Finance & rapports',[^\n]+/);
-ok(finance && !finance[0].includes('fiscalhub') && !finance[0].includes('fiscal2'), 'Les vues fiscales ne doivent plus être dans Finance & rapports');
+ok(shell.includes("label: 'La Fiscalité', icon: '⚖️'"), 'La Fiscalité doit avoir son propre groupe de menu');
+const finStart = shell.indexOf("label: 'Finance & rapports'");
+const finance = finStart > 0 ? shell.slice(finStart, shell.indexOf("label: 'Comptabilité'", finStart)) : '';
+ok(finance && !finance.includes('fiscalhub') && !finance.includes('fiscal2'), 'Les vues fiscales ne doivent plus être dans Finance & rapports');
 ok(app.includes("ME.permissions.includes('fiscal.access')") && app.includes('contractAllowed'), 'Le menu doit exiger permission de rôle et contrat');
 ok(frontend.includes("me.permissions.includes('fiscal.access')") && frontend.includes('contractAllowed'), 'Le parcours fiscal doit appliquer la même règle');
 ok(server.includes("req.user.perms.has('fiscal.access')") && server.includes('FISCAL_PERMISSION_DENIED'), 'Le serveur doit refuser les accès API sans permission');

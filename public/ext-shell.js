@@ -19,21 +19,47 @@
 
   /* ---------- Arbre de navigation : regroupe les vues existantes (clés de V) ---------- */
   const TREE = [
-    { label: 'Tableau de bord', icon: '📊', keys: ['direction', 'dash', 'moidash', 'consolidee', 'parstation', 'eod', 'reconcile'] },
-    { label: 'Exploitation', icon: '⛽', keys: ['jour', 'quart', 'ventes', 'prixjour', 'factures', 'bcommande', 'prod', 'stock', 'previsions', 'transferts', 'pompes', 'cuves', 'histcompteurs', 'risque', 'caisse', 'periodlock', 'alert'] },
+    { label: 'Tableau de bord', icon: '📊', keys: ['direction', 'dash', 'moidash', 'consolidee', 'parstation', 'eod'] },
+    {
+      label: 'Exploitation', icon: '⛽', keys: [], children: [
+        { label: 'Ventes & caisse', icon: '🛒', keys: ['ventes', 'factures', 'prixjour', 'caisse'] },
+        { label: 'Quarts & pompes', icon: '⏱️', keys: ['jour', 'quart', 'pompes', 'cuves', 'histcompteurs'] },
+        { label: 'Stock & approvisionnement', icon: '📦', keys: ['prod', 'stock', 'previsions', 'transferts', 'bcommande'] },
+        { label: 'Contrôles', icon: '🛡️', keys: ['risque', 'periodlock', 'alert', 'reconcile'] }
+      ]
+    },
     { label: 'Gestion commerciale', icon: '🤝', keys: ['cli', 'flotte', 'fidelite', 'espaceclient', 'four', 'achats', 'vendeurs'] },
     {
       label: 'Ressources humaines', icon: '👥', keys: ['emp'], children: [
         { label: 'Pilotage RH', icon: '📋', keys: ['rhdash', 'rh', 'rhalerts', 'rhr', 'audrh', 'rhme'] },
-        { label: 'Suivi du personnel', icon: '🗓️', keys: ['rhatt', 'rhleaves', 'rhot', 'rhsched', 'rhteams', 'rhcontracts', 'rhdocs', 'rhskills', 'rhtrain', 'rheval', 'rhdisc'] },
+        { label: 'Présence & planning', icon: '🗓️', keys: ['rhatt', 'rhleaves', 'rhot', 'rhsched', 'rhteams'] },
+        { label: 'Compétences & suivi', icon: '🎓', keys: ['rhcontracts', 'rhdocs', 'rhskills', 'rhtrain', 'rheval', 'rhdisc'] },
         { label: 'Paie', icon: '💵', keys: ['rhctl', 'rhperiods', 'rhrules', 'declarations', 'act'] }
       ]
     },
-    { label: 'Finance & rapports', icon: '📈', keys: ['treso', 'dettes', 'profit', 'rapports', 'fin', 'mmcomm', 'finevents', 'reconcile', 'ctrlfin', 'exports', 'archive', 'imports'] },
+    {
+      label: 'Finance & rapports', icon: '📈', keys: [], children: [
+        { label: 'Trésorerie', icon: '💰', keys: ['treso', 'dettes', 'mmcomm', 'finevents'] },
+        { label: 'Résultats', icon: '📊', keys: ['profit', 'fin', 'ctrlfin'] },
+        { label: 'Rapports & données', icon: '🗂️', keys: ['rapports', 'exports', 'archive', 'imports'] }
+      ]
+    },
     { label: 'Comptabilité', icon: '📒', keys: ['compta'] },
-    { label: 'La Fiscalité', icon: '⚖️', keys: ['fiscalhub', 'fiscal', 'fiscalest', 'fiscal2', 'fiscal3', 'fiscaldash', 'fiscaldl', 'fiscalcheck', 'fiscalaudit', 'fiscalrulesview', 'fiscalstorage', 'fiscalscore', 'fiscalactivity', 'fiscalyear'] },
+    {
+      label: 'La Fiscalité', icon: '⚖️', keys: [], children: [
+        { label: 'Accueil & profil', icon: '🏠', keys: ['fiscalhub', 'fiscal', 'fiscalest'] },
+        { label: 'Déclarations & périodes', icon: '🧾', keys: ['fiscal2', 'fiscal3', 'fiscaldash', 'fiscaldl', 'fiscalcheck', 'fiscalstorage'] },
+        { label: 'Audit & score', icon: '🔎', keys: ['fiscalaudit', 'fiscalrulesview', 'fiscalscore', 'fiscalactivity', 'fiscalyear'] }
+      ]
+    },
     { label: 'Communication', icon: '💬', keys: ['msg'] },
-    { label: 'Administration', icon: '🛡️', keys: ['admin', 'stations', 'carte', 'param', 'teamroles', 'roles', 'dashcfg', 'settings_hub', 'rhsettings', 'licence', 'msgroles', 'audit', 'auditx', 'packs'] },
+    {
+      label: 'Administration', icon: '🛡️', keys: [], children: [
+        { label: 'Accès & rôles', icon: '🔐', keys: ['param', 'teamroles', 'roles', 'msgroles', 'packs'] },
+        { label: 'Station & paramètres', icon: '⚙️', keys: ['settings_hub', 'dashcfg', 'rhsettings', 'licence'] },
+        { label: 'Stations & audit', icon: '🏪', keys: ['stations', 'carte', 'admin', 'audit', 'auditx'] }
+      ]
+    },
     { label: 'Mon profil & aide', icon: '🙋', keys: ['moi', 'clients', 'onboard', 'aide'] }
   ];
 
