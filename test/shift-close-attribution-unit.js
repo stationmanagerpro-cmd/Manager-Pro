@@ -25,7 +25,7 @@ function Router() {
   return { stack, get: add('get'), post: add('post'), put: add('put'), patch: add('patch'), delete: add('delete'), use() {} };
 }
 const hooks = { afterClose: [] };
-const stubs = { './employee_actions': { afterClose: async (req, shiftId, number) => { hooks.afterClose.push([shiftId, number]); }, track: async () => {} }, './core': core, './notification_rules': { fireNotificationRules: async () => {} }, './messaging': messaging, '../services/emailService': emailService, express: { Router } };
+const stubs = { './tanks': { tankCloseCheck: async () => ({ mode: 'off', blocking: [], products: [] }) }, './employee_actions': { afterClose: async (req, shiftId, number) => { hooks.afterClose.push([shiftId, number]); }, track: async () => {} }, './core': core, './notification_rules': { fireNotificationRules: async () => {} }, './messaging': messaging, '../services/emailService': emailService, express: { Router } };
 const realLoad = Module._load;
 Module._load = function (request, parent) {
   if (parent && /src[\\/]shifts\.js$/.test(parent.filename) && Object.prototype.hasOwnProperty.call(stubs, request)) return stubs[request];
@@ -69,7 +69,7 @@ pool.query = async (sql, params) => {
   if (/kind = 'produits' GROUP BY p\.method/.test(q)) return { rows: [{ method: 'especes', amount: 5000 }] };
   if (/^SELECT balance FROM cash_registers/.test(q)) return { rows: [{ balance: 65000 }] };   // 20 000 d'ouverture + 45 000 d'espèces déjà encaissées à la saisie
   if (/FROM products p JOIN categories cat/.test(q)) return { rows: [{ id: 10, name: 'Gasoil', cat: 'CARBURANT', qty: 1230 }] };
-  if (/FROM shift_anomalies sa LEFT JOIN employees e ON e\.id = sa\.employee_id WHERE sa\.shift_id = \$1 ORDER BY sa\.id/.test(q)) return { rows: [{ kind: 'autre', description: 'Bidon cassé à la pompe 1', amount: null, employee_id: 1, employee: 'Awa Traoré' }] };
+  if (/FROM shift_anomalies sa LEFT JOIN employees e ON e\.id = sa\.employee_id(?: LEFT JOIN users cu ON cu\.id = sa\.created_by)? WHERE sa\.shift_id = \$1 ORDER BY sa\.id/.test(q)) return { rows: [{ kind: 'autre', description: 'Bidon cassé à la pompe 1', amount: null, employee_id: 1, employee: 'Awa Traoré' }] };
   if (/^INSERT INTO employee_gaps/.test(q)) { DB.gaps.push({ employee_id: params[2], kind: params[3], product_id: params[4], amount: params[5] }); return { rows: [] }; }
   if (/^INSERT INTO shift_anomalies/.test(q)) { DB.anomalies.push({ kind: params[1], description: params[2], amount: params[3], employee_id: params[5] }); return { rows: [] }; }
   if (/^SELECT closed_at FROM shifts/.test(q)) return { rows: [{ closed_at: new Date() }] };
@@ -78,6 +78,8 @@ pool.query = async (sql, params) => {
   if (/^SELECT client_id FROM users/.test(q)) return { rows: [{ client_id: 7 }] };
   if (/^SELECT id, user_id FROM employees WHERE id = ANY/.test(q)) return { rows: DB.team.map(t => ({ id: t.id, user_id: t.user_id })) };
   if (/^SELECT name FROM stations/.test(q)) return { rows: [{ name: 'Station Test' }] };
+  if (/^SELECT pr.id AS product_id/.test(q)) return { rows: [] };
+  if (/^SELECT sa.kind, sa.description, sa.amount, sa.employee_id/.test(q)) return { rows: [] };
   throw new Error('requête inattendue : ' + q.slice(0, 140));
 };
 const shifts = require(path.join(__dirname, '..', 'src', 'shifts.js'));
