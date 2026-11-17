@@ -5,7 +5,7 @@ const docs = fs.readFileSync('src/docs.js', 'utf8');
 const tests = [];
 function check(name, fn) { try { fn(); tests.push({ name, ok: true }); } catch (e) { tests.push({ name, ok: false, error: e.message }); } }
 check('PDF charge uniquement le logo de la station, sans repli sur le logo application', () => {
-  assert.match(docs, /const stationLogo = st\?\.photo_path \? await files\.read\(st\.photo_path\) : null/);
+  assert.match(docs, /const stationLogo = st\?\.photo_path \? await files\.read\(st\.photo_path\)\.catch\(swallow\('docs:logo', null\)\) : null/);
   assert.match(docs, /logo: stationLogo \|\| null/);
   assert.doesNotMatch(docs, /files\.read\(app\.logo_path\)/);
 });

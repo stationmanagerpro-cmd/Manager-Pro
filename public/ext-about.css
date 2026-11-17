@@ -13,8 +13,9 @@
 .ab-hero h2 { margin: 0 0 6px; font-size: clamp(1.5rem, 3.6vw, 2.2rem); color: #fff; letter-spacing: .2px; }
 .ab-tag { margin: 0 0 12px; font-size: 1.08rem; font-weight: 600; color: #cfe0ff; }
 .ab-intro { margin: 0; max-width: 72ch; line-height: 1.6; color: #e6eeff; }
-.ab-edit-btn { background: rgba(255, 255, 255, .16); color: #fff; border: 1px solid rgba(255, 255, 255, .55); }
-.ab-edit-btn:hover { background: rgba(255, 255, 255, .3); }
+/* Boutons du bandeau (fond bleu marine) : texte blanc forcé, y compris pour la variante b2 (fond clair par défaut). */
+.ab-hero .ab-edit-btn, .ab-hero .ab-edit-btn.b2 { background: rgba(255, 255, 255, .16) !important; color: #fff !important; border: 1px solid rgba(255, 255, 255, .55) !important; }
+.ab-hero .ab-edit-btn:hover:not(:disabled), .ab-hero .ab-edit-btn.b2:hover:not(:disabled) { background: rgba(255, 255, 255, .3) !important; }
 
 /* ---- Cartes génériques ---- */
 .ab-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 16px; }

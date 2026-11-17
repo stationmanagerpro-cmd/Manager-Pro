@@ -7,6 +7,10 @@ let passed = 0;
 function check(label, fn) { fn(); passed++; console.log('✓ ' + label); }
 check('public/sw.js est à jour (sinon : npm run build:sw)', () => assert.strictEqual(render(sw).out, sw));
 check('le nom du cache est dérivé d\'une empreinte de build', () => assert.match(sw, /const CACHE = 'smp-static-b[0-9a-f]{10}';/));
+check('sw.js est du JavaScript valide, sans marqueur de conflit Git (un fichier invalide ne s\'installe jamais)', () => {
+  assert.doesNotMatch(sw, /^(<{7} |={7}$|>{7} )/m, 'marqueur de conflit Git dans sw.js');
+  assert.doesNotThrow(() => new (require('vm').Script)(sw), 'sw.js ne se compile pas');
+});
 check('tous les scripts et feuilles de style locaux de index.html sont pré-chargés', () => {
   const html = fs.readFileSync(path.join(__dirname, '../public/index.html'), 'utf8');
   const wanted = [...html.matchAll(/<script\b[^>]*\bsrc="(\/[^"/][^"]*)"/g)].map(m => m[1]).filter(u => !u.startsWith('/api/'));

@@ -21,7 +21,7 @@ ok('bandeau : modifiable seulement dans Paramètres → Apparence', () => {
   assert(/entity === 'banner'\) return req\.user\.perms\.has\('appearance\.manage'\)/.test(a));
 });
 ok('bandeau en haut de la page, au-dessus de l’en-tête', () => assert(/host\.insertBefore\(h, hd\)/.test(r('public/ext-banner.js'))));
-ok('fil d’Ariane cliquable', () => { const j = r('public/ext-skin-pro.js'); assert(/skin-crumb-link/.test(j) && /go\(k\)/.test(j) && /data-go/.test(j)); });
+ok('fil d’Ariane cliquable', () => { const j = r('public/ext-skin-pro.js'); assert(/skin-crumb-link/.test(j) && /go\(k, /.test(j) && /data-go/.test(j)); });
 ok('bandeau sur toutes les pages client', () => { const j = r('public/ext-banner.js'); assert(!/cur === 'dash' && typeof ME/.test(j)); assert(/hero-compact/.test(j)); });
 ok('bandeau aussi chez le Superadmin', () => assert(/var sa = typeof ME/.test(r('public/ext-banner.js'))));
 ok('photo de bandeau du Superadmin (branding)', () => { const b = r('src/branding.js'); assert(/banner: 'app_banner_path'/.test(b) && /pub\.get\('\/banner'/.test(b) && /banner: \{ key: KEYS\.banner/.test(b) && /has_banner/.test(b)); assert(/img\('banner'/.test(r('public/ext-brand-admin.js'))); });
