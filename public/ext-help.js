@@ -65,4 +65,19 @@
       if (typeof go === 'function') go('aide');
     } catch (e) { toast(errMsg(e)); }
   };
+  // Le bouton doit rester présent : si un rendu ultérieur retire la bannière ou son contenu, on le remet en place.
+  function ensureHelpButton() {
+    const right = document.querySelector('#app-header .brandbar-right');
+    if (!right || document.getElementById('help-top-btn')) return;
+    const b = document.createElement('button');
+    b.type = 'button'; b.id = 'help-top-btn'; b.className = 'help-top-btn';
+    b.textContent = "Besoin d'aide ?";
+    b.setAttribute('aria-label', "Besoin d'aide : procédures et vidéos");
+    b.addEventListener('click', () => { if (typeof go === 'function') go('aide'); });
+    right.insertBefore(b, right.firstChild);
+  }
+  let helpTimer = null;
+  function scheduleEnsure() { clearTimeout(helpTimer); helpTimer = setTimeout(ensureHelpButton, 50); }
+  ensureHelpButton();
+  new MutationObserver(scheduleEnsure).observe(document.body, { childList: true, subtree: true });
 })();
