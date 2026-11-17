@@ -30,7 +30,7 @@ check('A6 : un seul tableau (pompe, emplacement, statut, compteur, produit, inde
   assert.match(cf, /correctCounterIndex\(/);
 });
 check('A9 : un seul élément de menu « Alertes », anciens liens redirigés vers les onglets', () => {
-  assert.match(shell, /'periodlock', 'alert'\] \}/); assert(!/'alert', 'alertcfg'/.test(shell));
+  assert.match(shell, /'periodlock', 'alert', 'reconcile'\] \}/); assert(!/'alert', 'alertcfg'/.test(shell));
   for (const t of ['À traiter', 'Configuration', 'Règles de notification', 'Historique']) assert(cf.includes(t), t);
   assert.match(cf, /MAP\[k\]/);
 });
