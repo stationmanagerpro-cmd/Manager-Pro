@@ -17,8 +17,14 @@ r.get('/admin/platform/health', needPrincipal, wrap(async (req, res) => {
   const [clients, act, sh] = await Promise.all([
     pool.query(`SELECT c.id, c.name, c.status AS client_status, ct.status AS contract_status, ct.expires_at, ct.is_indefinite, ct.end_date
                   FROM clients c LEFT JOIN client_contracts ct ON ct.client_id = c.id WHERE c.status <> 'archive' ORDER BY c.name`),
-    pool.query(`SELECT u.client_id, COUNT(DISTINCT uu.day)::int AS active_days FROM user_usage uu JOIN users u ON u.id = uu.user_id
-                 WHERE uu.day >= CURRENT_DATE - $1::int AND u.client_id IS NOT NULL GROUP BY u.client_id`, [days]),
+    // Jours d'activité = jours avec une connexion (user_sessions) OU un temps d'utilisation mesuré (user_usage).
+    pool.query(`SELECT x.client_id, COUNT(DISTINCT x.day)::int AS active_days FROM (
+                   SELECT u.client_id, uu.day FROM user_usage uu JOIN users u ON u.id = uu.user_id
+                    WHERE uu.day >= CURRENT_DATE - $1::int AND u.client_id IS NOT NULL
+                   UNION
+                   SELECT u.client_id, ss.created_at::date AS day FROM user_sessions ss JOIN users u ON u.id = ss.user_id
+                    WHERE ss.created_at >= CURRENT_DATE - $1::int AND u.client_id IS NOT NULL
+                 ) x GROUP BY x.client_id`, [days]),
     pool.query(`SELECT s.client_id,
                        COUNT(*) FILTER (WHERE sh.status IN ('ouvert','ferme'))::int AS opened,
                        COUNT(*) FILTER (WHERE sh.status = 'ferme')::int AS closed,

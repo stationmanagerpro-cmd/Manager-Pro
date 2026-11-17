@@ -30,7 +30,7 @@ function healthScore(i) {
   // Quarts : clôturés / ouverts, pénalité par quart resté ouvert trop longtemps
   let shifts, shiftsKnown = true;
   const opened = Number(i.shiftsOpened) || 0, closed = Number(i.shiftsClosed) || 0, stale = Number(i.staleOpenShifts) || 0;
-  if (opened === 0) { shifts = 0; shiftsKnown = false; reasons.push('aucun quart sur la période'); }
+  if (opened === 0) { shifts = 15; shiftsKnown = false; reasons.push('aucun quart sur la période (composante neutre)'); }
   else { shifts = clamp(closed / opened, 0, 1) * 30 - stale * 5; shifts = clamp(shifts, 0, 30); if (stale) reasons.push(`${stale} quart(s) resté(s) ouvert(s) trop longtemps`); else if (closed / opened < 0.8) reasons.push('quarts non clôturés'); }
   // Écarts de caisse : part des quarts clôturés avec écart (0 % = 20 pts, 50 % et plus = 0)
   let gaps, gapsKnown = closed > 0;

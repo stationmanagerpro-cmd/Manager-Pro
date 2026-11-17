@@ -28,7 +28,7 @@
       '<div class="cards"><div class="card"><small>À risque</small><b>' + d.at_risk + '</b></div><div class="card"><small>À surveiller</small><b>' + d.watch + '</b></div><div class="card"><small>Clients</small><b>' + d.clients.length + '</b></div></div>' +
       T(['Client', 'Score', 'Niveau', 'Activité', 'Quarts', 'Écarts', 'Licence', 'Points d\'attention'], d.clients.map(function (c) {
         var l = lvl[c.level] || [c.level, '#64748b'];
-        return [esc(c.name), '<b style="color:' + l[1] + '">' + c.score + '</b>', '<span class="tag" style="background:' + l[1] + '22;color:' + l[1] + '">' + l[0] + (c.incomplete ? ' (incomplet)' : '') + '</span>', c.parts.activite + '/30', c.parts.quarts + '/30', c.parts.ecarts + '/20', c.parts.licence + '/20', esc(c.reasons.join(' · ') || '—')];
+        return [esc(c.name), '<b style="color:' + l[1] + '">' + c.score + '</b>', '<span class="tag" style="background:' + l[1] + '22;color:' + l[1] + '">' + l[0] + (c.incomplete ? ' (incomplet)' : '') + '</span>', (c.active_days || 0) + ' j sur ' + days + ' · ' + c.parts.activite + '/30 pts', (c.shifts_opened ? (c.shifts_closed || 0) + ' clôturé(s) sur ' + c.shifts_opened : 'aucun quart') + ' · ' + c.parts.quarts + '/30 pts', (c.parts.ecarts) + '/20 pts', c.parts.licence + '/20 pts', esc(c.reasons.join(' · ') || '—')];
       })) +
       '<h3>Relances de licence envoyées (30, 15 et 7 jours)</h3><div class="bar"><button class="b2" onclick="piRunReminders()">Lancer la vérification maintenant</button></div>' +
       T(['Client', 'Échéance', 'Palier', 'Envoyée le', 'Stations notifiées'], rem.map(function (x) { return [esc(x.name), String(x.expires_on).slice(0, 10), x.band + ' j', dt(x.sent_at), x.stations]; }));

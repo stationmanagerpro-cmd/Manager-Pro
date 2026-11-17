@@ -29,6 +29,7 @@ const call = async (key, req = {}) => { let out; await routes[key]({ query: {}, 
     const good = healthScore({ activeDays: 25, windowDays: 30, shiftsOpened: 40, shiftsClosed: 40, staleOpenShifts: 0, gapShifts: 0, license: { status: 'ACTIVE', daysRemaining: 200 } });
     assert.strictEqual(good.score, 100); assert.strictEqual(good.level, 'bon'); assert.strictEqual(good.incomplete, false);
     const bad = healthScore({ activeDays: 0, windowDays: 30, shiftsOpened: 0, shiftsClosed: 0, license: { status: 'EXPIREE' } });
+    assert.strictEqual(bad.parts.quarts, 15, 'sans quart : composante neutre (moitié des points)');
     assert.ok(bad.score < 40 && bad.level === 'a_risque', JSON.stringify(bad)); assert.ok(bad.reasons.some(r => /expirée/.test(r)) && bad.incomplete);
   });
   await check('santé : pénalités (quarts ouverts trop longtemps, écarts fréquents, licence proche) et bornes 0–100', () => {
