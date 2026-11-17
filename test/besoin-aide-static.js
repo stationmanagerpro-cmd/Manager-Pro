@@ -3,8 +3,8 @@
 const fs = require('fs'), assert = require('assert');
 const rd = p => fs.readFileSync(p, 'utf8');
 const idx = rd('public/index.html'), help = rd('public/ext-help.js'), css = rd('public/responsive-v3.css');
-const bar = idx.slice(idx.indexOf('class="brandbar-right"'), idx.indexOf('id="live-clock"'));
-assert(bar.includes('id="help-top-btn"') && bar.includes("go('besoin_aide')"), 'bouton « Besoin d\'aide » dans la bannière (brandbar-right)');
+const bar = idx.slice(idx.indexOf('id="topbar-ctx"'), idx.indexOf('id="ttl"'));
+assert(bar.includes('id="help-top-btn"') && bar.includes("go('besoin_aide')"), 'bouton « Besoin d\'aide » dans la barre du haut (topbar-ctx), visible même quand le bandeau est affiché');
 assert(idx.indexOf('ext-help.js') > idx.indexOf('ext-confort.js') && idx.indexOf('ext-help.js') > 0, 'ext-help.js chargé après app.js et ext-confort.js');
 assert(help.includes("V.besoin_aide = [\"Besoin d'aide\", '*']") && help.includes('VM.besoin_aide') && !/V\.aide\s*=/.test(help), 'vue aide enregistrée');
 assert(help.includes('canView(k)'), 'seuls les modules accessibles sont affichés');

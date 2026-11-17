@@ -69,14 +69,15 @@
   };
   // Le bouton doit rester présent : si un rendu ultérieur retire la bannière ou son contenu, on le remet en place.
   function ensureHelpButton() {
-    const right = document.querySelector('#app-header .brandbar-right');
+    const right = document.getElementById('topbar-ctx');
     if (!right || document.getElementById('help-top-btn')) return;
     const b = document.createElement('button');
-    b.type = 'button'; b.id = 'help-top-btn'; b.className = 'help-top-btn';
+    b.type = 'button'; b.id = 'help-top-btn'; b.className = 'b2 help-top-btn';
     b.textContent = "Besoin d'aide ?";
     b.setAttribute('aria-label', "Besoin d'aide : procédures et vidéos");
     b.addEventListener('click', () => { if (typeof go === 'function') go('besoin_aide'); });
-    right.insertBefore(b, right.firstChild);
+    const nb = document.getElementById('nav-back');
+    right.insertBefore(b, nb && nb.parentNode === right ? nb.nextSibling : right.firstChild);
   }
   let helpTimer = null;
   function scheduleEnsure() { clearTimeout(helpTimer); helpTimer = setTimeout(ensureHelpButton, 50); }

@@ -60,7 +60,7 @@
         { label: 'Stations & audit', icon: '🏪', keys: ['stations', 'carte', 'admin', 'audit', 'auditx'] }
       ]
     },
-    { label: 'Mon profil & aide', icon: '🙋', keys: ['moi', 'clients', 'onboard', 'aide'] }
+    { label: 'Mon profil & aide', icon: '🙋', keys: ['moi', 'clients', 'onboard', 'aide', 'besoin_aide'] }
   ];
 
   // Arbre du Superadmin : uniquement l'administration de la plateforme (aucune rubrique d'exploitation ou de RH de station)
@@ -69,7 +69,7 @@
     { label: 'Clients & licences', icon: 'clients', keys: ['clients', 'packs', 'carte'] },
     { label: 'Finance & rapports', icon: 'finance', keys: ['pfin'] },
     { label: 'Messagerie', icon: 'messagerie', keys: ['msg'] },
-    { label: 'Administration', icon: 'settings', keys: ['roles', 'homeadmin', 'accesskeys'] }
+    { label: 'Administration', icon: 'settings', keys: ['roles', 'homeadmin', 'accesskeys', 'besoin_aide'] }
   ];
   const treeFor = () => (ME && ME.is_global ? SA_TREE : TREE);
   // Dernier onglet du menu, pour tous les comptes (vue enregistrée par ext-about.js ; texte modifiable par le Superadmin).
