@@ -33,10 +33,10 @@ let n = 0;
 async function check(label, fn) { await fn(); n++; console.log('✔ ' + label); }
 
 // ----- Base simulée -----
-const DB = { audits: [], station: { name: 'Station Test', email: 'station@example.com', phone: '+223 70 00 00 00' }, emps: [], closer: null, report: true, shift: true };
+const DB = { audits: [], station: { name: 'Station Test', email: 'station@example.com', phone: '+223 70 00 00 00' }, emps: [], closer: null, report: true, shift: true, perEmployee: true };
 pool.query = async (sql, params) => {
   if (/FROM shifts sh JOIN users u/.test(sql)) return { rows: DB.shift ? [{ id: 5, number: 12, kind: 'jour', opened_at: new Date('2026-10-24T06:00:00Z'), closed_at: new Date('2026-10-24T14:00:00Z'), closed_by: DB.closer ? 9 : null, gap_justification: 'RAS', observations: 'Aucune', manager: 'gerant', closer_login: 'clot' }] : [] };
-  if (/FROM reports WHERE shift_id/.test(sql)) return { rows: DB.report ? [{ content: { fuel_total: 100000, other_sales: { total: 5000, by_method: [] }, fuel_payments: { especes: 60000, mobile_money: 30000, carte: 0, credit: 10000 }, cash: { opening: 0, theoretical: 65000, counted: 64000, gap: -1000 }, counters: [{ pump: 'P1', counter: 'A', product: 'Gasoil', index_start: 10, index_end: 20, liters: 10, unit_price: 700, amount: 7000 }], stock: [], anomalies: [] } }] : [] };
+  if (/FROM reports WHERE shift_id/.test(sql)) return { rows: DB.report ? [{ content: { ...(DB.perEmployee ? { employees: [{ employee_id: 1 }, { employee_id: 2 }, { employee_id: 3 }, { employee_id: 4 }] } : {}), fuel_total: 100000, other_sales: { total: 5000, by_method: [] }, fuel_payments: { especes: 60000, mobile_money: 30000, carte: 0, credit: 10000 }, cash: { opening: 0, theoretical: 65000, counted: 64000, gap: -1000 }, counters: [{ pump: 'P1', counter: 'A', product: 'Gasoil', index_start: 10, index_end: 20, liters: 10, unit_price: 700, amount: 7000 }], stock: [], anomalies: [] } }] : [] };
   if (/AS n FROM shift_employees se JOIN employees e/.test(sql)) return { rows: DB.emps.map(e => ({ n: e.name })) };
   if (/FROM stations WHERE id/.test(sql)) return { rows: [DB.station] };
   if (/FROM employees e\s+WHERE e\.station_id/.test(sql)) { assert(/shift_employees/.test(sql) && /sa\.status = 'valide'/.test(sql), 'employés affectés OU ventes valides'); assert.strictEqual(params[1], 77, 'filtré sur la station courante'); return { rows: DB.emps }; }
@@ -63,7 +63,7 @@ async function call(method, path, { params = { id: '5' }, body = {}, perms = ['s
   }
   return { out, err };
 }
-const reset = () => { sent.length = 0; DB.audits.length = 0; DB.report = true; DB.shift = true; DB.station = { name: 'Station Test', email: 'station@example.com', phone: '+223 70 00 00 00' }; DB.closer = null; DB.emps = []; };
+const reset = () => { sent.length = 0; DB.audits.length = 0; DB.report = true; DB.shift = true; DB.perEmployee = true; DB.station = { name: 'Station Test', email: 'station@example.com', phone: '+223 70 00 00 00' }; DB.closer = null; DB.emps = []; };
 
 (async () => {
   await check('permission requise (403 sans droit)', async () => { reset(); const { err } = await call('post', '/shifts/:id/report-email', { body: { mode: 'employees' }, perms: [] }); assert(err && err.status === 403); });
@@ -72,12 +72,20 @@ const reset = () => { sent.length = 0; DB.audits.length = 0; DB.report = true; D
     reset(); DB.shift = false; let r = await call('post', '/shifts/:id/report-email', { body: { mode: 'employees' } }); assert.strictEqual(r.err.status, 404);
     reset(); DB.report = false; r = await call('post', '/shifts/:id/report-email', { body: { mode: 'employees' } }); assert.strictEqual(r.err.status, 409);
   });
+  await check('rapport ancien (avant la séparation par employé) : refus 409 si plusieurs employés, rien d’envoyé', async () => {
+    reset(); DB.perEmployee = false; DB.emps = [{ id: 1, name: 'Awa Traoré', email: 'awa@example.com', phone: '' }, { id: 2, name: 'Bako', email: 'bako@example.com', phone: '' }];
+    const { err } = await call('post', '/shifts/:id/report-email', { body: { mode: 'employees' } });
+    assert(err && err.status === 409 && /avant la séparation par employé|clôturé avant/.test(err.message), 'refus attendu');
+    assert.strictEqual(sent.length, 0, 'aucun envoi');
+  });
   await check('e-mail aux employés : adresses individuelles, dédoublonnées, invalides ignorées, PDF joint, un e-mail par personne', async () => {
     reset(); DB.emps = [{ id: 1, name: 'Awa Traoré', email: 'Awa@Example.com', phone: '' }, { id: 2, name: 'Doublon', email: 'awa@example.com', phone: '' }, { id: 3, name: 'Sans', email: 'pas-un-mail', phone: '' }, { id: 4, name: 'Bako', email: 'bako@example.com', phone: '' }];
     const { out, err } = await call('post', '/shifts/:id/report-email', { body: { mode: 'employees' } });
     assert(!err, err && err.message); assert.deepStrictEqual(out.json.sent_to, ['awa@example.com', 'bako@example.com']); assert.strictEqual(out.json.fallback_company, false);
     assert.strictEqual(sent.length, 2); assert(sent.every(m => typeof m.to === 'string' && !m.to.includes(',')));
-    const a = sent[0].attachments[0]; assert.strictEqual(a.contentType, 'application/pdf'); assert.strictEqual(a.filename, 'quart-12.pdf'); assert(Buffer.isBuffer(a.content) && a.content.toString().startsWith('%PDF'));
+    // Rapport récent : un PDF personnel par employé (jamais le rapport complet de la station)
+    const a = sent[0].attachments[0]; assert.strictEqual(a.contentType, 'application/pdf'); assert.strictEqual(a.filename, 'quart-12-employe-1.pdf'); assert(Buffer.isBuffer(a.content) && a.content.toString().startsWith('%PDF'));
+    assert.strictEqual(sent[1].attachments[0].filename, 'quart-12-employe-4.pdf', 'PDF personnel distinct pour chaque employé');
     assert.strictEqual(DB.audits.length, 1, 'envoi inscrit dans le journal d’audit'); assert(/Envoi e-mail du rapport de quart 000012/.test(DB.audits[0][3]));
   });
   await check('repli e-mail entreprise seulement si aucune adresse individuelle', async () => {
@@ -116,7 +124,7 @@ const reset = () => { sent.length = 0; DB.audits.length = 0; DB.report = true; D
   });
   await check('message WhatsApp : dates, carburant, autres ventes, compteurs, paiements, caisse, observations, justification', async () => {
     reset(); const { out } = await call('get', '/shifts/:id/report-contacts'); const m = out.json.message;
-    for (const k of [/Rapport de quart 000012/, /Ouverture :/, /Fermeture :/, /Carburant \(compteurs\)/, /Autres produits/, /P1 \/ A \(Gasoil\)/, /Espèces/, /Mobile money/, /Théorique/, /Comptée/, /Écart/, /Justification des écarts : RAS/, /Observations : Aucune/]) assert(k.test(m), 'manque ' + k);
+    for (const k of [/Rapport N° : 000012/, /Ouverture :/, /Fermeture :/, /Ventes carburant \(compteurs\)/, /Autres produits/, /P1 \/ Cpt A – Gasoil/, /Espèces/, /Mobile Money/, /Crédit/, /Écart constaté/, /Justification des écarts : RAS/, /Observations du responsable : Aucune/]) assert(k.test(m), 'manque ' + k);
   });
-  console.log(`\n${n}/11 contrôles réussis.`); process.exit(0);
+  console.log(`\n${n}/12 contrôles réussis.`); process.exit(0);
 })().catch(e => { console.error('✘', e); process.exit(1); });
