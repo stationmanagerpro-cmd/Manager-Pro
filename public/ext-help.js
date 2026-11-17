@@ -8,7 +8,6 @@
 
   // Clé propre : « aide » désigne déjà le manuel (ext-aide-demo.js), qui écraserait cette vue.
   V.besoin_aide = ["Besoin d'aide", '*'];
-  SUPERADMIN_VIEWS.add('besoin_aide');
 
   const isHttps = u => /^https:\/\/\S+$/.test(String(u || ''));
 
@@ -33,7 +32,7 @@
     try { data = await G('/help-guides'); } catch (e) { /* contenu indisponible : cartes vides, sans erreur bloquante */ }
     const byKey = Object.fromEntries((data.guides || []).map(g => [g.module_key, g]));
     const cards = HELP_MODULES
-      .filter(k => V[k] && (typeof canView === 'function' ? canView(k) : true))
+      .filter(k => V[k] && (!!(ME && ME.is_global) || canView(k)))
       .map(k => card(k, byKey[k], !!data.is_superadmin))
       .join('');
     return `<section class="help-page">
@@ -67,20 +66,4 @@
       if (typeof go === 'function') go('besoin_aide');
     } catch (e) { toast(errMsg(e)); }
   };
-  // Le bouton doit rester présent : si un rendu ultérieur retire la bannière ou son contenu, on le remet en place.
-  function ensureHelpButton() {
-    const right = document.getElementById('topbar-ctx');
-    if (!right || document.getElementById('help-top-btn')) return;
-    const b = document.createElement('button');
-    b.type = 'button'; b.id = 'help-top-btn'; b.className = 'b2 help-top-btn';
-    b.textContent = "Besoin d'aide ?";
-    b.setAttribute('aria-label', "Besoin d'aide : procédures et vidéos");
-    b.addEventListener('click', () => { if (typeof go === 'function') go('besoin_aide'); });
-    const nb = document.getElementById('nav-back');
-    right.insertBefore(b, nb && nb.parentNode === right ? nb.nextSibling : right.firstChild);
-  }
-  let helpTimer = null;
-  function scheduleEnsure() { clearTimeout(helpTimer); helpTimer = setTimeout(ensureHelpButton, 50); }
-  ensureHelpButton();
-  new MutationObserver(scheduleEnsure).observe(document.body, { childList: true, subtree: true });
 })();

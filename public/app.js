@@ -361,6 +361,8 @@ const canTouchUser = u => !!ME && (ME.is_global || u.role !== 'ADMIN' || ME.role
 const canView = k => {
   const v = V[k];
   if (!v) return false;
+  // Besoin d'aide : accessible à tout compte connecté (clients et superadmin). Ne pas l'ajouter à SUPERADMIN_VIEWS, qui est aussi GLOBAL_ONLY_VIEWS.
+  if (k === 'besoin_aide') return true;
   // « Abonnement » : réservé à l'administrateur local du compte client (le Superadmin garde sa configuration des paiements).
   if (k === 'subscription' && !ME?.is_global) return ME?.role === 'ADMIN';
   if (ME?.is_global) {

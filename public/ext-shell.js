@@ -69,7 +69,8 @@
     { label: 'Clients & licences', icon: 'clients', keys: ['clients', 'packs', 'carte'] },
     { label: 'Finance & rapports', icon: 'finance', keys: ['pfin'] },
     { label: 'Messagerie', icon: 'messagerie', keys: ['msg'] },
-    { label: 'Administration', icon: 'settings', keys: ['roles', 'homeadmin', 'accesskeys', 'besoin_aide'] }
+    { label: 'Administration', icon: 'settings', keys: ['roles', 'homeadmin', 'accesskeys'] },
+    { label: 'Mon profil & aide', icon: 'settings', keys: ['besoin_aide'] }
   ];
   const treeFor = () => (ME && ME.is_global ? SA_TREE : TREE);
   // Dernier onglet du menu, pour tous les comptes (vue enregistrée par ext-about.js ; texte modifiable par le Superadmin).
