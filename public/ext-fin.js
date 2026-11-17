@@ -87,7 +87,10 @@ const SEC_FN = {
     const accs = await G('/money/accounts').catch(() => []);
     const recent = await G('/money/recent?limit=15').catch(() => ({ statements: [], deposits: [], transfers: [], movements: [] }));
     const m = SET.payment_methods || [];
-    const opts = a => `<option value="">Aucun (non suivi)</option>${accs.map(x => `<option value="${x.id}" ${x.id == a ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}`;
+    // Seuls les comptes actifs de la nature compatible avec le moyen (banque/carte → bancaire, mobile money → mobile money).
+    // Le compte déjà rattaché reste visible même s'il ne correspond plus, pour ne jamais changer la valeur affichée en silence.
+    const compatible = (x, kind) => x.active && (kind === 'mobile_money' ? x.kind === 'mobile_money' : kind === 'autre' ? true : x.kind === 'banque');
+    const opts = (a, kind) => `<option value="">Aucun (non suivi)</option>${accs.filter(x => compatible(x, kind) || x.id == a).map(x => `<option value="${x.id}" ${x.id == a ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}`;
     const empty = msg => `<p style="color:var(--m);font-size:13px;margin:6px 0">${esc(msg)}</p>`;
     const stmts = (recent.statements || []).length
       ? T(['Date relevé', 'Compte', 'Solde relevé', 'Note', 'Saisi le'], recent.statements.map(x => [
@@ -111,7 +114,7 @@ const SEC_FN = {
           x.moved_on, esc(x.account_name), esc(x.kind), f(x.amount), esc(x.label || '')
         ]))
       : empty('Aucun mouvement sur les comptes.');
-    return `<h2 style="margin-top:0">Finances</h2><h3>Moyens de paiement</h3>` + T(['Code', 'Libellé', 'Nature', 'Compte rattaché', 'Actif'], m.map(x => [esc(x.code), esc(x.label), x.kind, ['banque', 'mobile_money', 'carte', 'autre'].includes(x.kind) ? `<select onchange="mapMethod('${x.code}',this.value)">${opts(x.account_id)}</select>` : '-', x.code == 'especes' ? 'oui' : `<input type="checkbox" ${x.active ? 'checked' : ''} onchange="actMethod('${x.code}',this.checked)">`])) + `<div class="bar"><button class="b2" onclick="newMethod()">Ajouter un moyen de paiement</button></div>
+    return `<h2 style="margin-top:0">Finances</h2><h3>Moyens de paiement</h3>` + T(['Code', 'Libellé', 'Nature', 'Compte rattaché', 'Actif'], m.map(x => [esc(x.code), esc(x.label), x.kind, ['banque', 'mobile_money', 'carte', 'autre'].includes(x.kind) ? `<select onchange="mapMethod('${x.code}',this.value)">${opts(x.account_id, x.kind)}</select>` : '-', x.code == 'especes' ? 'oui' : `<input type="checkbox" ${x.active ? 'checked' : ''} onchange="actMethod('${x.code}',this.checked)">`])) + `<div class="bar"><button class="b2" onclick="newMethod()">Ajouter un moyen de paiement</button></div>
       <h3>Comptes bancaires et Mobile Money</h3>` + T(['Compte', 'Nature', 'Fournisseur / réf.', 'Solde théorique'], accs.map(a => [esc(a.name), a.kind, esc(a.provider || a.account_ref || ''), f(a.balance)])) + `<div class="bar">${can('money.manage') ? `<button onclick="newAcc()">Nouveau compte</button><button class="b2" onclick="newMove()">Mouvement</button><button class="b2" onclick="newDeposit()">Remise en banque depuis la caisse</button><button class="b2" onclick="newTransfer()">Transfert entre comptes</button><button class="b2" onclick="newStmt()">Saisir un relevé</button>` : ''}</div>
       <h4 style="margin:18px 0 6px">Derniers relevés (rapprochement)</h4>${stmts}
       <h4 style="margin:18px 0 6px">Remises en banque (sortie de caisse)</h4>${deps}

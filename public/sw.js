@@ -5,7 +5,7 @@
  */
 <<<<<<< HEAD
 <<<<<<< HEAD
-const CACHE = 'smp-static-b4abd0e2f4b';
+const CACHE = 'smp-static-bb8d5695baa';
 =======
 const CACHE = 'smp-static-b3c9ef34e6c';
 >>>>>>> 7fb82f1 (Menu compte client : regroupement en sous-rubriques, reconcile sans doublon)
