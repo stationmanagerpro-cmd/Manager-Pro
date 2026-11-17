@@ -756,3 +756,12 @@ body.demo-on #app-header { top: 44px; }
   .bar:has(> button[onclick*="impStart"]) > .q, .bar:has(> button[onclick*="impStart"]) > input.q { flex: 1 1 120px; min-width: 80px; }
   .bar:has(> button[onclick*="impStart"]) > button { flex: 0 1 auto; min-width: 0; white-space: nowrap; font-size: clamp(10px, 1.05vw, 14px); padding: clamp(5px, .55vw, 9px) clamp(6px, .85vw, 14px); overflow: hidden; text-overflow: ellipsis; }
 }
+
+/* Besoin d'aide : bouton de la bannière et cartes par module */
+#app-header .help-top-btn { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.55); border-radius: 999px; padding: 4px 12px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+#app-header .help-top-btn:hover, #app-header .help-top-btn:focus-visible { background: rgba(255,255,255,.16); }
+.help-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 12px; margin-top: 12px; }
+.help-card { border: 1px solid var(--line, #dde3ee); border-radius: 12px; padding: 14px; background: var(--card, #fff); display: flex; flex-direction: column; gap: 8px; }
+.help-card h3 { margin: 0; font-size: 15px; }
+.help-card p { margin: 0; font-size: 13px; }
+.help-video:disabled { opacity: .55; cursor: not-allowed; }
