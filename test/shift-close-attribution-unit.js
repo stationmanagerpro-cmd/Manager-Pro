@@ -69,7 +69,7 @@ pool.query = async (sql, params) => {
   if (/kind = 'produits' GROUP BY p\.method/.test(q)) return { rows: [{ method: 'especes', amount: 5000 }] };
   if (/^SELECT balance FROM cash_registers/.test(q)) return { rows: [{ balance: 65000 }] };   // 20 000 d'ouverture + 45 000 d'espèces déjà encaissées à la saisie
   if (/FROM products p JOIN categories cat/.test(q)) return { rows: [{ id: 10, name: 'Gasoil', cat: 'CARBURANT', qty: 1230 }] };
-  if (/FROM shift_anomalies sa LEFT JOIN employees e ON e\.id = sa\.employee_id WHERE sa\.shift_id = \$1 ORDER BY sa\.id/.test(q)) return { rows: [{ kind: 'autre', description: 'Bidon cassé à la pompe 1', amount: null, employee_id: 1, employee: 'Awa Traoré' }] };
+  if (/FROM shift_anomalies sa LEFT JOIN employees e ON e\.id = sa\.employee_id .*WHERE sa\.shift_id = \$1 ORDER BY sa\.id/.test(q)) return { rows: [{ kind: 'autre', description: 'Bidon cassé à la pompe 1', amount: null, employee_id: 1, employee: 'Awa Traoré' }] };
   if (/^INSERT INTO employee_gaps/.test(q)) { DB.gaps.push({ employee_id: params[2], kind: params[3], product_id: params[4], amount: params[5] }); return { rows: [] }; }
   if (/^INSERT INTO shift_anomalies/.test(q)) { DB.anomalies.push({ kind: params[1], description: params[2], amount: params[3], employee_id: params[5] }); return { rows: [] }; }
   if (/^SELECT closed_at FROM shifts/.test(q)) return { rows: [{ closed_at: new Date() }] };
@@ -80,6 +80,8 @@ pool.query = async (sql, params) => {
   if (/^SELECT name FROM stations/.test(q)) return { rows: [{ name: 'Station Test' }] };
   if (/^SELECT pr.id AS product_id/.test(q)) return { rows: [] };
   if (/^SELECT sa.kind, sa.description, sa.amount, sa.employee_id/.test(q)) return { rows: [] };
+  if (/^SELECT DISTINCT ON \(m.counter_id\)/.test(q)) return { rows: [] };
+  if (/^SELECT m.counter_id, m.index_start, pu.name AS pump/.test(q)) return { rows: [] };
   throw new Error('requête inattendue : ' + q.slice(0, 140));
 };
 const shifts = require(path.join(__dirname, '..', 'src', 'shifts.js'));
@@ -109,8 +111,13 @@ const CLOSINGS = [
     reset(); const { out, err } = await close({ ...BASE, counted_cash: 173500, employee_closings: CLOSINGS });
     assert(!err, err && (err.stack || err.message));
     const cash = DB.gaps.filter(g => g.kind === 'caisse');
-    assert.deepStrictEqual(cash.map(g => [g.employee_id, g.amount]), [[2, -2500]], 'un seul écart de caisse, sur Moussa');
-    assert.strictEqual(out.json.report.cash.gap, -2500); assert.strictEqual(out.json.report.shared, true);
+    // Écart individuel de Moussa + résiduel non attribué (sans employé) : le résiduel est affiché et calculé, jamais imputé
+    assert.deepStrictEqual(cash.map(g => [g.employee_id, g.amount]), [[2, -2500], [null, -10000]], 'écart de Moussa + résiduel non attribué');
+    // Écart global = somme des écarts individuels + résiduel non attribué (aucun écart inventé)
+    assert.strictEqual(out.json.report.cash.gap, -12500); assert.strictEqual(out.json.report.unassigned.cash_gap, -10000);
+    assert.strictEqual(out.json.report.shared, true);
+    assert.strictEqual(out.json.report.tank_check.dip_verified, false, 'sans jaugeage, les écarts ne sont pas vérifiés');
+    assert.ok(out.json.report.employees.every(e => e.gap_verified_by_dip === false), 'chaque employé porte le drapeau de vérification');
   });
   await check('écart de stock réparti selon les litres de chaque employé (somme = écart du quart)', async () => {
     const st = DB.gaps.filter(g => g.kind === 'stock');
@@ -131,7 +138,7 @@ const CLOSINGS = [
     assert.strictEqual(by[1].fuel_amount, 105000); assert.strictEqual(by[2].fuel_amount, 56000);
     assert.strictEqual(by[2].expected_cash, 46000); assert.strictEqual(by[2].counted_cash, 43500); assert.strictEqual(by[2].cash_gap, -2500);
     assert.strictEqual(by[1].cash_gap, 0); assert.strictEqual(by[3].cash_gap, 0);
-    assert.strictEqual(r.unassigned.cash_gap, 0);
+    assert.strictEqual(r.unassigned.cash_gap, -10000, 'résiduel non attribué : affiché, jamais imputé à un employé');
     assert(r.anomalies.some(a => a.employee === 'Awa Traoré' && /Bidon cassé/.test(a.description)), 'anomalie déclarée avec son employé');
     assert(Math.abs(by[1].stock_gaps[0].amount + 5.87) < 0.0015);
   });
@@ -142,7 +149,8 @@ const CLOSINGS = [
   await check('part non attribuable : si les espèces remises ne couvrent pas le comptage de la caisse, le reste n\'est mis sur personne', async () => {
     reset(); const { err } = await close({ ...BASE, counted_cash: 172000, employee_closings: CLOSINGS });   // caisse 1 500 de moins que ce que les employés disent avoir remis
     assert(!err, err && err.message);
-    assert.deepStrictEqual(DB.gaps.filter(g => g.kind === 'caisse').map(g => [g.employee_id, g.amount]), [[2, -2500], [null, -1500]]);
+    // Résiduel de base −10 000 (fixture) + baisse de 1 500 de la caisse comptée : affiché et calculé, jamais imputé
+    assert.deepStrictEqual(DB.gaps.filter(g => g.kind === 'caisse').map(g => [g.employee_id, g.amount]), [[2, -2500], [null, -11500]]);
   });
   await check('clôture refusée tant qu\'un employé du quart n\'a pas remis sa situation', async () => {
     reset(); const { err } = await close({ ...BASE, counted_cash: 173500, employee_closings: CLOSINGS.slice(0, 2) });

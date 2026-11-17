@@ -657,14 +657,30 @@ r.post('/:id/close', need('shift.close'), body(closeSchema), wrap(async (req, re
         employees: employeesReport, unassigned, shared: multi,
         attribution_check: { checked_sales: attrCheck.checked, mismatches: 0 },
       };
-      // Contrôle de cuve (réglage station « tank_close_block », désactivé par défaut) : écart critique/à surveiller sans justification = clôture refusée.
+      // Rapprochement par jaugeage : TOUJOURS calculé (rapport, écarts individuels « vérifiés par jaugeage », alerte).
+      // Il ne BLOQUE la clôture que si le réglage station « tank_close_block » est activé (défaut : off).
+      const tankSetting = await setting(c, req.sid, 'tank_close_block', 'off');
       const tankCheck = await require('./tanks').tankCloseCheck(c, req.sid, {
-        from: s.opened_at, to: resolvedClosedAt || new Date(), mode: await setting(c, req.sid, 'tank_close_block', 'off'),
+        from: s.opened_at, to: resolvedClosedAt || new Date(), mode: tankSetting === 'off' ? 'warning' : tankSetting,
         pumpedByProduct: Object.fromEntries(Object.entries(fuel).map(([pid, o]) => [pid, o.liters])) });
-      if (tankCheck.mode !== 'off') report.tank_check = { mode: tankCheck.mode, tolerance_pct: tankCheck.tolerance_pct, products: tankCheck.products.filter(p => p.status === 'calcule') };
+      const tankBlocking = tankSetting === 'off' ? [] : tankCheck.blocking;
+      // Vérifié par jaugeage : chaque produit carburant vendu a une réconciliation calculée et dans la tolérance
+      const dipVerified = Object.entries(fuel).filter(([, o]) => o.liters > 0).every(([pid]) =>
+        tankCheck.products.some(p => Number(p.product_id) === Number(pid) && p.status === 'calcule' && p.level === 'ok'));
+      report.tank_check = { mode: tankSetting, tolerance_pct: tankCheck.tolerance_pct, products: tankCheck.products, dip_verified: dipVerified };
+      report.employees = report.employees.map(e => ({ ...e, gap_verified_by_dip: dipVerified }));
+      // Continuité des index : index de départ de ce quart = index de fin du quart précédent, par compteur (contrôle, sans blocage)
+      const prevIdx = await neighbourIndexes(c, req.sid, new Date(s.opened_at), s.id);
+      const { rows: startRows } = await c.query(
+        `SELECT m.counter_id, m.index_start, pu.name AS pump, pc.counter_number FROM meter_readings m
+           JOIN pump_counters pc ON pc.id = m.counter_id JOIN pumps pu ON pu.id = m.pump_id WHERE m.shift_id = $1`, [s.id]);
+      report.counter_continuity = startRows.filter(x => prevIdx.prevEnd[x.counter_id] != null
+          && Math.abs(Number(x.index_start) - prevIdx.prevEnd[x.counter_id]) > 0.0005)
+        .map(x => ({ counter_id: x.counter_id, label: `${x.pump} compteur ${x.counter_number}`, expected: prevIdx.prevEnd[x.counter_id],
+          index_start: Number(x.index_start), diff: f3(Number(x.index_start) - prevIdx.prevEnd[x.counter_id]) }));
       if (req.query.preview) throw new Preview(report); // annule tout : simple aperçu
-      if (tankCheck.blocking.length && !String(b.justification || '').trim())
-        throw new HttpError(422, 'Justification obligatoire : écart de cuve ' + tankCheck.blocking.map(p => `${p.product_name} (${p.variance > 0 ? '+' : ''}${p.variance} L, tolérance ${p.tolerance} L)`).join(', '), tankCheck.blocking);
+      if (tankBlocking.length && !String(b.justification || '').trim())
+        throw new HttpError(422, 'Justification obligatoire : écart de cuve ' + tankBlocking.map(p => `${p.product_name} (${p.variance > 0 ? '+' : ''}${p.variance} L, tolérance ${p.tolerance} L)`).join(', '), tankBlocking);
 
       if (an.length && !b.justification.trim())
         throw new HttpError(422, 'Justification obligatoire : des anomalies ont été détectées', anomalies);
@@ -728,6 +744,27 @@ r.post('/:id/close', need('shift.close'), body(closeSchema), wrap(async (req, re
           });
         }
       } catch (alertError) { console.warn('[alertes] Impossible de notifier l’écart de clôture:', alertError.message); }
+    }
+    // Alertes de rapprochement (types configurables dans Alertes) : cuve non vérifiée par jaugeage, continuité des index
+    if (report && (report.tank_check?.dip_verified === false || report.counter_continuity?.length)) {
+      try {
+        const { rows: [actorRow] } = await pool.query('SELECT client_id FROM users WHERE id = $1', [req.user.id]);
+        if (actorRow?.client_id) {
+          const stationLabel = `quart ${report.shift?.number ?? ''}`;
+          if (report.tank_check?.dip_verified === false) {
+            const bad = report.tank_check.products.filter(p => p.status !== 'calcule' || p.level !== 'ok')
+              .map(p => p.status === 'calcule' ? `${p.product_name} (${p.variance > 0 ? '+' : ''}${p.variance} L)` : `${p.product_name} (jauge manquante)`);
+            await sendSystemAlert({ clientId: actorRow.client_id, actorUserId: req.user.id, kind: 'tank_variance', refTable: 'shifts', refId: report.shift?.id || null, stationId: req.sid,
+              body: `Écarts individuels non vérifiés par jaugeage à la clôture du ${stationLabel} : ${bad.join(', ') || 'aucun produit réconcilié'}.` });
+          }
+          if (report.counter_continuity?.length) {
+            const worst = report.counter_continuity.reduce((a, x) => (Math.abs(x.diff) > Math.abs(a.diff) ? x : a));
+            await sendSystemAlert({ clientId: actorRow.client_id, actorUserId: req.user.id, kind: 'counter_anomaly', refTable: 'shifts', refId: report.shift?.id || null, stationId: req.sid,
+              body: `Index de départ différent de l'index de fin du quart précédent à la clôture du ${stationLabel} : ${report.counter_continuity.map(x => `${x.label} (${x.diff > 0 ? '+' : ''}${x.diff} L)`).join(', ')}.`,
+              metricValue: Math.abs(worst.diff), metricUnit: 'litres' });
+          }
+        }
+      } catch (alertError) { console.warn('[alertes] rapprochement de clôture :', alertError.message); }
     }
     // Écarts et anomalies de chaque employé : historique de son profil + message dans SA messagerie (jamais ceux d'un collègue)
     if (report) await require('./employee_actions').afterClose(req, report.shift.id, report.shift.number);
