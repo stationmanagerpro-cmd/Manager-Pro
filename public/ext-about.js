@@ -234,7 +234,7 @@
     if (content.solutions.some(s => !s.name.trim())) return toast('Chaque solution doit avoir un nom', 'error');
     if (content.approach.commitments.some(k => !k.title.trim())) return toast('Chaque engagement doit avoir un titre', 'error');
     for (const [v, l] of [[content.downloads.android_url, 'Android'], [content.downloads.ios_url, 'App Store']]) {
-      if (v && !/^https:\/\/[^\s]+$/i.test(v) && !/^\/telechargements\/[A-Za-z0-9._-]+$/.test(v)) return toast('Lien ' + l + ' : l’adresse doit commencer par https://', 'error');
+      if (v && !/^https:\/\/[^\s]+$/i.test(v) && !/^\/downloads\/[A-Za-z0-9._-]+$/.test(v)) return toast('Lien ' + l + ' : l’adresse doit commencer par https://', 'error');
     }
     try {
       await api('PUT', '/admin/about', { content });
