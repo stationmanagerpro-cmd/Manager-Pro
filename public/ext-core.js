@@ -8,7 +8,10 @@ const pmAccOpts = (excl = ['credit']) => (AP.payment_methods || [])
   .filter(m => !excl.includes(m.kind) && (m.kind === 'especes' || (m.account_id && m.account_active)))
   .map(m => [m.code, m.kind === 'especes' ? m.label + ' — Caisse' : m.label + ' — ' + (m.account_name || 'Compte #' + m.account_id)]);
 async function refreshPmAccounts() { try { const a = await G('/appearance'); if (a && Array.isArray(a.payment_methods)) AP.payment_methods = a.payment_methods; } catch (_) { /* on garde la liste en mémoire */ } }
-const pmOpts = (excl = []) => (AP.payment_methods.length ? AP.payment_methods : [{ code: 'especes', label: 'Espèces', kind: 'especes' }]).filter(m => !excl.includes(m.kind)).map(m => [m.code, m.label]);
+// Liste commune à tous les écrans où l'on choisit un mode de paiement : seuls les moyens liés à un compte ACTIF (ou la caisse) sont proposés.
+const pmOpts = (excl = []) => (AP.payment_methods.length ? AP.payment_methods : [{ code: 'especes', label: 'Espèces', kind: 'especes' }])
+  .filter(m => !excl.includes(m.kind) && (m.kind === 'especes' || (m.account_id && m.account_active)))
+  .map(m => [m.code, m.kind === 'especes' ? m.label + ' — Caisse' : m.label + ' — ' + (m.account_name || 'Compte #' + m.account_id)]);
 const monthNow = () => new Date().toISOString().slice(0, 7), dayNow = () => new Date().toISOString().slice(0, 10), monthFirst = () => monthNow() + '-01';
 const fmtN = v => typeof v == 'number' ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 3 }).format(v) : esc(v ?? '');
 const kvh = rows => `<div class="kv">${rows.map(([k, v]) => `<span>${k}</span><b>${v ?? ''}</b>`).join('')}</div>`;
