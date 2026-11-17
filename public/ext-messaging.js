@@ -8,7 +8,28 @@
   V.msg = ['Messagerie', '*'];
   // Permission affichage : tout utilisateur authentifié non-global ; le backend enforce le contrat
 
-  const state = { presence: {}, conversations: [], current: null, status: null, users: [], alertConfig: null, systemAlerts: [], pendingFiles: [] };
+  const state = { presence: {}, conversations: [], current: null, status: null, users: [], alertConfig: null, systemAlerts: [], pendingFiles: [], selecting: false, selected: new Set() };
+
+  /* Styles propres à la messagerie (miniatures photo, sélection de discussions, visionneuse) */
+  function ensureMsgStyle() {
+    if (document.getElementById('msg-ext-style')) return;
+    const s = document.createElement('style');
+    s.id = 'msg-ext-style';
+    s.textContent = `
+.msg-photo{display:inline-block;cursor:zoom-in;border-radius:10px;overflow:hidden;max-width:min(100%,260px);margin:4px 0;vertical-align:top}
+.msg-photo img{display:block;max-width:100%;max-height:240px;width:auto;height:auto;border-radius:10px}
+.msg-photo-ph{display:inline-block;padding:8px 10px;font-size:12px;opacity:.7;border:1px dashed currentColor;border-radius:10px}
+.msg-lightbox{position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.85);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:12px}
+.msg-lightbox img{max-width:100%;max-height:80vh;object-fit:contain;border-radius:6px}
+.msg-lb-bar{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+.wa-bulk{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid rgba(127,127,127,.25)}
+.wa-bulk span{flex:1 1 auto;font-size:13px}
+.wa-sel{width:18px;height:18px;margin:0 8px 0 0;flex:0 0 auto;align-self:center;accent-color:#2563eb;pointer-events:none}
+.wa-row-sel{background:rgba(37,99,235,.08)}
+.wa-selecting .wa-row{cursor:pointer}`;
+    document.head.appendChild(s);
+  }
+  ensureMsgStyle();
 
   function featureBox(feat) {
     if (!feat || feat.enabled) return '';
@@ -130,6 +151,79 @@
     }
   }
 
+  /* ===== Photos envoyées en pièce jointe : miniature chargée avec le jeton (blob), agrandie au clic =====
+     Seules les images (JPEG, PNG, GIF, WebP) sont affichées en ligne ; les autres fichiers gardent le bouton de téléchargement. */
+  const attUrls = new Map();     // id de pièce jointe -> URL blob (révoquée au changement de discussion)
+  const attPending = new Map();  // id -> Promise<URL blob | null>
+  const attFailed = new Set();   // ids dont le chargement a échoué (repli : téléchargement)
+  let attGen = 0;
+  function isImageAtt(a) { return /^image\/(jpeg|png|gif|webp)$/i.test(String(a && a.mime_type || '')); }
+  function attUrl(id, mime) {
+    id = Number(id);
+    if (attPending.has(id)) return attPending.get(id);
+    const gen = attGen;
+    const p = (async () => {
+      try {
+        const headers = { Authorization: 'Bearer ' + TK };
+        if (typeof SID !== 'undefined' && SID) headers['X-Station-Id'] = String(SID);
+        const r = await fetch('/api/messaging/attachments/' + encodeURIComponent(id) + '/download', { headers, cache: 'no-store' });
+        if (!r.ok) { attFailed.add(id); return null; }
+        const blob = new Blob([await r.blob()], { type: String(mime || 'image/jpeg') });
+        if (gen !== attGen) return null;   // discussion changée pendant le chargement : pas d'URL orpheline
+        const url = URL.createObjectURL(blob);
+        attUrls.set(id, url);
+        return url;
+      } catch (_) { attFailed.add(id); return null; }
+    })();
+    attPending.set(id, p);
+    return p;
+  }
+  function releaseAttachmentUrls() {
+    attGen++;
+    for (const url of attUrls.values()) { try { URL.revokeObjectURL(url); } catch (_) { /* déjà libérée */ } }
+    attUrls.clear();
+    attPending.clear();
+    attFailed.clear();
+  }
+  async function hydrateAttachments() {
+    const els = document.querySelectorAll('[data-aid]:not([data-ah])');
+    for (const el of els) {
+      el.dataset.ah = '1';
+      const id = Number(el.dataset.aid);
+      const url = await attUrl(id, el.dataset.amime);
+      if (!el.isConnected) continue;
+      el.innerHTML = url
+        ? `<img src="${url}" alt="${esc(el.dataset.afn || 'Photo')}" loading="lazy">`
+        : `<span class="msg-photo-ph">🖼 Photo indisponible · toucher pour télécharger</span>`;
+    }
+  }
+  window.msgPhotoOpen = function (el) {
+    const id = Number(el && el.dataset && el.dataset.aid);
+    const name = (el && el.dataset && el.dataset.afn) || 'Photo';
+    const url = attUrls.get(id);
+    if (!url) {
+      if (attFailed.has(id)) return window.msgDownloadAttachment(id, name);
+      toast('Photo en cours de chargement…');
+      return;
+    }
+    document.getElementById('msg-lightbox')?.remove();
+    const box = document.createElement('div');
+    box.id = 'msg-lightbox';
+    box.className = 'msg-lightbox';
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-label', name);
+    box.innerHTML = `<img src="${url}" alt="${esc(name)}"><div class="msg-lb-bar"><button type="button" class="b2" data-act="dl">Télécharger</button><button type="button" class="b1" data-act="close">Fermer</button></div>`;
+    const close = () => { box.remove(); document.removeEventListener('keydown', onKey); };
+    const onKey = e => { if (e.key === 'Escape') close(); };
+    box.addEventListener('click', e => {
+      const act = e.target && e.target.dataset ? e.target.dataset.act : '';
+      if (e.target === box || act === 'close') close();
+      else if (act === 'dl') window.msgDownloadAttachment(id, name);
+    });
+    document.addEventListener('keydown', onKey);
+    document.body.appendChild(box);
+  };
+
   /* ===== Taille du texte de la messagerie, réglable par chaque utilisateur (80 % à 180 %) ===== */
   const fsKey = () => 'smp_msg_fs_' + (ME && ME.id);
   function fsGet() { try { const v = parseInt(localStorage.getItem(fsKey()), 10); return v >= 80 && v <= 180 ? v : 100; } catch (_) { return 100; } }
@@ -160,7 +254,7 @@
     let queued = false;
     window.__msgUiObs = new MutationObserver(() => {
       if (queued) return; queued = true;
-      requestAnimationFrame(() => { queued = false; if (!document.getElementById('wa-app')) return; fsApply(); hydratePhotos(); });
+      requestAnimationFrame(() => { queued = false; if (!document.getElementById('wa-app')) return; fsApply(); hydratePhotos(); hydrateAttachments(); });
     });
     window.__msgUiObs.observe(document.body, { childList: true, subtree: true });
   }
@@ -199,11 +293,13 @@
       const prev = last ? (mine ? 'Vous : ' : '') + esc((last.body || '').slice(0, 80)) : '';
       const fav = favs.has(c.id);
       const id = Number(c.id);
-      return `<div class="wa-row${Number(state.current) === id ? ' on' : ''}" data-id="${id}" title="${esc(convLabel(c))}" onclick="openConv(${id})">
+      const sel = state.selected.has(id);
+      return `<div class="wa-row${!state.selecting && Number(state.current) === id ? ' on' : ''}${state.selecting && sel ? ' wa-row-sel' : ''}" data-id="${id}" title="${esc(convLabel(c))}" onclick="${state.selecting ? `msgSelToggle(${id})` : `openConv(${id})`}">
+        ${state.selecting ? `<input type="checkbox" class="wa-sel" tabindex="-1" aria-hidden="true"${sel ? ' checked' : ''}>` : ''}
         ${avatarHtml(c)}
         <div class="wa-row-main">
           <div class="wa-row-top"><b class="wa-name">${esc(plainLabel(c))}</b><span class="wa-time${c.unread > 0 ? ' unread' : ''}">${last ? esc(listTime(last.created_at)) : ''}</span></div>
-          <div class="wa-row-bot"><span class="wa-prev">${prev || '&nbsp;'}</span>${c.unread > 0 ? `<span class="wa-badge">${Number(c.unread)}</span>` : ''}<button type="button" class="wa-btn wa-star${fav ? ' on' : ''}" title="Favori" onclick="event.stopPropagation();waFav(${id})">${fav ? '★' : '☆'}</button></div>
+          <div class="wa-row-bot"><span class="wa-prev">${prev || '&nbsp;'}</span>${c.unread > 0 ? `<span class="wa-badge">${Number(c.unread)}</span>` : ''}<button type="button" class="wa-btn wa-star${fav ? ' on' : ''}" title="Favori" onclick="event.stopPropagation();waFav(${id})">${fav ? '★' : '☆'}</button>${state.selecting ? '' : `<button type="button" class="wa-btn wa-row-del" title="Supprimer la discussion" aria-label="Supprimer la discussion" onclick="event.stopPropagation();msgConvDelete(${id})">🗑</button>`}</div>
         </div>
       </div>`;
     }).join('');
@@ -248,9 +344,10 @@
     const chip = (k, t) => `<button type="button" class="wa-btn wa-chip${state.filter === k ? ' on' : ''}" data-f="${k}" onclick="waFilter('${k}')">${t}</button>`;
     return `<div id="wa-app" class="wa-app">
       <aside class="wa-side">
-        <div class="wa-side-head"><h3>Discussions</h3><div class="wa-head-actions">${fontControlHtml()}${newBtn}${menu}</div></div>
+        <div class="wa-side-head"><h3>Discussions</h3><div class="wa-head-actions"><button type="button" id="msg-sel-toggle" class="wa-btn" onclick="msgSelectToggle()">${state.selecting ? 'Terminer' : 'Sélectionner'}</button>${fontControlHtml()}${newBtn}${menu}</div></div>
         <div class="wa-search"><input id="wa-search" type="search" autocomplete="off" placeholder="Rechercher ou démarrer une discussion" oninput="waSearch(this.value)"></div>
         <div class="wa-chips">${chip('all', 'Toutes')}${chip('unread', 'Non lues')}${chip('fav', 'Favoris')}</div>
+        <div id="msg-bulk">${bulkBarHtml()}</div>
         <div id="msg-list" class="wa-list">${rowsHtml()}</div>
       </aside>
       <section id="msg-thread" class="wa-main">${placeholderHtml()}</section>
@@ -278,8 +375,9 @@
       let sep = '';
       if (key && key !== lastDay) { lastDay = key; sep = `<div class="wa-day"><span>${esc(dayLabel(d))}</span></div>`; }
       const mine = m.sender_id === ME.id;
-      const atts = (m.attachments || []).map(a =>
-        `<button class="tag" type="button" onclick="msgDownloadAttachment(${Number(a.id)})">📎 ${esc(a.file_name)}</button>`
+      const atts = (m.attachments || []).map(a => isImageAtt(a)
+        ? `<span class="msg-photo" role="button" tabindex="0" data-aid="${Number(a.id)}" data-amime="${esc(a.mime_type)}" data-afn="${esc(a.file_name)}" title="${esc(a.file_name)}" onclick="msgPhotoOpen(this)" onkeydown="if(event.key==='Enter')msgPhotoOpen(this)"><span class="msg-photo-ph">🖼 Chargement…</span></span>`
+        : `<button class="tag" type="button" onclick="msgDownloadAttachment(${Number(a.id)})">📎 ${esc(a.file_name)}</button>`
       ).join(' ');
       return sep + `<div class="msg-line ${mine ? 'msg-line-mine' : 'msg-line-other'}">
         ${!mine && !m.is_system ? senderAvatarHtml(m) : ''}
@@ -627,11 +725,13 @@
     await loadConversations();
     await loadPresence();
     state.current = null; state.q = ''; state.lastSig = null;
+    state.selecting = false; state.selected = new Set(); releaseAttachmentUrls();
     startPolling();
     return renderList();
   };
 
   window.openConv = async function (id) {
+    releaseAttachmentUrls();
     id = Number(id);
     try {
       const thread = await renderThread(id);
@@ -651,6 +751,7 @@
   };
 
   window.msgBack = async function () {
+    releaseAttachmentUrls();
     state.current = null; state.lastSig = null;
     document.getElementById('wa-app')?.classList.remove('wa-open');
     const th = document.getElementById('msg-thread');
@@ -683,6 +784,79 @@
       loadConversations().then(refreshRows).catch(() => { /* rafraîchi au prochain cycle */ });
       toast('Message supprimé.', 'success');
     } catch (e) { toast(e.message || 'Impossible de supprimer ce message.', 'err'); }
+  };
+
+  /* ===== Suppression de discussions « pour moi » (masquage personnel côté serveur) ===== */
+  function bulkBarHtml() {
+    if (!state.selecting) return '';
+    const n = state.selected.size;
+    return `<div class="wa-bulk"><span>${n ? n + ' discussion' + (n > 1 ? 's' : '') + ' sélectionnée' + (n > 1 ? 's' : '') : 'Touchez les discussions à supprimer'}</span><button type="button" class="b2" onclick="msgBulkCancel()">Annuler</button><button type="button" class="b1" ${n ? '' : 'disabled'} onclick="msgBulkDelete()">Supprimer (${n})</button></div>`;
+  }
+  function refreshSelUi() {
+    const t = document.getElementById('msg-sel-toggle');
+    if (t) t.textContent = state.selecting ? 'Terminer' : 'Sélectionner';
+    const bar = document.getElementById('msg-bulk');
+    if (bar) bar.innerHTML = bulkBarHtml();
+    document.getElementById('wa-app')?.classList.toggle('wa-selecting', !!state.selecting);
+    refreshRows();
+  }
+  /* Après suppression : retire les discussions de la liste et ferme le fil si la discussion ouverte est partie. */
+  function afterConvsRemoved(removed) {
+    state.conversations = state.conversations.filter(c => !removed.has(Number(c.id)));
+    if (state.current && removed.has(Number(state.current))) {
+      releaseAttachmentUrls();
+      state.current = null; state.lastSig = null;
+      document.getElementById('wa-app')?.classList.remove('wa-open');
+      const th = document.getElementById('msg-thread');
+      if (th) th.innerHTML = placeholderHtml();
+    }
+    refreshRows();
+    loadConversations().then(refreshRows).catch(() => { /* rafraîchi au prochain cycle */ });
+  }
+  window.msgSelectToggle = function () {
+    state.selecting = !state.selecting;
+    state.selected = new Set();
+    refreshSelUi();
+  };
+  window.msgSelToggle = function (id) {
+    id = Number(id);
+    if (state.selected.has(id)) state.selected.delete(id); else state.selected.add(id);
+    refreshSelUi();
+  };
+  window.msgBulkCancel = function () {
+    state.selecting = false;
+    state.selected = new Set();
+    refreshSelUi();
+  };
+  window.msgBulkDelete = async function () {
+    const ids = [...state.selected];
+    const n = ids.length;
+    if (!n) return;
+    const plur = n > 1;
+    const msg = `Supprimer ${n} discussion${plur ? 's' : ''} de votre liste ?\n\n` +
+      `Vous ne verrez plus ${plur ? 'ces discussions' : 'cette discussion'} ni leur historique. ` +
+      `Les autres participants ${plur ? 'les' : 'la'} conservent. Si l'on vous écrit de nouveau, ${plur ? 'elles réapparaîtront' : 'elle réapparaîtra'} avec les nouveaux messages seulement.`;
+    if (!window.confirm(msg)) return;
+    try {
+      const res = await Po('/messaging/conversations/bulk-delete', { ids });
+      const removed = new Set((res.ids || []).map(Number));
+      state.selecting = false;
+      state.selected = new Set();
+      afterConvsRemoved(removed);
+      refreshSelUi();
+      toast(`${removed.size} discussion${removed.size > 1 ? 's' : ''} supprimée${removed.size > 1 ? 's' : ''}.`, 'success');
+    } catch (e) { toast(e.message || 'Suppression impossible.', 'err'); }
+  };
+  window.msgConvDelete = async function (id) {
+    id = Number(id);
+    const c = state.conversations.find(x => Number(x.id) === id);
+    const name = c ? plainLabel(c) : 'cette discussion';
+    if (!window.confirm(`Supprimer la discussion « ${name} » de votre liste ?\n\nVous ne verrez plus cette discussion ni son historique. Les autres participants la conservent. Si l'on vous écrit de nouveau, elle réapparaîtra avec les nouveaux messages seulement.`)) return;
+    try {
+      await api('DELETE', '/messaging/conversations/' + id);
+      afterConvsRemoved(new Set([id]));
+      toast('Discussion supprimée.', 'success');
+    } catch (e) { toast(e.message || 'Suppression impossible.', 'err'); }
   };
 
   window.msgSupportOpen = safe(async function () {

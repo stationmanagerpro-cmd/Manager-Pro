@@ -316,6 +316,7 @@ r.get('/messaging/conversations', wrap(async (req, res) => {
        LEFT JOIN users creator ON creator.id = c.created_by
        JOIN conversation_members cm ON cm.conversation_id = c.id AND cm.user_id = $1
        WHERE c.deleted_at IS NULL
+         AND (cm.hidden_at IS NULL OR EXISTS (SELECT 1 FROM messages mh WHERE mh.conversation_id = c.id AND mh.deleted_at IS NULL AND mh.created_at > cm.hidden_at))
        ORDER BY COALESCE((SELECT max(m.created_at) FROM messages m WHERE m.conversation_id = c.id), c.created_at) DESC
        LIMIT 100`, [req.user.id]
     );
@@ -356,6 +357,7 @@ r.get('/messaging/conversations', wrap(async (req, res) => {
        LEFT JOIN users creator ON creator.id = c.created_by
        JOIN conversation_members cm ON cm.conversation_id = c.id AND cm.user_id = $2
       WHERE c.client_id = $1 AND c.deleted_at IS NULL
+        AND (cm.hidden_at IS NULL OR EXISTS (SELECT 1 FROM messages mh WHERE mh.conversation_id = c.id AND mh.deleted_at IS NULL AND mh.created_at > cm.hidden_at))
       ORDER BY COALESCE(
         (SELECT max(m.created_at) FROM messages m WHERE m.conversation_id = c.id AND m.deleted_at IS NULL),
         c.created_at
@@ -503,6 +505,14 @@ r.get('/messaging/conversations/:id/messages', wrap(async (req, res) => {
       LEFT JOIN message_states ms ON ms.message_id = m.id AND ms.user_id = $3
      WHERE m.conversation_id = $1 AND m.client_id = $2 AND m.deleted_at IS NULL`;
   params.push(req.user.id);
+  // Discussion supprimée pour moi : seuls les messages postérieurs à la suppression sont affichés.
+  const { rows: [hid] } = await pool.query(
+    'SELECT hidden_at FROM conversation_members WHERE conversation_id = $1 AND user_id = $2', [convId, req.user.id]
+  );
+  if (hid?.hidden_at) {
+    params.push(hid.hidden_at);
+    sql += ` AND m.created_at > $${params.length}`;
+  }
   if (before) {
     params.push(before);
     sql += ` AND m.id < $${params.length}`;
@@ -1233,6 +1243,75 @@ r.delete('/messaging/messages/:id', wrap(async (req, res) => {
   // Les autres membres voient disparaître le message sans recharger la page.
   realtime.notifyConversation(m.conversation_id, { message_id: msgId, sender_id: req.user.id, deleted: true });
   res.json({ ok: true, id: msgId });
+}));
+
+/* -------------------------------------------------------------------------- */
+/* Suppression d'une discussion « pour moi » (masquage par participant)       */
+/* Les autres participants gardent la discussion ; rien n'est effacé en base. */
+/* -------------------------------------------------------------------------- */
+
+const MAX_BULK_CONVERSATIONS = 100;
+
+/**
+ * Masque pour l'utilisateur courant les discussions données dont il est membre.
+ * Client isolé : un utilisateur de client ne touche que les conversations de son client ;
+ * le superadmin ne touche que les conversations dont il est membre (même règle que la liste).
+ * Retourne les ids effectivement masqués.
+ */
+async function hideConversationsFor(req, ids) {
+  const clientId = req.user.is_global ? null : await clientIdOf(req.user.id);
+  const params = [ids, req.user.id];
+  let tenantSql = '';
+  if (clientId !== null) {
+    params.push(clientId);
+    tenantSql = `AND c.client_id = $${params.length}`;
+  }
+  return tx(async c => {
+    const { rows } = await c.query(
+      `UPDATE conversation_members cm SET hidden_at = now()
+         FROM conversations c
+        WHERE c.id = cm.conversation_id AND cm.conversation_id = ANY($1::bigint[]) AND cm.user_id = $2
+          AND c.deleted_at IS NULL ${tenantSql}
+        RETURNING cm.conversation_id`,
+      params
+    );
+    if (!rows.length) return [];
+    const convIds = rows.map(r => r.conversation_id);
+    // Les messages existants deviennent « lus » pour moi : ils ne comptent plus dans les non-lus ni la cloche.
+    await c.query(
+      `INSERT INTO message_states(message_id, user_id, read_at)
+       SELECT m.id, $2, now() FROM messages m
+        WHERE m.conversation_id = ANY($1::bigint[]) AND m.deleted_at IS NULL
+       ON CONFLICT (message_id, user_id) DO UPDATE SET read_at = COALESCE(message_states.read_at, now())`,
+      [convIds, req.user.id]
+    );
+    await c.query(
+      `UPDATE conversation_members SET last_read_at = now()
+        WHERE conversation_id = ANY($1::bigint[]) AND user_id = $2`,
+      [convIds, req.user.id]
+    );
+    await audit(c, req, 'messagerie', 'Suppression de discussion(s) pour soi', 'conversations', null, null,
+      { conversation_ids: convIds.map(Number) });
+    return convIds.map(Number);
+  });
+}
+
+r.delete('/messaging/conversations/:id', wrap(async (req, res) => {
+  await requireMessaging(req);
+  const convId = parseInt(req.params.id, 10);
+  if (!Number.isInteger(convId) || convId <= 0) throw new HttpError(400, 'Discussion invalide.');
+  const removed = await hideConversationsFor(req, [convId]);
+  if (!removed.length) throw new HttpError(403, 'Conversation inaccessible.');
+  res.json({ ok: true, id: convId, removed: removed.length });
+}));
+
+r.post('/messaging/conversations/bulk-delete', body(z.object({
+  ids: z.array(z.number().int().positive()).min(1).max(MAX_BULK_CONVERSATIONS)
+})), wrap(async (req, res) => {
+  await requireMessaging(req);
+  const ids = [...new Set(req.body.ids)];
+  const removed = await hideConversationsFor(req, ids);
+  res.json({ ok: true, requested: ids.length, removed: removed.length, ids: removed });
 }));
 
 
