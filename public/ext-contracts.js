@@ -132,6 +132,7 @@
       if (el) { el.value = flags[k]; n++; }
     });
     if (typeof toast === 'function') toast('Pack « ' + (AUTH_PACKS[code] && AUTH_PACKS[code].label || code) + ' » appliqué (' + n + ' champs)', 'success');
+    if (typeof sfSync === 'function') sfSync();
     try { updateAuthSummary(); } catch (_) {}
   };
   window.updateAuthSummary = function () {
@@ -146,27 +147,32 @@
     });
     el.innerHTML = '<b>' + yes + '</b> autorisation(s) activée(s) · <b>' + no + '</b> désactivée(s)';
   };
-  /* Groupes de modules : un clic active ou coupe toutes les cases d'une même famille (au lieu de cocher une à une). */
+  /* Familles de modules : une section par famille dans les formulaires client.
+     Chaque section a son interrupteur Actif / Inactif d’en-tête, chaque module garde le sien. */
   const MODULE_GROUPS = {
-    fiscalite: { label: 'Fiscalité (15 cases)', keys: ['can_access_fiscal', 'can_fiscal_estimates', 'can_fiscal_exports', 'can_fiscal_prepare', 'can_fiscal_deadlines', 'fiscal_tva', 'fiscal_synthetique', 'fiscal_ibic', 'fiscal_is', 'fiscal_its', 'fiscal_cfe', 'fiscal_tfp', 'fiscal_logement', 'fiscal_retenues', 'fiscal_autres'] },
-    comptabilite: { label: 'Comptabilité (6 cases)', keys: ['can_access_accounting', 'accounting_entries', 'accounting_assets', 'accounting_vat', 'accounting_closing', 'accounting_export'] },
-    paie: { label: 'Paie (5 cases)', keys: ['payroll_amo', 'payroll_inps', 'payroll_its', 'payroll_charges', 'employee_portal_payslips'] },
-    messagerie: { label: 'Messagerie (5 cases)', keys: ['can_use_messaging', 'messaging_attachments', 'messaging_groups', 'messaging_broadcast', 'messaging_support'] },
-    flotte_credit: { label: 'Clients, flottes et trésorerie', keys: ['module_customers', 'module_fleet', 'module_loyalty', 'module_portal', 'module_treasury', 'module_profit', 'module_mobile'] }
+    parametres: { title: 'Paramètres et administration', keys: ['can_access_settings', 'can_access_advanced_settings', 'can_manage_services', 'can_view_coming_soon', 'demo_mode'] },
+    exploitation: { title: 'Exploitation station', keys: ['module_sales', 'module_stock', 'module_purchases', 'module_suppliers', 'module_shifts', 'module_employees', 'module_pumps', 'module_receipts', 'module_reconcile', 'module_period_lock', 'module_price_history', 'module_imports', 'module_eod', 'module_direction', 'module_multistation', 'module_tanks', 'module_profit'] },
+    clients_flottes: { title: 'Clients, flottes et trésorerie', keys: ['module_customers', 'module_fleet', 'module_loyalty', 'module_portal', 'module_treasury', 'module_mm_commission', 'module_mobile'] },
+    rh_paie: { title: 'RH et paie', keys: ['can_access_hr', 'can_manage_hr', 'module_seller_commissions', 'payroll_amo', 'payroll_inps', 'payroll_its', 'payroll_charges', 'employee_portal_payslips', 'employee_portal_commissions'] },
+    finance: { title: 'Finance et rapports', keys: ['can_access_finance', 'can_view_reports', 'can_export_reports', 'can_view_advanced_reports', 'can_use_billing'] },
+    messagerie: { title: 'Messagerie', keys: ['can_use_messaging', 'messaging_attachments', 'messaging_groups', 'messaging_broadcast', 'messaging_support'] },
+    alertes_personnalisation: { title: 'Alertes et personnalisation', keys: ['module_auto_alerts', 'can_personalize', 'can_customize_signature', 'signature_mode', 'can_customize_report_exports'] },
+    comptabilite: { title: 'Comptabilité OHADA', keys: ['can_access_accounting', 'accounting_entries', 'accounting_assets', 'accounting_vat', 'accounting_closing', 'accounting_export'] },
+    fiscalite: { title: 'Fiscalité', keys: ['can_access_fiscal', 'can_fiscal_estimates', 'can_fiscal_exports', 'can_fiscal_prepare', 'can_fiscal_deadlines', 'fiscal_storage_mb', 'fiscal_tva', 'fiscal_synthetique', 'fiscal_ibic', 'fiscal_is', 'fiscal_its', 'fiscal_cfe', 'fiscal_tfp', 'fiscal_logement', 'fiscal_retenues', 'fiscal_autres'] }
   };
-  window.applyModuleGroup = function (code, on) {
-    const g = MODULE_GROUPS[code]; if (!g) return;
-    let n = 0;
-    g.keys.forEach(k => { const el = document.getElementById('f_' + k); if (el) { el.value = on ? 'true' : 'false'; n++; } });
-    if (typeof toast === 'function') toast(g.label.replace(/ \(.*\)/, '') + ' : ' + (on ? 'tout activé' : 'tout désactivé') + ' (' + n + ' cases)', 'success');
-    try { updateAuthSummary(); } catch (_) {}
-  };
+  function moduleSections() {
+    return Object.keys(MODULE_GROUPS).map(c => ({ title: MODULE_GROUPS[c].title, keys: MODULE_GROUPS[c].keys }));
+  }
+  /* Les cases Oui / Non des modules deviennent des interrupteurs Actif / Inactif. */
+  function featureFormFieldsSw() {
+    return featureFormFields().map(f => (f[2] === 's' && f[3] === YN) ? [f[0], f[1], 'sw'] : f);
+  }
+  /* Barre « Activation globale » en haut du formulaire : un interrupteur pour tous les modules Oui / Non. */
   function moduleGroupsHtml() {
-    return '<div class="card" style="margin:12px 0;padding:12px"><b>Groupes de modules</b>' +
-      '<p class="muted" style="font-size:12px;margin:4px 0 8px">Activez ou coupez toute une famille en un clic, puis ajustez au besoin.</p>' +
-      Object.keys(MODULE_GROUPS).map(c => '<div class="r" style="flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0"><span style="min-width:190px">' + MODULE_GROUPS[c].label + '</span>' +
-        '<button type="button" class="b2" onclick="applyModuleGroup(\'' + c + '\',true)">Tout activer</button>' +
-        '<button type="button" class="b2" onclick="applyModuleGroup(\'' + c + '\',false)">Tout couper</button></div>').join('') + '</div>';
+    const keys = featureFormFields().filter(f => f[2] === 's' && f[3] === YN).map(f => f[0]);
+    return '<div class="sf-gbar"><div><b>Activation globale des modules</b>' +
+      '<div style="font-size:12px;color:var(--m,#64748b);margin-top:2px">Un clic sur Actif ou Inactif s’applique à tous les modules. Chaque famille et chaque module reste réglable séparément.</div></div>' +
+      (typeof sfSwitchHtml === 'function' ? sfSwitchHtml(keys) : '') + '</div>';
   }
   function authPacksExtraHtml() {
     return moduleGroupsHtml() + '<div class="card" style="margin:12px 0;padding:12px">' +
@@ -559,12 +565,11 @@
 
   window.clNew = safe(async () => {
     const today = new Date().toISOString().slice(0, 10);
-    const featKeys = featureFormFields().map(f => f[0]);
     const newSections = [
       { title: 'Compte client', keys: ['name', 'manager_name', 'code', 'contact_email', 'contact_phone'] },
       { title: 'Administrateur local', keys: ['owner_login', 'owner_password'] },
       { title: 'Licence', keys: ['start_date', 'duration_preset', 'duration_unit', 'duration_value', 'max_users', 'max_stations', 'can_manage_users', 'can_create_station'] },
-      { title: 'Modules et droits du contrat', keys: featKeys },
+      ...moduleSections(),
       { title: 'Notes', keys: ['notes'] }
     ];
     sectionedForm('Nouveau client + licence', [
@@ -590,7 +595,7 @@
       ['max_stations', 'Max stations', 'number'],
       ['can_manage_users', 'Autoriser création employés / utilisateurs', 's', YN],
       ['can_create_station', 'Autoriser création de stations', 's', YN],
-      ...featureFormFields(),
+      ...featureFormFieldsSw(),
       ['notes', 'Notes']
     ], {
       start_date: today,
@@ -678,11 +683,10 @@
     const c = await G('/admin/clients/' + id + '/contract');
     const f = c.features || {};
     const hist = await G('/admin/clients/' + id + '/license/history').catch(() => []);
-    const featKeys = featureFormFields().map(f => f[0]);
     const editSections = [
       { title: 'Information administrative', keys: ['name', 'manager_name', 'contact_email', 'contact_phone', 'status_client', 'contract_type'] },
       { title: 'Droits de création', keys: ['can_create_station', 'max_stations', 'can_manage_users', 'max_users'] },
-      { title: 'Modules et droits du contrat', keys: featKeys },
+      ...moduleSections(),
       { title: 'Signature et notes', keys: ['forced_signature', 'notes'] }
     ];
     const band = clLicenceBand(c, id, hist);
@@ -697,7 +701,7 @@
       ['max_stations', 'Max stations (vide = ∞)', 'number'],
       ['can_manage_users', 'Gérer utilisateurs', 's', YN],
       ['max_users', 'Max utilisateurs (vide = ∞)', 'number'],
-      ...featureFormFields(),
+      ...featureFormFieldsSw(),
       ['forced_signature', 'Signature imposée (affichée en pied de tous les documents du client et dans l’application)'],
       ['notes', 'Notes']
     ], {
