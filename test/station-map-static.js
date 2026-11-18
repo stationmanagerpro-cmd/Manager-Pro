@@ -26,6 +26,6 @@ check('UI : la carte du Super Admin utilise /admin/platform/clients-map (route a
   assert.match(server, /const allowed = \['\/admin'/);
 });
 check('Super Admin : /config/map (jeton public Mapbox) autorisé par le garde-fou, sans ouvrir /config/*', () => {
-  assert.match(server, /'\/messaging', '\/config\/map'\]/); assert(!/'\/config'[,\]]/.test(server));
+  assert.match(server, /'\/messaging', '\/config\/map'(?:, '\/help-guides')?\]/); assert(!/'\/config'[,\]]/.test(server));
 });
 console.log(`\n${n}/11 contrôles statiques réussis.`);
