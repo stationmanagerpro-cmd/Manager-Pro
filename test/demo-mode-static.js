@@ -67,7 +67,7 @@ const D = sandbox.SMP_DEMO, state = D.state;
   });
   await check('aide : manuel servi par l\'application, lien dans « Mon profil & aide », boutons « ? » sur les pages difficiles', () => {
     assert(fs.statSync('public/manuel/Manuel_Utilisation_Manager_Pro.pdf').size > 1e6);
-    assert.match(shell, /keys: \['moi', 'clients', 'onboard', 'aide'\]/); assert.match(src, /\/manuel\/Manuel_Utilisation_Manager_Pro\.pdf/);
+    assert.match(shell, /keys: \['moi', 'clients', 'onboard', 'aide', 'besoin_aide'\]/); assert.match(src, /\/manuel\/Manuel_Utilisation_Manager_Pro\.pdf/);
     for (const k of ['quart', 'clot', 'ventes', 'four']) assert(new RegExp(k + ': \\d+').test(src.match(/const HELP = \{[^}]*\}/)[0]), k);
     assert.match(idx, /ext-aide-demo\.js/);
   });

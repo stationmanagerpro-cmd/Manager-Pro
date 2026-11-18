@@ -627,6 +627,7 @@ const repHtml = r => `<div class="card"><b>Quart N° ${r.shift.number} (${esc(r.
   + '<h3>Caisse</h3>' + T(['Initiale', 'Théorique', 'Comptée', 'Écart'], [[f(r.cash.opening), f(r.cash.theoretical), f(r.cash.counted), `<b style="color:${r.cash.gap ? 'var(--r)' : 'var(--p)'}">${f(r.cash.gap)}</b>`]])
   + '<h3>Stock</h3>' + T(['Produit', 'Théorique', 'Physique', 'Écart'], r.stock.map(x => [esc(x.product), x.theoretical, x.physical ?? '', x.gap ?? '']))
   + (r.expenses_unassigned ? '<p style="margin:8px 0"><b>Dépenses hors employé</b> (justifiées, au nom de leur auteur) : ' + f(r.expenses_unassigned) + ' FCFA</p>' : '')
+  + (r.expenses_responsibles && r.expenses_responsibles.length ? '<h3>Dépenses et responsables</h3>' + T(['Catégorie', 'Montant', 'Mode', 'Responsable', 'Motif'], r.expenses_responsibles.map(x => [esc(x.category), f(x.amount) + ' FCFA', esc(x.method), esc(x.responsible), esc(x.comment)])) : '')
   + (r.employees && r.employees.length ? '<h3>Situation par employé</h3>' + T(['Employé', 'Pompes', 'Litres', 'Espèces attendues', 'Espèces remises', 'Écart de caisse', 'Écarts de stock'], r.employees.map(e => [esc(e.name), esc((e.pumps || []).join(', ') || '-'), e.fuel_liters, e.expected_cash == null ? '' : f(e.expected_cash), e.counted_cash == null ? '' : f(e.counted_cash), e.cash_gap == null ? '' : `<b style="color:${e.cash_gap ? 'var(--r)' : 'var(--p)'}">${f(e.cash_gap)}</b>`, (e.stock_gaps || []).map(x => esc(String(x.product || '').trim()) + ' : ' + (Math.round(Number(x.amount) * 100) / 100)).join('<br>') || '-']).concat(r.unassigned && ((r.unassigned.cash_gap && Math.abs(r.unassigned.cash_gap) > 0.004) || (r.unassigned.stock_gaps || []).length) ? [['<i>Non attribué à un employé</i>', '', '', '', '', r.unassigned.cash_gap ? f(r.unassigned.cash_gap) : '', (r.unassigned.stock_gaps || []).map(x => esc(String(x.product || '').trim()) + ' : ' + (Math.round(Number(x.amount) * 100) / 100)).join('<br>')]] : [])) : '')
   + `<div class="card"><b>Anomalies détectées</b><p>${r.anomalies.map(a => (a.employee ? '<b>' + esc(a.employee) + '</b> : ' : (r.shared ? '<i>Ensemble du quart</i> : ' : '')) + esc(a.description) + (a.reported_by && !/^ecart_|^rattachement$/.test(a.kind || '') ? ' <i style="color:var(--m)">(signalée par ' + (a.reported_self ? 'l\'employé lui-même' : esc(a.reported_by)) + ')</i>' : '')).join('<br>') || 'Aucune'}</p></div>`;
 async function vClot() {
@@ -919,10 +920,11 @@ async function vCaisse() {
 }
 const addX = async () => {
   notifyIfPastShift();
-  // Quart partagé : l'employé responsable est obligatoire ; sinon la dépense est hors employé (justification obligatoire).
-  const cu = await G('/shifts/current').catch(() => null), team = cu && Array.isArray(cu.team) ? cu.team : [], shared = team.length >= 2;
-  const empField = team.length ? [['employee_id', shared ? 'Employé responsable (obligatoire, quart partagé)' : 'Employé responsable (facultatif)', 's', [['', shared ? '— Choisir un employé —' : '— Aucun (dépense hors employé) —'], ...team.map(t => [t.id, t.name])]]] : [];
-  form('Dépense', [['category', 'Catégorie', 's', ['Carburant véhicule', 'Électricité', 'Eau', 'Salaires', 'Maintenance', 'Transport', 'Fournitures', 'Sécurité', 'Autres']], ['amount', 'Montant', 'number'], ['method', 'Mode', 's', pmOpts(['credit'])], ['beneficiary', 'Bénéficiaire'], ...empField, ['comment', 'Commentaire (justification obligatoire si hors employé)']], {}, async d => { const ex = await Po('/expenses', { ...d, employee_id: d.employee_id ? Number(d.employee_id) : undefined }); closeM(); if (ex && ex.id && typeof askExpenseReceipt === 'function') await askExpenseReceipt(ex.id); go(cur, arg); }); };
+  // Responsable obligatoire (ANO-016) : un compte de la station, désigné par une autre personne ; motif obligatoire.
+  const resps = await G('/expenses/responsables').catch(() => []);
+  const respOpts = [['', '— Choisir le responsable —'], ...(resps || []).filter(u => !ME || u.id !== ME.id).map(u => [u.id, u.name])];
+  form('Dépense', [['category', 'Catégorie', 's', ['Carburant véhicule', 'Électricité', 'Eau', 'Salaires', 'Maintenance', 'Transport', 'Fournitures', 'Sécurité', 'Autres']], ['amount', 'Montant', 'number'], ['method', 'Mode', 's', pmOpts(['credit'])], ['beneficiary', 'Bénéficiaire'], ['responsible_user_id', 'Responsable (obligatoire, désigné par une autre personne)', 's', respOpts], ['comment', 'Motif (obligatoire)']], {}, async d => { const ex = await Po('/expenses', { ...d, responsible_user_id: d.responsible_user_id ? Number(d.responsible_user_id) : undefined }); closeM(); if (ex && ex.id && typeof askExpenseReceipt === 'function') await askExpenseReceipt(ex.id); go(cur, arg); });
+};
 const addM = async () => {
   let accOpts = [];
   try {

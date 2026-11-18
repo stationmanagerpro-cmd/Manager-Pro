@@ -73,5 +73,22 @@ const call = async (handler, req) => { const out = { status: 200, json: null }; 
     const out = await call(find('put', '/help-guides/:key'), { params: { key }, body: { label: 'Hygiène', procedure: 'x' }, user: { id: 1, is_global: true } });
     assert.strictEqual(out.json.label, 'Hygiène');
   });
-  console.log(`\n${n}/6 contrôles réussis.`); process.exit(0);
+  await check('écriture : le contrôle Super Admin précède la validation du corps (403 et non 400 pour un client)', async () => {
+    for (const [m, p] of [['post', '/help-guides'], ['put', '/help-guides/:key']]) {
+      const l = mod.r.stack.find(x => x.path === p && x.method === m);
+      assert(l && l.handlers.length >= 2, 'route ' + m + ' ' + p + ' sans garde');
+      let err = null;
+      try { await new Promise((resolve, reject) => l.handlers[0]({ user: { id: 3, is_global: false }, body: { label: 123 }, params: { key: 'quart' } }, {}, e => (e ? reject(e) : resolve()))); } catch (e) { err = e; }
+      assert(err && err.status === 403, m + ' ' + p + ' : attendu 403');
+      let ok = false;
+      await new Promise(resolve => l.handlers[0]({ user: { id: 1, is_global: true } }, {}, e => { ok = !e; resolve(); }));
+      assert(ok, m + ' ' + p + ' : le Super Admin doit passer');
+    }
+  });
+  await check('lecture : la liste des modules intégrés vient du serveur', async () => {
+    pool.query = async () => ({ rows: [] });
+    const out = await call(find('get', '/help-guides'), { user: { id: 3, is_global: false } });
+    assert.deepStrictEqual(out.json.help_keys, ['dash', 'quart', 'ventes', 'prod', 'pompes', 'cli', 'four', 'caisse', 'emp', 'alert', 'audit', 'param']);
+  });
+  console.log(`\n${n}/8 contrôles réussis.`); process.exit(0);
 })().catch(e => { console.error('✘', e); process.exit(1); });

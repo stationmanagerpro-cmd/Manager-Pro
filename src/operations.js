@@ -241,6 +241,7 @@ r.post('/expenses', need('expense.create'), body(z.object({
   category: z.string().min(1), amount: z.number().positive(), method: z.string().min(1),
   beneficiary: z.string().optional(), receipt_url: z.string().optional(), comment: z.string().optional(),
   employee_id: z.number().int().optional(),
+  responsible_user_id: z.number().int().positive(),
   client_ref: z.string().trim().min(1).max(128).optional().nullable(),
 })), wrap(async (req, res) => {
   await assertNotLocked(req.sid);
@@ -253,24 +254,33 @@ r.post('/expenses', need('expense.create'), body(z.object({
       if (prior) {
         const sameRequest = prior.category === b.category && sameMoney(prior.amount, b.amount) && prior.method === b.method &&
           (prior.beneficiary || null) === (b.beneficiary || null) && (prior.receipt_url || null) === (b.receipt_url || null) &&
-          (prior.comment || null) === (b.comment || null);
+          (prior.comment || null) === (b.comment || null) && Number(prior.responsible_user_id) === Number(b.responsible_user_id);
         if (!sameRequest) throw new HttpError(409, 'Cette référence de requête est déjà utilisée pour une autre dépense. Générez une nouvelle référence.');
         return { ...prior, _idempotent_replay: true };
       }
     }
     const { rows: [sh] } = await c.query("SELECT id, opened_at, shift_date FROM shifts WHERE station_id = $1 AND status = 'ouvert'", [req.sid]);
     const stamp = businessStampFromShift(sh);
-    // Employé responsable : obligatoire sur quart partagé (membre du quart) ; sinon dépense hors employé, au nom de son auteur, justifiée.
+    // Responsable (ANO-016) : obligatoire pour toute dépense ; compte utilisateur de la station ; désigné par une AUTRE personne ; motif obligatoire.
+    const respId = Number(b.responsible_user_id);
+    if (respId === req.user.id) throw new HttpError(400, 'Un autre utilisateur doit désigner le responsable de cette dépense');
+    const { rows: [resp] } = await c.query(
+      'SELECT u.id, u.active, u.deleted_at FROM users u JOIN user_stations us ON us.user_id = u.id AND us.station_id = $2 WHERE u.id = $1', [respId, req.sid]);
+    if (!resp || !resp.active || resp.deleted_at) throw new HttpError(400, 'Responsable inconnu ou inactif sur cette station');
+    if (!String(b.comment || '').trim()) throw new HttpError(400, 'Motif obligatoire pour toute dépense');
     const team = sh ? (await c.query('SELECT employee_id FROM shift_employees WHERE shift_id = $1', [sh.id])).rows.map(x => Number(x.employee_id)) : [];
-    const empId = b.employee_id != null ? Number(b.employee_id) : null;
-    if (team.length >= 2 && empId == null) throw new HttpError(400, 'Quart partagé : choisissez l’employé responsable de cette dépense');
+    // Si le responsable est aussi employé de la station, la dépense est rattachée à cet employé (écart de caisse du quart).
+    const { rows: [linkedEmp] } = await c.query('SELECT id FROM employees WHERE station_id = $1 AND user_id = $2 AND deleted_at IS NULL ORDER BY id LIMIT 1', [req.sid, respId]);
+    const linkedId = linkedEmp ? Number(linkedEmp.id) : null;
+    let empId = b.employee_id != null ? Number(b.employee_id) : null;
+    if (empId != null && empId !== linkedId) throw new HttpError(400, 'L’employé indiqué n’est pas le responsable désigné');
+    if (empId == null && linkedId != null && team.includes(linkedId)) empId = linkedId;
     if (empId != null && !sh) throw new HttpError(400, 'Aucun quart ouvert : la dépense ne peut pas être attribuée à un employé');
     if (empId != null && !team.includes(empId)) throw new HttpError(400, 'Cet employé ne fait pas partie du quart en cours');
-    if (empId == null && !String(b.comment || '').trim()) throw new HttpError(400, 'Justification obligatoire pour une dépense hors employé (commentaire)');
-    const { rows: [e] } = await c.query(
-      `INSERT INTO expenses(station_id, shift_id, category, amount, method, beneficiary, receipt_url, comment, created_by, client_ref, spent_on, employee_id)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,COALESCE($11::date, CURRENT_DATE),$12) RETURNING *`,
-      [req.sid, sh?.id || null, b.category, b.amount, b.method, b.beneficiary || null, b.receipt_url || null, b.comment || null, req.user.id, clientRef, stamp.spentOn, empId]);
+        const { rows: [e] } = await c.query(
+      `INSERT INTO expenses(station_id, shift_id, category, amount, method, beneficiary, receipt_url, comment, created_by, client_ref, spent_on, employee_id, responsible_user_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,COALESCE($11::date, CURRENT_DATE),$12,$13) RETURNING *`,
+      [req.sid, sh?.id || null, b.category, b.amount, b.method, b.beneficiary || null, b.receipt_url || null, b.comment || null, req.user.id, clientRef, stamp.spentOn, empId, respId]);
     await settle(c, { station: req.sid, method: b.method, amount: -b.amount, label: 'Dépense : ' + b.category, ref: ['expenses', e.id], shift: sh?.id, by: req.user.id, event_type: 'DEPENSE', description: b.comment || b.category });
     await audit(c, req, 'dépenses',
       stamp.backdated
@@ -279,9 +289,27 @@ r.post('/expenses', need('expense.create'), body(z.object({
       'expenses', e.id, null, { ...b, spent_on: e.spent_on, backdated: stamp.backdated });
     return e;
   });
+  if (!e._idempotent_replay) {
+    const m = require('./messaging');
+    m.deliverSystemMessage({ clientId: req.user.client_id, userIds: [e.responsible_user_id], title: 'Dépense désignée à votre nom',
+      body: `${b.category} : ${b.amount} FCFA. Motif : ${b.comment}. Désignée par un autre utilisateur de la station.`,
+      kind: 'expense_assigned', refTable: 'expenses', refId: e.id }).catch(swallow('expenses:notify-responsable', null));
+  }
   const replay = Boolean(e?._idempotent_replay);
   if (replay) delete e._idempotent_replay;
   res.status(replay ? 200 : 201).json(e);
+}));
+
+// Responsables possibles d'une dépense : comptes actifs de la station (employé, admin, gérant…).
+r.get('/expenses/responsables', need('expense.create'), wrap(async (req, res) => {
+  const { rows } = await pool.query(
+    `SELECT u.id, COALESCE(NULLIF(TRIM(CONCAT_WS(' ', e.first_name, e.last_name)), ''), u.login) AS name
+       FROM users u
+       JOIN user_stations us ON us.user_id = u.id AND us.station_id = $1
+       LEFT JOIN employees e ON e.user_id = u.id AND e.station_id = $1 AND e.deleted_at IS NULL
+      WHERE u.active AND u.deleted_at IS NULL AND u.client_id = $2
+      ORDER BY name`, [req.sid, req.user.client_id]);
+  res.json(rows);
 }));
 
 // CAISSE
