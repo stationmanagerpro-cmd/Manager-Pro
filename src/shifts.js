@@ -523,6 +523,9 @@ r.post('/:id/close', need('shift.close'), body(closeSchema), wrap(async (req, re
       }
       const { rows: decEmp } = await c.query("SELECT employee_id, COALESCE(SUM(total),0) AS t FROM sales WHERE shift_id = $1 AND kind = 'carburant' AND status = 'valide' AND employee_id IS NOT NULL GROUP BY employee_id", [s.id]);
       const { rows: cashEmp } = await c.query("SELECT sa.employee_id, COALESCE(SUM(p.amount),0) AS t FROM payments p JOIN sales sa ON sa.id = p.sale_id WHERE sa.shift_id = $1 AND sa.status = 'valide' AND p.method = 'especes' AND sa.employee_id IS NOT NULL GROUP BY sa.employee_id", [s.id]);
+      const { rows: expEmp } = await c.query("SELECT employee_id, COALESCE(SUM(amount),0) AS t FROM expenses WHERE shift_id = $1 AND deleted_at IS NULL AND method = 'especes' AND employee_id IS NOT NULL GROUP BY employee_id", [s.id]);
+      const { rows: [expUn] } = await c.query("SELECT COALESCE(SUM(amount),0) AS t FROM expenses WHERE shift_id = $1 AND deleted_at IS NULL AND method = 'especes' AND employee_id IS NULL", [s.id]);
+      const expensesUnassigned = fl(expUn.t);   // dépenses en espèces hors employé : au nom de leur auteur, affichées au rapport
       const { rows: qtyEmp } = await c.query("SELECT sa.employee_id, d.product_id, COALESCE(SUM(d.quantity),0) AS q FROM sale_details d JOIN sales sa ON sa.id = d.sale_id WHERE sa.shift_id = $1 AND sa.status = 'valide' AND sa.employee_id IS NOT NULL GROUP BY sa.employee_id, d.product_id", [s.id]);
       const team = teamRows.map(t => ({ id: Number(t.id), name: t.name || ('Employé ' + t.id) }));
       const multi = team.length >= 2, soleId = team.length === 1 ? team[0].id : null;
@@ -537,6 +540,7 @@ r.post('/:id/close', need('shift.close'), body(closeSchema), wrap(async (req, re
           team, fuelByEmp: fuelEmp,
           declaredFuelByEmp: new Map(decEmp.map(x => [Number(x.employee_id), Number(x.t)])),
           cashDeclaredByEmp: new Map(cashEmp.map(x => [Number(x.employee_id), Number(x.t)])),
+          expensesByEmp: new Map(expEmp.map(x => [Number(x.employee_id), Number(x.t)])),
           inputs: multi ? b.employee_closings : [], requireInputs: multi && !req.query.preview });
       } catch (e) { if (e instanceof attr.AttributionError) throw new HttpError(400, e.message); throw e; }
       if (multi) for (const r of empCl.rows) if (r.overdeclared > 0)
@@ -639,7 +643,7 @@ r.post('/:id/close', need('shift.close'), body(closeSchema), wrap(async (req, re
       const employeesReport = empCl.rows.map(r => ({
         employee_id: r.employee_id, name: r.name,
         pumps: [...ownersMap.entries()].filter(([, e]) => e === r.employee_id).map(([pid]) => pumpName.get(pid)).filter(Boolean),
-        fuel_liters: r.fuel_liters, fuel_amount: r.fuel_amount, declared_fuel: r.declared_fuel, undeclared: r.undeclared, non_cash: r.non_cash, cash_declared: r.cash_declared,
+        fuel_liters: r.fuel_liters, fuel_amount: r.fuel_amount, declared_fuel: r.declared_fuel, undeclared: r.undeclared, non_cash: r.non_cash, cash_declared: r.cash_declared, expenses_cash: r.expenses_cash,
         expected_cash: multi ? r.expected_cash : null, counted_cash: multi ? r.counted_cash : null,
         cash_gap: multi ? r.cash_gap : (soleId === r.employee_id ? gap : null),
         stock_gaps: gaps.flatMap(g => (g.parts || (soleId != null ? [{ employee_id: soleId, amount: g.amount }] : [])).filter(x => x.employee_id === r.employee_id).map(x => ({ product: g.name, amount: x.amount }))),
@@ -655,7 +659,7 @@ r.post('/:id/close', need('shift.close'), body(closeSchema), wrap(async (req, re
         shop_sales: shopSales,
         cash: { opening: s.opening_cash, theoretical, counted: b.counted_cash, gap },
         stock, anomalies: [...manual, ...anomalies],
-        employees: employeesReport, unassigned, shared: multi,
+        employees: employeesReport, unassigned, shared: multi, expenses_unassigned: expensesUnassigned,
         attribution_check: { checked_sales: attrCheck.checked, mismatches: 0 },
       };
       // Contrôle de cuve (réglage station « tank_close_block », désactivé par défaut) : écart critique/à surveiller sans justification = clôture refusée.

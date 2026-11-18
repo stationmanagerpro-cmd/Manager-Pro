@@ -240,6 +240,7 @@ r.get('/sales', wrap(async (req, res) => {
 r.post('/expenses', need('expense.create'), body(z.object({
   category: z.string().min(1), amount: z.number().positive(), method: z.string().min(1),
   beneficiary: z.string().optional(), receipt_url: z.string().optional(), comment: z.string().optional(),
+  employee_id: z.number().int().optional(),
   client_ref: z.string().trim().min(1).max(128).optional().nullable(),
 })), wrap(async (req, res) => {
   await assertNotLocked(req.sid);
@@ -259,10 +260,17 @@ r.post('/expenses', need('expense.create'), body(z.object({
     }
     const { rows: [sh] } = await c.query("SELECT id, opened_at, shift_date FROM shifts WHERE station_id = $1 AND status = 'ouvert'", [req.sid]);
     const stamp = businessStampFromShift(sh);
+    // Employé responsable : obligatoire sur quart partagé (membre du quart) ; sinon dépense hors employé, au nom de son auteur, justifiée.
+    const team = sh ? (await c.query('SELECT employee_id FROM shift_employees WHERE shift_id = $1', [sh.id])).rows.map(x => Number(x.employee_id)) : [];
+    const empId = b.employee_id != null ? Number(b.employee_id) : null;
+    if (team.length >= 2 && empId == null) throw new HttpError(400, 'Quart partagé : choisissez l’employé responsable de cette dépense');
+    if (empId != null && !sh) throw new HttpError(400, 'Aucun quart ouvert : la dépense ne peut pas être attribuée à un employé');
+    if (empId != null && !team.includes(empId)) throw new HttpError(400, 'Cet employé ne fait pas partie du quart en cours');
+    if (empId == null && !String(b.comment || '').trim()) throw new HttpError(400, 'Justification obligatoire pour une dépense hors employé (commentaire)');
     const { rows: [e] } = await c.query(
-      `INSERT INTO expenses(station_id, shift_id, category, amount, method, beneficiary, receipt_url, comment, created_by, client_ref, spent_on)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,COALESCE($11::date, CURRENT_DATE)) RETURNING *`,
-      [req.sid, sh?.id || null, b.category, b.amount, b.method, b.beneficiary || null, b.receipt_url || null, b.comment || null, req.user.id, clientRef, stamp.spentOn]);
+      `INSERT INTO expenses(station_id, shift_id, category, amount, method, beneficiary, receipt_url, comment, created_by, client_ref, spent_on, employee_id)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,COALESCE($11::date, CURRENT_DATE),$12) RETURNING *`,
+      [req.sid, sh?.id || null, b.category, b.amount, b.method, b.beneficiary || null, b.receipt_url || null, b.comment || null, req.user.id, clientRef, stamp.spentOn, empId]);
     await settle(c, { station: req.sid, method: b.method, amount: -b.amount, label: 'Dépense : ' + b.category, ref: ['expenses', e.id], shift: sh?.id, by: req.user.id, event_type: 'DEPENSE', description: b.comment || b.category });
     await audit(c, req, 'dépenses',
       stamp.backdated
