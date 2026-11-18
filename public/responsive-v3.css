@@ -762,7 +762,7 @@ body.demo-on #app-header { top: 44px; }
 #app-header .help-top-btn:hover, #app-header .help-top-btn:focus-visible { background: rgba(255,255,255,.16); }
 .help-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 12px; margin-top: 12px; }
 .help-card { border: 1px solid var(--line, #dde3ee); border-radius: 12px; padding: 14px; background: var(--card, #fff); display: flex; flex-direction: column; gap: 8px; }
-.help-card h3 { margin: 0; font-size: 15px; color: var(--t, #1b2433); overflow-wrap: anywhere; min-width: 0; }
+.help-card h3 { margin: 0; font-size: 15px; color: #fff; background: #0a2a6b; padding: 7px 10px; border-radius: 8px; overflow-wrap: anywhere; min-width: 0; }
 .help-card .help-proc { overflow-wrap: anywhere; word-break: break-word; min-width: 0; max-width: 100%; }
 .help-card a.help-video { color: var(--p, #1f4fd8); text-decoration: none; overflow-wrap: anywhere; white-space: normal; text-align: center; }
 .help-card a.help-video:hover, .help-card a.help-video:focus-visible { text-decoration: underline; }
