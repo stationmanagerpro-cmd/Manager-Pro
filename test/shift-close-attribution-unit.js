@@ -80,6 +80,8 @@ pool.query = async (sql, params) => {
   if (/^SELECT name FROM stations/.test(q)) return { rows: [{ name: 'Station Test' }] };
   if (/^SELECT pr.id AS product_id/.test(q)) return { rows: [] };
   if (/^SELECT sa.kind, sa.description, sa.amount, sa.employee_id/.test(q)) return { rows: [] };
+  if (/FROM expenses WHERE shift_id = \$1 AND deleted_at IS NULL AND method = 'especes' AND employee_id IS NOT NULL/.test(q)) return { rows: [] };
+  if (/FROM expenses WHERE shift_id = \$1 AND deleted_at IS NULL AND method = 'especes' AND employee_id IS NULL/.test(q)) return { rows: [{ t: 0 }] };
   throw new Error('requête inattendue : ' + q.slice(0, 140));
 };
 const shifts = require(path.join(__dirname, '..', 'src', 'shifts.js'));

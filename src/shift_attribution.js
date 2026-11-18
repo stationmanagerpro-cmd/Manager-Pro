@@ -61,11 +61,11 @@ function fuelByEmployee(counters, owners, soleEmployeeId = null) {
  * - écart  = espèces qu'il a remises − attendu
  * team : [{ id, name }] ; inputs : [{ employee_id, counted_cash, mobile_money, card, credit }]
  */
-function computeEmployeeClosings({ team, fuelByEmp, declaredFuelByEmp, cashDeclaredByEmp, inputs, requireInputs }) {
+function computeEmployeeClosings({ team, fuelByEmp, declaredFuelByEmp, cashDeclaredByEmp, expensesByEmp = new Map(), inputs, requireInputs }) {
   const nameOf = new Map(team.map(t => [t.id, t.name]));
   const inByEmp = new Map((inputs || []).map(x => [Number(x.employee_id), x]));
   for (const k of inByEmp.keys()) if (!nameOf.has(k)) throw new AttributionError("L'employé " + k + " ne fait pas partie de ce quart.");
-  const ids = [...new Set([...team.map(t => t.id), ...[...fuelByEmp.keys()].filter(k => k != null), ...declaredFuelByEmp.keys(), ...cashDeclaredByEmp.keys()].filter(k => k != null))];
+  const ids = [...new Set([...team.map(t => t.id), ...[...fuelByEmp.keys()].filter(k => k != null), ...declaredFuelByEmp.keys(), ...cashDeclaredByEmp.keys(), ...expensesByEmp.keys()].filter(k => k != null))];
   const rows = [];
   for (const id of ids) {
     const name = nameOf.get(id) || ('Employé ' + id);
@@ -77,10 +77,11 @@ function computeEmployeeClosings({ team, fuelByEmp, declaredFuelByEmp, cashDecla
     const nonCash = inp ? { mobile_money: fl(inp.mobile_money), card: fl(inp.card), credit: fl(inp.credit) } : { mobile_money: 0, card: 0, credit: 0 };
     const nonCashTotal = fl(nonCash.mobile_money + nonCash.card + nonCash.credit);
     if (nonCashTotal > undeclared + 0.01) throw new AttributionError('Les paiements non espèces de ' + name + ' (' + nonCashTotal + ') dépassent son carburant non déclaré (' + undeclared + ').');
-    const expected = fl(cashDeclared + undeclared - nonCashTotal);
+    const expensesCash = fl(expensesByEmp.get(id) || 0);   // dépenses en espèces dont cet employé est responsable
+    const expected = fl(cashDeclared + undeclared - nonCashTotal - expensesCash);
     const counted = inp ? fl(inp.counted_cash) : null;
     rows.push({ employee_id: id, name, in_team: nameOf.has(id), fuel_liters: fuel.liters, fuel_amount: fuel.amount, declared_fuel: declared, undeclared, overdeclared: over,
-      non_cash: nonCash, cash_declared: cashDeclared, expected_cash: expected, counted_cash: counted, cash_gap: counted == null ? null : fl(counted - expected) });
+      non_cash: nonCash, cash_declared: cashDeclared, expenses_cash: expensesCash, expected_cash: expected, counted_cash: counted, cash_gap: counted == null ? null : fl(counted - expected) });
   }
   const unowned = fuelByEmp.get(null) || null;
   return { rows, unowned: unowned && { liters: unowned.liters, amount: unowned.amount },
