@@ -463,6 +463,14 @@ r.post('/:id/close', need('shift.close'), body(closeSchema), wrap(async (req, re
           throw new HttpError(400, 'La clôture ne peut pas être antérieure à l\'ouverture du quart');
         resolvedClosedAt = d;
       }
+      // Règle métier : aucune clôture ne peut être antérieure à une opération du même quart (vente, paiement, mouvement de caisse).
+      // Les écritures faites par la clôture elle-même ne sont pas comptées : elles n'existent pas encore à ce stade.
+      const { rows: [lastOp] } = await c.query(`SELECT GREATEST(
+          (SELECT MAX(sold_at) FROM sales WHERE shift_id = $1),
+          (SELECT MAX(paid_at) FROM payments WHERE shift_id = $1),
+          (SELECT MAX(created_at) FROM cash_movements WHERE shift_id = $1)) AS last_at`, [s.id]);
+      if (resolvedClosedAt && lastOp && lastOp.last_at && resolvedClosedAt.getTime() < new Date(lastOp.last_at).getTime() - 1000)
+        throw new HttpError(400, 'La clôture ne peut pas être antérieure à la dernière opération du quart (' + fmtDt(lastOp.last_at) + ').');
       // Placement chronologique : si des quarts plus récents existent, ce quart est « dans le passé ».
       const nbc = s.opened_at ? await shiftNeighbours(c, req.sid, new Date(s.opened_at), s.id) : { previous: null, next: null };
       const notLatest = !!nbc.next;
@@ -603,6 +611,8 @@ r.post('/:id/close', need('shift.close'), body(closeSchema), wrap(async (req, re
       const residGap = multi && !incomplete ? attr.residualGap(gap, empCl.rows) : null;         // part non attribuable à un employé
       if (fuelCash > 0) await cashMove(c, { reg: s.cash_register_id, shift: s.id, kind: 'encaissement', amount: fuelCash, label: 'Recette carburant espèces, quart ' + s.number, by: req.user.id });
       if (gap !== 0) await cashMove(c, { reg: s.cash_register_id, shift: s.id, kind: 'ecart_cloture', amount: gap, label: 'Écart de clôture, quart ' + s.number, by: req.user.id });
+      // L'écart est daté à l'heure de clôture retenue (même règle que l'ouverture), pour ne pas être postérieur à la clôture.
+      if (gap !== 0 && resolvedClosedAt) await c.query("UPDATE cash_movements SET created_at = $2::timestamptz WHERE shift_id = $1 AND kind = 'ecart_cloture' AND created_at = now()", [s.id, resolvedClosedAt.toISOString()]);
 
       // D. Stock : les litres vendus sortent du stock, puis comparaison avec l'inventaire physique
       const { rows: prods } = await c.query(

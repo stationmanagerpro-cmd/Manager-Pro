@@ -54,3 +54,11 @@ Décision du propriétaire : chaque dépense a un responsable (employé, admin, 
 - Rapport de fermeture : les dépenses sans employé restent dans « Dépenses hors employé » ; le nom du responsable n'y figure pas encore.
 - Test : `test/expense-responsible-static.js` 8/8 (vérification statique, base non exécutée). Suite : 202 réussis, 2 échecs d'environnement.
 - Non vérifié : tests d'intégration avec PostgreSQL, comportement en production, ancien client (cache) qui n'envoie pas `responsible_user_id` (refusé).
+
+## Règle : aucune clôture antérieure à une opération du quart (2026-11-18)
+Décision du propriétaire : une clôture de quart ne peut pas être antérieure à une vente ou opération du même quart.
+- `src/shifts.js` (route de clôture) : refus 400 si `closed_at` est antérieur à la dernière vente (`sales.sold_at`), au dernier paiement (`payments.paid_at`) ou au dernier mouvement de caisse (`cash_movements.created_at`) du quart.
+- L'écart de clôture (`ecart_cloture`) est daté à l'heure de clôture retenue, comme l'ouverture le fait déjà pour ses mouvements.
+- Test : `test/shift-close-after-ops-static.js` 5/5. `test/shift-close-attribution-unit.js` : simulateur complété pour la nouvelle requête. Suite : 203 réussis, 2 échecs d'environnement (zod factice).
+- Non couvert : les dépenses (la base de production n'a pas de `created_at` pour `expenses`, seulement la date `spent_on`), ni les relevés de compteurs et mouvements de stock dont la colonne horodatée n'a pas été confirmée.
+- Non vérifié : tests d'intégration avec PostgreSQL.

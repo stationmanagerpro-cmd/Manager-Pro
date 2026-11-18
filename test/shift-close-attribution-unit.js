@@ -82,6 +82,8 @@ pool.query = async (sql, params) => {
   if (/^SELECT sa.kind, sa.description, sa.amount, sa.employee_id/.test(q)) return { rows: [] };
   if (/FROM expenses WHERE shift_id = \$1 AND deleted_at IS NULL AND method = 'especes' AND employee_id IS NOT NULL/.test(q)) return { rows: [] };
   if (/FROM expenses WHERE shift_id = \$1 AND deleted_at IS NULL AND method = 'especes' AND employee_id IS NULL/.test(q)) return { rows: [{ t: 0 }] };
+  // Dernière opération du quart (règle : clôture non antérieure aux opérations) : aucune dans ce scénario.
+  if (/SELECT GREATEST\(/.test(q)) return { rows: [{ last_at: null }] };
   throw new Error('requête inattendue : ' + q.slice(0, 140));
 };
 const shifts = require(path.join(__dirname, '..', 'src', 'shifts.js'));
