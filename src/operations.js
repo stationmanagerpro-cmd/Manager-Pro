@@ -112,7 +112,13 @@ r.post('/sales', need('sale.create'), body(saleSchema), wrap(async (req, res) =>
     if (!sh) throw new HttpError(409, 'Aucun quart ouvert : impossible de vendre');
     const stamp = businessStampFromShift(sh);
     let emp = b.employee_id;
-    if (!emp) { const { rows: [e] } = await c.query('SELECT id FROM employees WHERE user_id = $1 AND station_id = $2', [req.user.id, req.sid]); emp = e?.id; }
+    const { rows: [team] } = await c.query('SELECT COUNT(*)::int AS n FROM shift_employees WHERE shift_id = $1', [sh.id]);
+    if (team.n >= 2) {
+      // Quart partagé : la vente doit être attribuée à l'employé qui a servi, et il doit faire partie du quart.
+      if (!emp) throw new HttpError(400, 'Quart partagé : choisissez l’employé qui a servi cette vente');
+      const { rowCount: inTeam } = await c.query('SELECT 1 FROM shift_employees WHERE shift_id = $1 AND employee_id = $2', [sh.id, emp]);
+      if (!inTeam) throw new HttpError(400, 'Cet employé ne fait pas partie du quart en cours');
+    } else if (!emp) { const { rows: [e] } = await c.query('SELECT id FROM employees WHERE user_id = $1 AND station_id = $2', [req.user.id, req.sid]); emp = e?.id; }
     const { rowCount } = emp ? await c.query('SELECT 1 FROM employees WHERE id = $1 AND station_id = $2', [emp, req.sid]) : { rowCount: 0 };
     if (!rowCount) throw new HttpError(400, 'Employé requis pour enregistrer la vente');
 
