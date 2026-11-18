@@ -43,3 +43,14 @@
 - **ANO-014** : SDK Android absent (Gradle présent, pas de SDK) : recompilation impossible ici.
 - **ANO-015** : le service Render `Manager-Pro` est en auto-deploy sur `main` : toute fusion déploie automatiquement. Fusion et déploiement doivent donc être validés ensemble.
 - **ANO-018 / ANO-019** : dépendances non installées (pas de `node_modules`, réseau npm bloqué) : `npm audit` et tests d'intégration impossibles.
+
+## ANO-016 — responsable obligatoire sur chaque dépense (2026-11-18)
+Décision du propriétaire : chaque dépense a un responsable (employé, admin, gérant…), compte utilisateur de la station, désigné par une autre personne ; motif obligatoire ; responsable prévenu dans la messagerie ; dépense visible dans le rapport de fermeture.
+- Migration `123_expenses_responsible.sql` : colonne `expenses.responsible_user_id` (nullable, historique intact).
+- `POST /expenses` : responsable requis ; refus si le responsable est l'auteur ; refus si hors station ou inactif ; motif obligatoire pour toute dépense ; si le responsable est employé du quart, la dépense lui est rattachée (écart de caisse). Notification `expense_assigned` (hors rejeu).
+- `GET /expenses/responsables` : comptes actifs de la station.
+- Formulaire « Dépense » : sélecteur de responsable obligatoire (remplace le sélecteur d'employé). `app.js` modifié, `sw.js` régénéré.
+- **Changement de règle** : l'obligation « employé responsable sur quart partagé » (PR #18) est remplacée par la règle du responsable ci-dessus. Un responsable sans compte utilisateur n'est plus admis.
+- Rapport de fermeture : les dépenses sans employé restent dans « Dépenses hors employé » ; le nom du responsable n'y figure pas encore.
+- Test : `test/expense-responsible-static.js` 8/8 (vérification statique, base non exécutée). Suite : 202 réussis, 2 échecs d'environnement.
+- Non vérifié : tests d'intégration avec PostgreSQL, comportement en production, ancien client (cache) qui n'envoie pas `responsible_user_id` (refusé).

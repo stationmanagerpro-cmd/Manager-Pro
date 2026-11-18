@@ -919,10 +919,11 @@ async function vCaisse() {
 }
 const addX = async () => {
   notifyIfPastShift();
-  // Quart partagé : l'employé responsable est obligatoire ; sinon la dépense est hors employé (justification obligatoire).
-  const cu = await G('/shifts/current').catch(() => null), team = cu && Array.isArray(cu.team) ? cu.team : [], shared = team.length >= 2;
-  const empField = team.length ? [['employee_id', shared ? 'Employé responsable (obligatoire, quart partagé)' : 'Employé responsable (facultatif)', 's', [['', shared ? '— Choisir un employé —' : '— Aucun (dépense hors employé) —'], ...team.map(t => [t.id, t.name])]]] : [];
-  form('Dépense', [['category', 'Catégorie', 's', ['Carburant véhicule', 'Électricité', 'Eau', 'Salaires', 'Maintenance', 'Transport', 'Fournitures', 'Sécurité', 'Autres']], ['amount', 'Montant', 'number'], ['method', 'Mode', 's', pmOpts(['credit'])], ['beneficiary', 'Bénéficiaire'], ...empField, ['comment', 'Commentaire (justification obligatoire si hors employé)']], {}, async d => { const ex = await Po('/expenses', { ...d, employee_id: d.employee_id ? Number(d.employee_id) : undefined }); closeM(); if (ex && ex.id && typeof askExpenseReceipt === 'function') await askExpenseReceipt(ex.id); go(cur, arg); }); };
+  // Responsable obligatoire (ANO-016) : un compte de la station, désigné par une autre personne ; motif obligatoire.
+  const resps = await G('/expenses/responsables').catch(() => []);
+  const respOpts = [['', '— Choisir le responsable —'], ...(resps || []).filter(u => !ME || u.id !== ME.id).map(u => [u.id, u.name])];
+  form('Dépense', [['category', 'Catégorie', 's', ['Carburant véhicule', 'Électricité', 'Eau', 'Salaires', 'Maintenance', 'Transport', 'Fournitures', 'Sécurité', 'Autres']], ['amount', 'Montant', 'number'], ['method', 'Mode', 's', pmOpts(['credit'])], ['beneficiary', 'Bénéficiaire'], ['responsible_user_id', 'Responsable (obligatoire, désigné par une autre personne)', 's', respOpts], ['comment', 'Motif (obligatoire)']], {}, async d => { const ex = await Po('/expenses', { ...d, responsible_user_id: d.responsible_user_id ? Number(d.responsible_user_id) : undefined }); closeM(); if (ex && ex.id && typeof askExpenseReceipt === 'function') await askExpenseReceipt(ex.id); go(cur, arg); });
+};
 const addM = async () => {
   let accOpts = [];
   try {
