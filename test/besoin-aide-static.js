@@ -15,7 +15,7 @@ assert(help.includes("V.besoin_aide = [\"Besoin d'aide\", '*']") && help.include
 assert(/keys: \['moi', 'clients', 'onboard', 'aide', 'besoin_aide'\]/.test(shell), 'entrée dans « Mon profil & aide » (clients)');
 assert(/label: 'Mon profil & aide', icon: 'settings', keys: \['besoin_aide'\]/.test(shell), 'entrée dans « Mon profil & aide » (superadmin)');
 // 4. Superadmin : toutes les cartes de module, avec le bouton Modifier.
-assert(help.includes('!!(ME && ME.is_global) || canView(k)'), 'superadmin voit tous les modules de la vue');
+assert(help.includes('(isSuper || canView(k))') && help.includes('const isSuper = !!(ME && ME.is_global)'), 'superadmin voit tous les modules de la vue, droit lu dans la session');
 assert(help.includes("helpEdit('") && help.includes('data.is_superadmin'), 'bouton Modifier réservé au superadmin');
 // 5. Stockage et écriture côté serveur.
 assert(help.includes("G('/help-guides')") && help.includes("Pu('/help-guides/'"), 'lecture et écriture via /api/help-guides');
