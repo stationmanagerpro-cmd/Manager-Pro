@@ -316,7 +316,8 @@
     const team = cu && Array.isArray(cu.team) ? cu.team : [];
     const emps = team.length ? team.map(t => ({ id: t.id, name: t.name })) : (em || []).map(e => ({ id: e.id, name: e.first_name + ' ' + e.last_name }));
     const meEmp = (em || []).find(e => e.user_id && ME && Number(e.user_id) === Number(ME.id));
-    const defEmp = (meEmp && emps.some(x => Number(x.id) === Number(meEmp.id))) ? meEmp.id : (emps[0] && emps[0].id);
+    const shared = emps.length >= 2;   // quart partagé : l'employé qui a servi doit être choisi explicitement
+    const defEmp = shared ? null : ((meEmp && emps.some(x => Number(x.id) === Number(meEmp.id))) ? meEmp.id : (emps[0] && emps[0].id));
     const cur_ = typeof CUR !== 'undefined' ? CUR : 'FCFA', fm = typeof f === 'function' ? f : (v => String(v));
     modal(`<div class="sp">
       <div class="sp-head"><div class="sp-ico" aria-hidden="true">🛒</div>
@@ -327,7 +328,7 @@
           <div class="g">
             <label>Produit<select id="pp">${ps.map(p => `<option value="${Number(p.id)}" data-price="${Number(p.sell_price) || 0}" data-stock="${Number(p.stock) || 0}">${escLocal(p.name)}</option>`).join('')}</select></label>
             <label>Quantité<input id="pq" type="number" step="any" min="0" value="1"></label>
-            <label>Employé (participant du quart)<select id="pe">${emps.map(e => `<option value="${Number(e.id)}"${Number(e.id) === Number(defEmp) ? ' selected' : ''}>${escLocal(e.name)}</option>`).join('')}</select></label>
+            <label>${shared ? 'Employé qui a servi (obligatoire)' : 'Employé (participant du quart)'}<select id="pe">${shared ? '<option value="" selected>— Choisir l’employé —</option>' : ''}${emps.map(e => `<option value="${Number(e.id)}"${Number(e.id) === Number(defEmp) ? ' selected' : ''}>${escLocal(e.name)}</option>`).join('')}</select></label>
             <label>Client (si crédit)<select id="pc"><option value="">Aucun</option>${(cl || []).map(c => `<option value="${c.id}">${escLocal(c.name)}</option>`).join('')}</select></label>
             <label style="display:none">Paiement<select id="ppay">${payOpts.filter(o => o[2] !== false).map(([c, l]) => `<option value="${escLocal(c)}">${escLocal(l)}</option>`).join('')}</select></label>
           </div>
@@ -356,6 +357,7 @@
     $$('pok').onclick = async () => {
       const { tot, q } = calcP(), btn = $$('pok');
       if (!(q > 0)) return toast('Saisissez une quantité', 'error');
+      if (shared && !$$('pe').value) return toast('Choisissez l’employé qui a servi cette vente', 'error');
       if ($$('ppay').value === 'credit' && !$$('pc').value) return toast('Client requis pour un paiement à crédit', 'error');
       btn.disabled = true;
       try {
