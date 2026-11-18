@@ -3,7 +3,7 @@
  * - /api/** → network-only (jamais de cache : auth JWT, données métier)
  * - Navigation HTML → network-first, fallback cache index si offline total
  */
-const CACHE = 'smp-static-b8f138beeac';
+const CACHE = 'smp-static-b6e121d623e';
 
 /* PRECACHE:BEGIN (généré par scripts/build-sw.js — ne pas modifier à la main) */
 const PRECACHE = [
@@ -45,7 +45,7 @@ const PRECACHE = [
   '/ext-fleet.js?v=2',
   '/ext-form-drafts.js?v=1',
   '/ext-gaps.js?v=1',
-  '/ext-help.js?v=2',
+  '/ext-help.js?v=3',
   '/ext-home.js',
   '/ext-hr-v2.js',
   '/ext-import.js?v=3',
