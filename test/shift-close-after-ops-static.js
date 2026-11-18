@@ -23,4 +23,12 @@ check('elle est exécutée après la résolution de closed_at et avant le contr�
 check('l’écart de clôture est daté à l’heure de clôture retenue', () => {
   assert(src.includes("UPDATE cash_movements SET created_at = $2::timestamptz WHERE shift_id = $1 AND kind = 'ecart_cloture'"));
 });
-console.log(`\n${n}/5 contrôles réussis.`);
+check('le journal de clôture enregistre l’heure de réception et l’écart (ANO-020)', () => {
+  assert(src.includes('closed_received_at: receivedAt.toISOString()') && src.includes('closed_delay_min: closedDelayMin'));
+});
+check('le rapport de clôture détaille les dépenses avec leur responsable (ANO-016)', () => {
+  assert(src.includes('expenses_responsibles: expResp.map('));
+  const app = fs.readFileSync(path.join(__dirname, '..', 'public', 'app.js'), 'utf8');
+  assert(app.includes("'<h3>Dépenses et responsables</h3>'"));
+});
+console.log(`\n${n}/7 contrôles réussis.`);

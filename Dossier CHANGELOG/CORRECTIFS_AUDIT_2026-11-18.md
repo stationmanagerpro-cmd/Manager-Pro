@@ -62,3 +62,10 @@ Décision du propriétaire : une clôture de quart ne peut pas être antérieure
 - Test : `test/shift-close-after-ops-static.js` 5/5. `test/shift-close-attribution-unit.js` : simulateur complété pour la nouvelle requête. Suite : 203 réussis, 2 échecs d'environnement (zod factice).
 - Non couvert : les dépenses (la base de production n'a pas de `created_at` pour `expenses`, seulement la date `spent_on`), ni les relevés de compteurs et mouvements de stock dont la colonne horodatée n'a pas été confirmée.
 - Non vérifié : tests d'intégration avec PostgreSQL.
+
+## Suite des corrections (2026-11-18)
+- **ANO-020** : le journal de clôture enregistre désormais `closed_received_at` (heure de réception serveur) et `closed_delay_min`. L'indicateur `backdated` garde son sens (date antérieure au jour).
+- **ANO-016 (rapport)** : le rapport de clôture détaille chaque dépense avec son responsable (`expenses_responsibles`), affiché dans un tableau « Dépenses et responsables ».
+- `public/app.js` modifié, `sw.js` régénéré (`smp-static-b69e72ec4a4`).
+- Tests : `shift-close-after-ops-static` 7/7 ; `shift-close-attribution-unit` 16/16 (simulateur complété). Suite : 203 réussis, 2 échecs d'environnement (zod factice).
+- Non couvert : tests d'intégration PostgreSQL ; mouvements de caisse manuels (fonds, retraits), dont le responsable n'a pas encore été décidé.

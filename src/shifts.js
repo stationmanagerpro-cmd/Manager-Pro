@@ -533,7 +533,13 @@ r.post('/:id/close', need('shift.close'), body(closeSchema), wrap(async (req, re
       const { rows: cashEmp } = await c.query("SELECT sa.employee_id, COALESCE(SUM(p.amount),0) AS t FROM payments p JOIN sales sa ON sa.id = p.sale_id WHERE sa.shift_id = $1 AND sa.status = 'valide' AND p.method = 'especes' AND sa.employee_id IS NOT NULL GROUP BY sa.employee_id", [s.id]);
       const { rows: expEmp } = await c.query("SELECT employee_id, COALESCE(SUM(amount),0) AS t FROM expenses WHERE shift_id = $1 AND deleted_at IS NULL AND method = 'especes' AND employee_id IS NOT NULL GROUP BY employee_id", [s.id]);
       const { rows: [expUn] } = await c.query("SELECT COALESCE(SUM(amount),0) AS t FROM expenses WHERE shift_id = $1 AND deleted_at IS NULL AND method = 'especes' AND employee_id IS NULL", [s.id]);
-      const expensesUnassigned = fl(expUn.t);   // dépenses en espèces hors employé : au nom de leur auteur, affichées au rapport
+      const expensesUnassigned = fl(expUn.t);
+      // Dépenses rattachées à un responsable désigné (règle ANO-016) : détail au rapport de fermeture.
+      const { rows: expResp } = await c.query(`SELECT e.category, e.amount, e.method, e.comment,
+          COALESCE(NULLIF(TRIM(CONCAT_WS(' ', emp.first_name, emp.last_name)), ''), u.login) AS responsible
+        FROM expenses e LEFT JOIN users u ON u.id = e.responsible_user_id
+        LEFT JOIN employees emp ON emp.user_id = u.id AND emp.station_id = e.station_id AND emp.deleted_at IS NULL
+        WHERE e.shift_id = $1 AND e.deleted_at IS NULL ORDER BY e.id`, [s.id]);   // dépenses en espèces hors employé : au nom de leur auteur, affichées au rapport
       const { rows: qtyEmp } = await c.query("SELECT sa.employee_id, d.product_id, COALESCE(SUM(d.quantity),0) AS q FROM sale_details d JOIN sales sa ON sa.id = d.sale_id WHERE sa.shift_id = $1 AND sa.status = 'valide' AND sa.employee_id IS NOT NULL GROUP BY sa.employee_id, d.product_id", [s.id]);
       const team = teamRows.map(t => ({ id: Number(t.id), name: t.name || ('Employé ' + t.id) }));
       const multi = team.length >= 2, soleId = team.length === 1 ? team[0].id : null;
@@ -669,7 +675,7 @@ r.post('/:id/close', need('shift.close'), body(closeSchema), wrap(async (req, re
         shop_sales: shopSales,
         cash: { opening: s.opening_cash, theoretical, counted: b.counted_cash, gap },
         stock, anomalies: [...manual, ...anomalies],
-        employees: employeesReport, unassigned, shared: multi, expenses_unassigned: expensesUnassigned,
+        employees: employeesReport, unassigned, shared: multi, expenses_unassigned: expensesUnassigned, expenses_responsibles: expResp.map(x => ({ category: x.category, amount: fl(x.amount), method: x.method, comment: x.comment || "", responsible: x.responsible || "—" })),
         attribution_check: { checked_sales: attrCheck.checked, mismatches: 0 },
       };
       // Contrôle de cuve (réglage station « tank_close_block », désactivé par défaut) : écart critique/à surveiller sans justification = clôture refusée.
@@ -718,13 +724,16 @@ r.post('/:id/close', need('shift.close'), body(closeSchema), wrap(async (req, re
         [req.sid, gap !== 0 ? 'warning' : 'info', gap !== 0 ? 'ecart_caisse' : 'anomalie', `Quart ${s.number} clôturé avec ${an.length} anomalie(s)`, s.id]);
       await c.query("INSERT INTO reports(station_id, shift_id, kind, content, generated_by) VALUES ($1,$2,'quart',$3,$4)", [req.sid, s.id, JSON.stringify(report), req.user.id]);
       const closedBackdated = !!(closedIso && closedIso.slice(0, 10) < new Date().toISOString().slice(0, 10));
+      // Heure de réception serveur et écart avec l'heure de clôture retenue (ANO-020) : la date seule ne suffit pas.
+      const receivedAt = new Date();
+      const closedDelayMin = closedIso ? Math.round((receivedAt.getTime() - new Date(closedIso).getTime()) / 60000) : 0;
       await audit(c, req, 'quarts',
         closedBackdated
           ? ('Clôture du quart N° ' + s.number + ' (date antérieure ' + closedIso.slice(0, 10) + ')')
           : ('Clôture du quart N° ' + s.number),
         'shifts', s.id,
         { statut: 'ouvert' },
-        { statut: 'ferme', ecart_caisse: gap, closed_at: closedIso || closedRow?.closed_at, backdated: closedBackdated });
+        { statut: 'ferme', ecart_caisse: gap, closed_at: closedIso || closedRow?.closed_at, backdated: closedBackdated, closed_received_at: receivedAt.toISOString(), closed_delay_min: closedDelayMin });
       return report;
     });
     // Déclenche une notification client après la validation de la clôture. L’envoi
