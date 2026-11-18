@@ -118,7 +118,7 @@ app.use('/api', require('./activity_log').middleware);   // traçabilité : chaq
 app.use('/api', (req, res, next) => {
   if (!req.user?.is_global) return next();
   // '/messaging' : le Super Admin échange avec les administrateurs de ses clients (support) ; messaging.js applique l'isolation par client.
-  const allowed = ['/admin', '/users', '/roles', '/auth', '/me', '/contracts', '/branding', '/messaging', '/config/map'];   // /config/map : jeton public Mapbox (aucune donnée métier) — nécessaire à la carte du Super Admin
+  const allowed = ['/admin', '/users', '/roles', '/auth', '/me', '/contracts', '/branding', '/messaging', '/config/map', '/help-guides'];   // /config/map : jeton public Mapbox (aucune donnée métier) — nécessaire à la carte du Super Admin
   const path = req.path || '';
   if (allowed.some(p => path === p || path.startsWith(p + '/'))) return next();
   return res.status(403).json({ error: 'Administrateur Principal : les données métier des stations sont interdites.' });
