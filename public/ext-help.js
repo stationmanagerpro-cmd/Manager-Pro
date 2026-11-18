@@ -28,15 +28,20 @@
   }
 
   VM.besoin_aide = async function () {
-    let data = { guides: [], is_superadmin: false };
-    try { data = await G('/help-guides'); } catch (e) { /* contenu indisponible : cartes vides, sans erreur bloquante */ }
+    let data = { guides: [] }, loadError = null;
+    try { data = await G('/help-guides'); } catch (e) { loadError = e; }
     const byKey = Object.fromEntries((data.guides || []).map(g => [g.module_key, g]));
+    // Le droit d'édition vient de la session (ME.is_global), pas seulement de la réponse : une lecture ratée ne le retire plus.
+    const isSuper = !!(ME && ME.is_global) || !!data.is_superadmin;
     const cards = HELP_MODULES
-      .filter(k => V[k] && (!!(ME && ME.is_global) || canView(k)))
-      .map(k => card(k, byKey[k], !!data.is_superadmin))
+      .filter(k => V[k] && (isSuper || canView(k)))
+      .map(k => card(k, byKey[k], isSuper))
       .join('');
+    const notice = loadError
+      ? `<p class="muted" role="status">Contenu non chargé. <button type="button" class="b2" onclick="go('besoin_aide')">Réessayer</button></p>`
+      : '';
     return `<section class="help-page">
-      <p class="muted">Procédures et vidéos par module.</p>
+      <p class="muted">Procédures et vidéos par module.</p>${notice}
       <div class="help-grid">${cards || '<p class="muted">Aucun module d’aide accessible avec vos droits.</p>'}</div>
     </section>`;
   };
