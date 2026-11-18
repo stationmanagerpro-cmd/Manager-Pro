@@ -10,7 +10,7 @@ const pool = { query: async () => ({ rows: [] }) };
 const core = {
   pool, HttpError, wrap: fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next),
   body: () => (req, res, next) => next(),
-  audit: async (c, req, module, action, table, recId, oldV, newV) => { audits.push([module, action, table, recId, newV]); },
+  audit: async (c, req, module, action, table, recId, oldV, newV) => { audits.push([module, action, table, recId, newV]); if (recId !== null) throw Object.assign(new Error('record_id BIGINT reçoit du texte'), { code: '22P02' }); },
 };
 function Router() {
   const stack = [];

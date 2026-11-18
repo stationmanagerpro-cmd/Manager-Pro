@@ -74,7 +74,8 @@ r.post('/help-guides', body(z.object({
     `INSERT INTO help_guides (module_key, label, procedure, video_url, custom, updated_by) VALUES ($1,$2,$3,$4,true,$5)
      RETURNING module_key, label, procedure, video_url, custom, updated_at`,
     [key, label, procedure, videoUrl, req.user.id]);
-  await audit(pool, req, 'aide', 'creer', 'help_guides', key, null, { label, video_url: videoUrl });
+  // record_id est un BIGINT : la clé du module (texte) va dans new_value, pas dans record_id.
+  await audit(pool, req, 'aide', 'creer', 'help_guides', null, null, { module_key: key, label, video_url: videoUrl });
   res.status(201).json(g);
 }));
 
@@ -97,7 +98,8 @@ r.put('/help-guides/:key', body(z.object({
      ON CONFLICT (module_key) DO UPDATE SET label = EXCLUDED.label, procedure = EXCLUDED.procedure, video_url = EXCLUDED.video_url, updated_at = now(), updated_by = EXCLUDED.updated_by
      RETURNING module_key, label, procedure, video_url, custom, updated_at`,
     [key, label, procedure, videoUrl, req.user.id]);
-  await audit(pool, req, 'aide', 'modifier', 'help_guides', key, null, { label, video_url: videoUrl, procedure_length: procedure.length });
+  // record_id est un BIGINT : la clé du module (texte) va dans new_value, pas dans record_id.
+  await audit(pool, req, 'aide', 'modifier', 'help_guides', null, null, { module_key: key, label, video_url: videoUrl, procedure_length: procedure.length });
   res.json(g);
 }));
 
