@@ -2,7 +2,6 @@
 -- - tax_rate sur lignes d'achat (TVA déductible plus précise)
 -- - Pas de DROP destructif
 
-BEGIN;
 
 ALTER TABLE purchase_details
   ADD COLUMN IF NOT EXISTS tax_rate NUMERIC(5,2) NOT NULL DEFAULT 0
@@ -15,4 +14,3 @@ CREATE INDEX IF NOT EXISTS purchase_details_tax_idx
   ON purchase_details (purchase_id)
   WHERE tax_rate > 0;
 
-COMMIT;

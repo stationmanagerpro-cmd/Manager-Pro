@@ -1,6 +1,5 @@
 -- 086 — Fiscalité : assistant d'activation individuelle par impôt (paramètres versionnés, confirmés, journalisés)
 -- Un module ne calcule rien tant qu'il n'a pas été activé par l'assistant (voir src/fiscal_wizard.js).
-BEGIN;
 
 ALTER TABLE fiscal_module_activations
   ADD COLUMN IF NOT EXISTS effective_from       DATE,
@@ -40,4 +39,3 @@ DROP TRIGGER IF EXISTS fiscal_module_settings_immutable ON fiscal_module_setting
 CREATE TRIGGER fiscal_module_settings_immutable BEFORE UPDATE ON fiscal_module_settings
   FOR EACH ROW EXECUTE FUNCTION fiscal_module_settings_no_update();
 
-COMMIT;

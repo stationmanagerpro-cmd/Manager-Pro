@@ -1,5 +1,4 @@
 -- Migration 050 : Checklist pièces justificatives par période fiscale
-BEGIN;
 
 CREATE TABLE IF NOT EXISTS fiscal_checklist_items (
   id              BIGSERIAL PRIMARY KEY,
@@ -22,4 +21,3 @@ CREATE INDEX IF NOT EXISTS fiscal_checklist_client_idx ON fiscal_checklist_items
 
 COMMENT ON TABLE fiscal_checklist_items IS 'Pièces attendues pour une période — aide à la préparation, non officielle.';
 
-COMMIT;

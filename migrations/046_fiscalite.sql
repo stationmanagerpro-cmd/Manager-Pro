@@ -3,7 +3,6 @@
 -- Les calculs sont des ESTIMATIONS. Aucune transmission DGI. Aucune déclaration officielle.
 -- Règles versionnées : les historiques conservent la version applicable à leur période.
 
-BEGIN;
 
 -- 1. Profil fiscal du client (une ligne par client)
 CREATE TABLE IF NOT EXISTS fiscal_profiles (
@@ -168,4 +167,3 @@ COMMENT ON TABLE fiscal_rules IS 'Règles fiscales versionnées. Ne jamais réé
 COMMENT ON TABLE fiscal_periods IS 'Périodes préparées. Statut « pret » = prêt pour revue humaine, PAS déposé à la DGI.';
 COMMENT ON COLUMN fiscal_periods.estimates IS 'Estimations indicatives. Toujours accompagnées d''un avertissement de non-officialité.';
 
-COMMIT;

@@ -2,7 +2,6 @@
 -- Ne jamais présenter ces taux comme officiels tant que verification_status != 'verifiee'.
 -- L'Administrateur Principal doit vérifier et confirmer les textes maliens applicables.
 
-BEGIN;
 
 INSERT INTO fiscal_rules (
   tax_code, rule_key, rule_value, conditions, regime,
@@ -46,4 +45,3 @@ INSERT INTO fiscal_rules (
 )
 ON CONFLICT (tax_code, rule_key, version) DO NOTHING;
 
-COMMIT;

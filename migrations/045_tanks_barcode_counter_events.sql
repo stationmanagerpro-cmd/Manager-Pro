@@ -2,7 +2,6 @@
 -- Conforme au cahier de mise à niveau Station Manager Pro — P1/P2
 -- Idempotente et réversible (pas de DROP destructif de données métier)
 
-BEGIN;
 
 -- 1. Code-barres / EAN / SKU sur les produits (saisie UI + recherche)
 ALTER TABLE products
@@ -90,4 +89,3 @@ COMMENT ON TABLE counter_events IS 'Remises à zéro, remplacements et correctio
 COMMENT ON COLUMN products.barcode IS 'Code-barres / EAN pour produits annexes et recherche rapide';
 COMMENT ON COLUMN products.sku IS 'Référence interne produit';
 
-COMMIT;

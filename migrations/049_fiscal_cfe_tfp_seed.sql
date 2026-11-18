@@ -1,5 +1,4 @@
 -- Seed CFE / TFP (placeholders a_verifier)
-BEGIN;
 INSERT INTO fiscal_rules (
   tax_code, rule_key, rule_value, conditions, regime,
   effective_from, legal_source, version, verification_status, notes
@@ -21,4 +20,3 @@ INSERT INTO fiscal_rules (
   'Placeholder. Confirmer le barème légal avant usage.'
 )
 ON CONFLICT (tax_code, rule_key, version) DO NOTHING;
-COMMIT;
