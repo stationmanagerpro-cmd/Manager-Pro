@@ -69,3 +69,11 @@ Décision du propriétaire : une clôture de quart ne peut pas être antérieure
 - `public/app.js` modifié, `sw.js` régénéré (`smp-static-b69e72ec4a4`).
 - Tests : `shift-close-after-ops-static` 7/7 ; `shift-close-attribution-unit` 16/16 (simulateur complété). Suite : 203 réussis, 2 échecs d'environnement (zod factice).
 - Non couvert : tests d'intégration PostgreSQL ; mouvements de caisse manuels (fonds, retraits), dont le responsable n'a pas encore été décidé.
+
+## Bandeau : affichage initial (2026-11-18)
+- Constat : au chargement, l'ancien en-tête (« S Station M… » + « Besoin d'aide ») s'affichait avant le bandeau « STATION DÉMONSTRATION ».
+- Cause : l'ancien en-tête n'était masqué que lorsque le bandeau était déjà posé (`data-hero`). Le bouton « Besoin d'aide » était placé dans cet en-tête en attendant le bandeau.
+- Correction : `public/ext-banner.js` pose `data-hero-pending` dès le chargement et le retire à chaque décision (bandeau affiché ou non). `public/ext-skin-pro.css` masque l'ancien en-tête tant que le marqueur est présent, avec un repli : il redevient visible après 2,5 s si aucune décision n'est prise.
+- Versions : `ext-skin-pro.css?v=4`, `ext-banner.js?v=3`, `sw.js` régénéré (`smp-static-bc28ec0beba`).
+- Tests : `banner-pending-static` 5/5 ; `banner-static` mis à jour (version). Suite : 204 réussis, 2 échecs d'environnement (zod factice).
+- Non vérifié : rendu réel sur téléphone (la capture ci-dessus provient de l'utilisateur) ; comportement sur les pages sans bandeau.
