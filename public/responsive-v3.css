@@ -758,8 +758,10 @@ body.demo-on #app-header { top: 44px; }
 }
 
 /* Besoin d'aide : bouton de la bannière et cartes par module */
-#app-header .help-top-btn { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.55); border-radius: 999px; padding: 4px 12px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-#app-header .help-top-btn:hover, #app-header .help-top-btn:focus-visible { background: rgba(255,255,255,.16); }
+.help-top-btn { background: #0b1b3a; color: #fff; border: 1px solid rgba(255,255,255,.4); border-radius: 999px; padding: 6px 14px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; line-height: 1.2; }
+#hero { position: relative; }
+#hero > .help-top-btn { position: absolute; top: 12px; right: 16px; z-index: 3; }
+.help-top-btn:hover, .help-top-btn:focus-visible { background: #15316b; }
 .help-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 12px; margin-top: 12px; }
 .help-card { border: 1px solid var(--line, #dde3ee); border-radius: 12px; padding: 14px; background: var(--card, #fff); display: flex; flex-direction: column; gap: 8px; }
 .help-card h3 { margin: 0; font-size: 15px; color: #fff; background: #0a2a6b; padding: 7px 10px; border-radius: 8px; overflow-wrap: anywhere; min-width: 0; }

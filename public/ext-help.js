@@ -104,4 +104,38 @@
       if (typeof go === 'function') go('besoin_aide');
     } catch (e) { toast(errMsg(e)); }
   };
+
+  /* Raccourci permanent « Besoin d'aide » en haut à droite : dans la bannière (#hero) quand elle est affichée,
+   * sinon dans la barre d'en-tête, à côté du profil. Réinséré à chaque rendu (la bannière est recréée de façon asynchrone). */
+  function placeHelpShortcut() {
+    const header = document.getElementById('app-header');
+    let btn = document.querySelector('.help-top-btn');
+    let logged = false;
+    try { logged = !!ME; } catch (_) { logged = false; }
+    if (!logged || !header) { if (btn) btn.remove(); return; }
+    const hero = document.getElementById('hero');
+    const rightBar = document.querySelector('#tenant-brandbar .brandbar-right');
+    let target = header, before = null;
+    if (hero) target = hero;
+    else if (rightBar) { target = rightBar; before = rightBar.querySelector('.user-chip'); }
+    if (btn && btn.parentElement === target && btn.nextElementSibling === before) return;
+    if (btn) btn.remove();
+    btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'help-top-btn';
+    btn.textContent = "Besoin d'aide";
+    btn.title = "Besoin d'aide";
+    btn.setAttribute('aria-label', "Besoin d'aide");
+    btn.onclick = () => { if (typeof go === 'function') go('besoin_aide'); };
+    if (before) target.insertBefore(btn, before); else target.appendChild(btn);
+  }
+  let helpPlaceQueued = false;
+  function queueHelpShortcut() {
+    if (helpPlaceQueued) return;
+    helpPlaceQueued = true;
+    requestAnimationFrame(() => { helpPlaceQueued = false; placeHelpShortcut(); });
+  }
+  const helpRoot = document.querySelector('main') || document.body;
+  new MutationObserver(queueHelpShortcut).observe(helpRoot, { childList: true, subtree: true });
+  queueHelpShortcut();
 })();
