@@ -32,3 +32,14 @@
 
 ## Suite
 - Revue de la branche, puis PR et fusion sur votre mot. Déploiement après « déploie ».
+
+## Suite — points « non corrigé » traités (2026-11-18)
+- **ANO-010 (partiel)** : `test/demo-mode-static.js` corrigé : la liste des clés du menu attendait 4 clés, la fonctionnalité d'aide en ajoute `besoin_aide`. Test passe. Suite : 201 réussis, 2 échecs.
+- `employee-actions-unit.js` et `stock-movement-validation-unit.js` : échecs liés au `zod` factice du bac à sable (contraintes min/max ignorées). Non corrigés ici ; à relancer avec `npm ci` (zod réel).
+- **ANO-001 (CSP)** : non modifié. ~1 376 attributs inline (onclick, onchange, oninput…) à migrer avant de retirer `'unsafe-inline'`.
+- **ANO-002 (Mapbox)** : non modifié. `MAPBOX_TOKEN` à confirmer dans Render avant suppression du repli.
+- **ANO-004 (innerHTML)** : revue des 15 insertions suspectes : sources internes (URL blob, nombres, champs déjà échappés, dataURL de canevas). Aucune injection exploitable constatée.
+- **ANO-009** : non modifié (risque sur le bouton d'aide, pas de test navigateur avec base).
+- **ANO-014** : SDK Android absent (Gradle présent, pas de SDK) : recompilation impossible ici.
+- **ANO-015** : le service Render `Manager-Pro` est en auto-deploy sur `main` : toute fusion déploie automatiquement. Fusion et déploiement doivent donc être validés ensemble.
+- **ANO-018 / ANO-019** : dépendances non installées (pas de `node_modules`, réseau npm bloqué) : `npm audit` et tests d'intégration impossibles.
