@@ -13,10 +13,6 @@ html[data-skin=pro] .tenant-brand-mark { background: rgba(255,255,255,.1); color
 html[data-skin=pro] .skin-slogan { flex: 1 1 0; min-width: 0; z-index: 2; text-align: center; color: #fff; font-style: italic; font-weight: 800; font-size: clamp(13px, 1.4vw, 22px); line-height: 1.25; text-shadow: 0 2px 6px rgba(0,10,40,.55); padding: 0 12px; }
 html[data-skin=pro] .skin-slogan:empty { display: none; }
 html[data-skin=pro] .brandbar-right { z-index: 2; }
-html[data-skin=pro] .skin-banner { position: relative; flex: 0 0 min(20%, 300px); align-self: stretch; margin: -14px 14px -14px 0; z-index: 1; pointer-events: none;
-  background: var(--skin-banner) center/cover no-repeat;
-  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 30%, #000 85%, transparent 100%); mask-image: linear-gradient(90deg, transparent 0, #000 30%, #000 85%, transparent 100%); }
-html[data-skin=pro] .skin-banner:not([style*="--skin-banner"]) { display: none; }
 
 /* ===== Menu latéral ===== */
 html[data-skin=pro] .nav2 .nav-link { border-radius: 13px; font-weight: 600; }
@@ -124,14 +120,14 @@ html[data-skin=pro] .sp-save { background: linear-gradient(100deg, var(--p), var
 /* ===== Mobile ===== */
 @media (max-width: 760px) {
   html[data-skin=pro] .tenant-brandbar { min-height: 64px; }
-  html[data-skin=pro] .skin-slogan, html[data-skin=pro] .skin-banner, html[data-skin=pro] .skin-datepill { display: none; }
+  html[data-skin=pro] .skin-slogan, html[data-skin=pro] .skin-datepill { display: none; }
   html[data-skin=pro] #pg { border-radius: 17px; padding: 11px; min-height: 0; }
   html[data-skin=pro] .tabs a { padding: 9px 12px; }
 }
-@media print { html[data-skin=pro] .skin-crumbbar, html[data-skin=pro] .skin-banner { display: none !important; } html[data-skin=pro] #pg { box-shadow: none; border: 0; } }
+@media print { html[data-skin=pro] .skin-crumbbar { display: none !important; } html[data-skin=pro] #pg { box-shadow: none; border: 0; } }
 
 /* Grand bandeau d'accueil affiché : le petit bandeau du haut (photo + slogan) est masqué pour ne pas répéter */
-html[data-skin=pro][data-hero] .skin-banner, html[data-skin=pro][data-hero] .skin-slogan { display: none; }
+html[data-skin=pro][data-hero] .skin-slogan { display: none; }
 
 /* Grand bandeau affiché tout en haut : il porte déjà le logo et le nom de la station → on retire la ligne d'identité en double.
    L'heure n'est plus dans l'en-tête : elle descend sous le profil, à côté de la date (fil d'Ariane). */

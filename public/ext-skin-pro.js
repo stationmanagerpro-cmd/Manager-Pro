@@ -12,29 +12,16 @@
   if (typeof window.G === 'undefined' && typeof G === 'undefined') { /* écran de connexion seulement */ }
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); };
 
-  /* ---- Bandeau : slogan centré + photo ---- */
-  var bannerUrl = null, bannerKey = null;
+  /* ---- Bandeau : slogan centré. La photo est affichée par le grand bandeau #hero (ext-banner.js) : plus de vignette dans la barre. ---- */
   async function paintBanner() {
     var bar = document.getElementById('tenant-brandbar'); if (!bar || d.dataset.skin !== 'pro') return;
     var st = (typeof AP !== 'undefined' && AP && AP.station) || {}, sc = typeof ME !== 'undefined' && ME && ME.is_global;
+    var old = bar.querySelector('.skin-banner'); if (old) old.remove();   // ancienne vignette photo : doublon du grand bandeau
     var sl = bar.querySelector('.skin-slogan');
     if (!sl) { sl = document.createElement('div'); sl.className = 'skin-slogan'; var right = bar.querySelector('.brandbar-right'); bar.insertBefore(sl, right); }
     sl.textContent = sc ? '' : (st.tagline || '');
-    var bn = bar.querySelector('.skin-banner');
-    if (!bn) { bn = document.createElement('div'); bn.className = 'skin-banner'; bn.setAttribute('aria-hidden', 'true'); bar.insertBefore(bn, bar.querySelector('.brandbar-right')); }
-    if (sc || !st.has_banner || typeof SID === 'undefined' || !SID) { bn.style.removeProperty('--skin-banner'); bannerKey = null; return; }
-    var key = String(SID);
-    try {
-      if (bannerKey !== key || !bannerUrl) {
-        var r = await fetch('/api/images/banner/' + encodeURIComponent(key), { headers: { Authorization: 'Bearer ' + TK, 'X-Station-Id': String(SID) }, cache: 'no-store' });
-        if (!r.ok) throw new Error('banner');
-        if (bannerUrl) URL.revokeObjectURL(bannerUrl);
-        bannerUrl = URL.createObjectURL(await r.blob()); bannerKey = key;
-      }
-      bn.style.setProperty('--skin-banner', 'url("' + bannerUrl + '")');
-    } catch (_) { bn.style.removeProperty('--skin-banner'); }
   }
-  window.skinResetBanner = function () { bannerKey = null; if (bannerUrl) { URL.revokeObjectURL(bannerUrl); bannerUrl = null; } return paintBanner(); };
+  window.skinResetBanner = function () { return paintBanner(); };
 
   /* ---- Fil d'Ariane : Accueil › Section › Page (cliquables), + date et heure ---- */
   function homeKey() { try { return typeof defaultView === 'function' ? defaultView() : 'dash'; } catch (_) { return 'dash'; } }
