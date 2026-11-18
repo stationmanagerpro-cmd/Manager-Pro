@@ -36,9 +36,10 @@
     try { data = await G('/help-guides'); } catch (e) { loadError = e; }
     const guides = data.guides || [];
     const byKey = Object.fromEntries(guides.map(g => [g.module_key, g]));
+    // Liste des modules intégrés : source serveur (ANO-008) ; repli sur la liste locale si absente.
     // Le droit d'édition vient de la session (ME.is_global), pas seulement de la réponse : une lecture ratée ne le retire plus.
     const isSuper = !!(ME && ME.is_global) || !!data.is_superadmin;
-    const builtin = HELP_MODULES
+    const builtin = (Array.isArray(data.help_keys) && data.help_keys.length ? data.help_keys : HELP_MODULES)
       .filter(k => V[k] && (isSuper || canView(k)))
       .map(k => card(k, byKey[k], isSuper));
     // Modules ajoutés par le Super Admin : visibles de tous les comptes connectés.

@@ -16,6 +16,9 @@ const LABEL_MAX = 80;
 
 const r = express.Router();
 
+// Contrôle Super Admin placé AVANT la validation du corps : un compte client reçoit 403, jamais 400 (ANO-007).
+const requireSuper = (req, res, next) => (req.user && req.user.is_global) ? next() : next(new HttpError(403, 'Réservé au Super Admin : la rédaction des procédures et des liens vidéo est gérée par la plateforme.'));
+
 // Schéma créé à la demande (idempotent, identique à migrations/120 et 121) :
 // les migrations ne sont pas toujours appliquées en production, et sans la table rien ne s'affiche.
 let schemaReady = null;
@@ -55,11 +58,11 @@ const httpsOrEmpty = z.string().max(500).refine(v => v === '' || /^https:\/\/\S+
 r.get('/help-guides', wrap(async (req, res) => {
   await ensureSchema();
   const { rows } = await pool.query('SELECT module_key, label, procedure, video_url, custom, updated_at FROM help_guides ORDER BY custom, module_key');
-  res.json({ guides: rows, is_superadmin: !!req.user.is_global });
+  res.json({ guides: rows, is_superadmin: !!req.user.is_global, help_keys: HELP_KEYS });
 }));
 
 // Création d'un module personnalisé (Super Admin).
-r.post('/help-guides', body(z.object({
+r.post('/help-guides', requireSuper, body(z.object({
   label: z.string().max(LABEL_MAX),
   procedure: z.string().max(20000).optional(),
   video_url: httpsOrEmpty.optional(),
@@ -80,7 +83,7 @@ r.post('/help-guides', body(z.object({
 }));
 
 // Modification du nom, de la procédure et du lien vidéo (Super Admin). Nom vide = nom par défaut pour un module intégré.
-r.put('/help-guides/:key', body(z.object({
+r.put('/help-guides/:key', requireSuper, body(z.object({
   label: z.string().max(LABEL_MAX).optional(),
   procedure: z.string().max(20000),
   video_url: httpsOrEmpty.optional(),
