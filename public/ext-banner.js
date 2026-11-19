@@ -94,6 +94,18 @@
       + (o.warn ? '<button type="button" class="hero-warn" onclick="openBannerSettings()">⚠ Nom difficile à lire sur cette image — corriger (Paramètres → Apparence)</button>' : '');
     return h;
   }
+  var imgCache = { key: null, url: null };
+  function place(url) {
+    var hd = document.getElementById('app-header'), host = hd && hd.parentNode; if (!host) return;
+    var s = st(), sy = styleOf(s), logo = logoOf(s), home = cur === 'dash';
+    var ex = document.getElementById('hero');
+    var sig = JSON.stringify([home, s.name, s.tagline, s.banner_title, sy, !!url, s.banner_legibility, canEdit(), cache.key, logo]);
+    if (ex && ex.__sig === sig && ex.nextElementSibling === hd) { purgeHeroes(ex); d.dataset.hero = '1'; decided(); return; }
+    var h = build({ name: s.banner_title || s.name || '', slogan: s.tagline, style: sy, img: url, logo: logo, compact: !home, warn: canEdit() && url && s.banner_legibility === 'warn',
+      cta: home && (function () { try { return can('sale.create'); } catch (_) { return false; } })() });
+    h.id = 'hero'; h.__sig = sig; h.setAttribute('role', 'banner');
+    purgeHeroes(null); host.insertBefore(h, hd); d.dataset.hero = '1'; decided();   // tout en haut de la page, au-dessus de la barre d'en-tête
+  }
   var busy = false, paintSeq = 0;
   /* Un seul bandeau dans la page : on supprime tout autre élément #hero / .hero-top (course entre deux rendus asynchrones). */
   function purgeHeroes(keep) { Array.prototype.slice.call(document.querySelectorAll('#hero, .hero-top')).forEach(function (n) { if (n !== keep) n.remove(); }); }
@@ -112,22 +124,21 @@
       hs.id = 'hero'; hs.__sig = sg; hs.setAttribute('role', 'banner');
       purgeHeroes(null); host.insertBefore(hs, hd); d.dataset.hero = '1'; decided(); return;
     }
-    var s = st(), sy = styleOf(s), url = null;
-    try { url = await stationImageUrl(); } catch (_) {}
-    if (my !== paintSeq) return;   // un autre rendu a démarré pendant le chargement de l'image
-    ex = document.getElementById('hero');   // relu après l'attente : un autre rendu a pu insérer le bandeau entre-temps
-    var logo = logoOf(s), home = cur === 'dash';   // accueil : grand bandeau ; autres pages : même bandeau, hauteur réduite
-    var sig = JSON.stringify([home, s.name, s.tagline, s.banner_title, sy, !!url, s.banner_legibility, canEdit(), cache.key, logo]);
-    if (ex && ex.__sig === sig && ex.nextElementSibling === hd) { purgeHeroes(ex); d.dataset.hero = '1'; decided(); return; }
-    var h = build({ name: s.banner_title || s.name || '', slogan: s.tagline, style: sy, img: url, logo: logo, compact: !home, warn: canEdit() && url && s.banner_legibility === 'warn',
-      cta: home && (function () { try { return can('sale.create'); } catch (_) { return false; } })() });
-    h.id = 'hero'; h.__sig = sig; h.setAttribute('role', 'banner');
-    purgeHeroes(null); host.insertBefore(h, hd); d.dataset.hero = '1'; decided();   // tout en haut de la page, au-dessus de la barre d'en-tête
+    var key = String(SID || '') + '|' + String(cur || '');
+    var known = imgCache.key === key;   // photo déjà connue pour cette station : pas d'attente
+    var url = known ? imgCache.url : null;
+    if (!known && !document.getElementById('hero')) place(null);   // bandeau texte immédiat, la photo arrive ensuite
+    if (!known) {
+      try { url = await stationImageUrl(); } catch (_) { url = null; }
+      if (my !== paintSeq) return;   // un autre rendu a démarré pendant le chargement de l'image
+      imgCache = { key: key, url: url };
+    }
+    place(url);
   }
   function schedule() { if (busy) return; busy = true; setTimeout(function () { busy = false; paint(); }, 40); }
   function watch() { var pg = document.getElementById('pg'); if (!pg || pg.__heroObs) return; pg.__heroObs = new MutationObserver(function () { schedule(); }); pg.__heroObs.observe(pg, { childList: true }); schedule(); }
   window.addEventListener('load', function () { watch(); setTimeout(watch, 700); setTimeout(watch, 2000); });
-  window.paintHeroBanner = function () { var ex = document.getElementById('hero'); if (ex) ex.__sig = ''; return paint(); };
+  window.paintHeroBanner = function () { imgCache = { key: null, url: null }; var ex = document.getElementById('hero'); if (ex) ex.__sig = ''; return paint(); };
   ['applyAppearance', 'refreshTenantBrand', 'loadBrand'].forEach(function (n) { var t = setInterval(function () { if (typeof window[n] === 'function' && !window[n].__hero) { var o = window[n]; window[n] = function () { var r = o.apply(this, arguments); Promise.resolve(r).then(function () { watch(); schedule(); }); return r; }; window[n].__hero = true; clearInterval(t); } }, 300); setTimeout(function () { clearInterval(t); }, 8000); });
 
   /* ---------- fenêtre « Personnaliser le bandeau » ---------- */
