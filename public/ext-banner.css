@@ -43,3 +43,7 @@ html body .bn-seg button.on { background: var(--p) !important; color: var(--on-p
 @media (max-width: 860px) { .hero.hero-top { margin: 0 -14px; } }
 @media (max-width: 700px) { .hero-in { gap: 12px; } .hero-logo { width: 54px; font-size: 22px; } }
 @media print { .hero-edit, .hero-warn, .hero-cta { display: none !important; } }
+/* Logo Manager PRO par défaut : image centrée, entièrement visible (jamais recadrée). */
+.hero.has-img.is-default { background: var(--hero-img) center / contain no-repeat, #1b2a4a; }
+.hero.has-img.is-default::before { display: none; }
+@media (max-width: 600px) { .hero.is-default .hero-in { visibility: hidden; } }
