@@ -19,7 +19,7 @@
   /* ---------- image de la station (blob mis en cache) ---------- */
   var cache = { url: null, key: null };
   /* Photo par défaut de Manager PRO : affichée pendant le téléchargement, ou si la station n'a pas de photo. */
-  var DEFAULT_IMG = '/banner-logo.webp';   // logo Manager PRO centré (toujours visible)
+  var DEFAULT_IMG = '/banner-defaut.webp';
   /* Photo du bandeau : gardée dans le navigateur (IndexedDB) entre deux chargements, pour un affichage instantané à l'actualisation. */
   var imgVer = 0;   // incrémenté quand la photo a changé en arrière-plan : déclenche un nouveau rendu du bandeau
   function idbOpen() { return new Promise(function (ok, ko) { var q = indexedDB.open('smp-banner', 1); q.onupgradeneeded = function () { q.result.createObjectStore('img'); }; q.onsuccess = function () { ok(q.result); }; q.onerror = ko; }); }
@@ -139,7 +139,7 @@
     if (ex && ex.__sig === sig && ex.nextElementSibling === hd) { purgeHeroes(ex); d.dataset.hero = '1'; decided(); return; }
     var h = build({ name: s.banner_title || s.name || '', slogan: s.tagline, style: sy, img: url, logo: logo, compact: !home, warn: canEdit() && url && s.banner_legibility === 'warn',
       cta: home && (function () { try { return can('sale.create'); } catch (_) { return false; } })() });
-    h.id = 'hero'; h.__sig = sig; h.setAttribute('role', 'banner'); if (url === DEFAULT_IMG) h.classList.add('is-default');
+    h.id = 'hero'; h.__sig = sig; h.setAttribute('role', 'banner');
     purgeHeroes(null); host.insertBefore(h, hd); d.dataset.hero = '1'; decided();   // tout en haut de la page, au-dessus de la barre d'en-tête
   }
   var busy = false, paintSeq = 0;
