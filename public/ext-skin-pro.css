@@ -145,6 +145,6 @@ html[data-skin=pro] .b2.on, html[data-skin=pro] .bar .b2.on, html[data-skin=pro]
 }
 
 /* Ancien en-tête masqué pendant le calcul du bandeau (évite l'affichage en deux temps).
-   Repli : si aucune décision n'est prise après 2,5 s, l'en-tête redevient visible. */
-html[data-skin=pro][data-hero-pending] #app-header #tenant-brand { visibility: hidden; animation: heroPendingReveal 0s linear 2.5s forwards; }
+   Repli : si aucune décision n'est prise après 10 s, l'en-tête redevient visible. */
+html[data-skin=pro][data-hero-pending] #app-header #tenant-brand { visibility: hidden; animation: heroPendingReveal 0s linear 10s forwards; }
 @keyframes heroPendingReveal { to { visibility: visible; } }
