@@ -18,14 +18,41 @@
 
   /* ---------- image de la station (blob mis en cache) ---------- */
   var cache = { url: null, key: null };
+  /* Photo du bandeau : gardée dans le navigateur (IndexedDB) entre deux chargements, pour un affichage instantané à l'actualisation. */
+  var imgVer = 0;   // incrémenté quand la photo a changé en arrière-plan : déclenche un nouveau rendu du bandeau
+  function idbOpen() { return new Promise(function (ok, ko) { var q = indexedDB.open('smp-banner', 1); q.onupgradeneeded = function () { q.result.createObjectStore('img'); }; q.onsuccess = function () { ok(q.result); }; q.onerror = ko; }); }
+  function idbGet(k) { return idbOpen().then(function (db) { return new Promise(function (ok, ko) { var t = db.transaction('img').objectStore('img').get(k); t.onsuccess = function () { db.close(); ok(t.result || null); }; t.onerror = ko; }); }); }
+  function idbPut(k, v) { return idbOpen().then(function (db) { return new Promise(function (ok, ko) { var t = db.transaction('img', 'readwrite'); t.objectStore('img').put(v, k); t.oncomplete = function () { db.close(); ok(); }; t.onerror = ko; }); }); }
+  function fetchImg() { return fetch('/api/images/banner/' + encodeURIComponent(SID), { headers: { Authorization: 'Bearer ' + TK, 'X-Station-Id': String(SID) }, cache: 'no-store' }).then(function (r) { return r.ok ? r.blob() : null; }); }
+  async function sameBytes(x, y) {
+    if (x.size !== y.size) return false;
+    var a = new Uint8Array(await x.arrayBuffer()), b = new Uint8Array(await y.arrayBuffer());
+    for (var i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+    return true;
+  }
+  async function revalidate(saved) {   // vérifie en arrière-plan que la photo enregistrée est toujours la bonne
+    try {
+      var fresh = await fetchImg(); if (!fresh) return;
+      if (await sameBytes(fresh, saved)) return;
+      await idbPut(String(SID), fresh);
+      cache = { url: URL.createObjectURL(fresh), key: cache.key }; imgVer++;
+      if (window.paintHeroBanner) window.paintHeroBanner();
+    } catch (_) {}
+  }
   async function stationImageUrl() {
     var s = st(); if (!s.has_banner || typeof SID === 'undefined' || !SID) return null;
     var key = SID + ':' + (window.__heroV || 0);
     if (cache.key === key && cache.url) return cache.url;
-    var r = await fetch('/api/images/banner/' + encodeURIComponent(SID), { headers: { Authorization: 'Bearer ' + TK, 'X-Station-Id': String(SID) }, cache: 'no-store' });
-    if (!r.ok) return null;
-    if (cache.url) URL.revokeObjectURL(cache.url);
-    cache = { url: URL.createObjectURL(await r.blob()), key: key }; return cache.url;
+    var saved = null; try { saved = await idbGet(String(SID)); } catch (_) {}
+    if (saved) {   // affichage immédiat depuis le navigateur, mise à jour silencieuse ensuite
+      cache = { url: URL.createObjectURL(saved), key: key };
+      revalidate(saved);
+      return cache.url;
+    }
+    var blob = await fetchImg(); if (!blob) return null;
+    cache = { url: URL.createObjectURL(blob), key: key };
+    try { await idbPut(String(SID), blob); } catch (_) {}
+    return cache.url;
   }
   function resetImage() { window.__heroV = (window.__heroV || 0) + 1; }
   function loadImg(url) { return new Promise(function (ok, ko) { var i = new Image(); i.onload = function () { ok(i); }; i.onerror = ko; i.src = url; }); }
@@ -99,7 +126,7 @@
     var hd = document.getElementById('app-header'), host = hd && hd.parentNode; if (!host) return;
     var s = st(), sy = styleOf(s), logo = logoOf(s), home = cur === 'dash';
     var ex = document.getElementById('hero');
-    var sig = JSON.stringify([home, s.name, s.tagline, s.banner_title, sy, !!url, s.banner_legibility, canEdit(), cache.key, logo]);
+    var sig = JSON.stringify([home, s.name, s.tagline, s.banner_title, sy, !!url, s.banner_legibility, canEdit(), cache.key, imgVer, logo]);
     if (ex && ex.__sig === sig && ex.nextElementSibling === hd) { purgeHeroes(ex); d.dataset.hero = '1'; decided(); return; }
     var h = build({ name: s.banner_title || s.name || '', slogan: s.tagline, style: sy, img: url, logo: logo, compact: !home, warn: canEdit() && url && s.banner_legibility === 'warn',
       cta: home && (function () { try { return can('sale.create'); } catch (_) { return false; } })() });
