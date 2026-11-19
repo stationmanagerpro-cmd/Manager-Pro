@@ -18,6 +18,8 @@
 
   /* ---------- image de la station (blob mis en cache) ---------- */
   var cache = { url: null, key: null };
+  /* Photo par défaut de Manager PRO : affichée pendant le téléchargement, ou si la station n'a pas de photo. */
+  var DEFAULT_IMG = '/banner-defaut.webp';
   /* Photo du bandeau : gardée dans le navigateur (IndexedDB) entre deux chargements, pour un affichage instantané à l'actualisation. */
   var imgVer = 0;   // incrémenté quand la photo a changé en arrière-plan : déclenche un nouveau rendu du bandeau
   function idbOpen() { return new Promise(function (ok, ko) { var q = indexedDB.open('smp-banner', 1); q.onupgradeneeded = function () { q.result.createObjectStore('img'); }; q.onsuccess = function () { ok(q.result); }; q.onerror = ko; }); }
@@ -133,7 +135,7 @@
     var hd = document.getElementById('app-header'), host = hd && hd.parentNode; if (!host) return;
     var s = st(), sy = styleOf(s), logo = logoOf(s), home = cur === 'dash';
     var ex = document.getElementById('hero');
-    var sig = JSON.stringify([home, s.name, s.tagline, s.banner_title, sy, !!url, s.banner_legibility, canEdit(), cache.key, imgVer, logo]);
+    var sig = JSON.stringify([home, s.name, s.tagline, s.banner_title, sy, url, s.banner_legibility, canEdit(), cache.key, imgVer, logo]);
     if (ex && ex.__sig === sig && ex.nextElementSibling === hd) { purgeHeroes(ex); d.dataset.hero = '1'; decided(); return; }
     var h = build({ name: s.banner_title || s.name || '', slogan: s.tagline, style: sy, img: url, logo: logo, compact: !home, warn: canEdit() && url && s.banner_legibility === 'warn',
       cta: home && (function () { try { return can('sale.create'); } catch (_) { return false; } })() });
@@ -162,12 +164,13 @@
     var known = imgCache.key === key;   // photo déjà connue pour cette station : pas d'attente
     var url = known ? imgCache.url : null;
     if (!known) {
+      place(DEFAULT_IMG);   // la photo par défaut s'affiche tout de suite, en attendant celle de la station
       window.__heroFetching = true;
       try { url = await stationImageUrl(); } catch (_) { url = null; } finally { window.__heroFetching = false; }
       if (my !== paintSeq) return;   // un autre rendu a démarré pendant le chargement de l'image
       imgCache = { key: key, url: url };
     }
-    place(url);
+    place(url || DEFAULT_IMG);   // sans photo propre de la station : photo par défaut
   }
   function schedule() { if (busy) return; busy = true; setTimeout(function () { busy = false; paint(); }, 40); }
   function watch() { var pg = document.getElementById('pg'); if (!pg || pg.__heroObs) return; pg.__heroObs = new MutationObserver(function () { schedule(); }); pg.__heroObs.observe(pg, { childList: true }); schedule(); }
