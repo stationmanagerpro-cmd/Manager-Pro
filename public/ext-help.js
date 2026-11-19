@@ -115,10 +115,10 @@
     try { logged = !!ME; } catch (_) { logged = false; }
     if (!logged || !header) { if (btn) btn.remove(); return; }
     const hero = document.getElementById('hero');
-    const rightBar = document.querySelector('#tenant-brandbar .brandbar-right');
+    const topBar = document.getElementById('topbar-ctx');
     let target = header, before = null;
     if (hero) target = hero;
-    else if (rightBar) { target = rightBar; before = rightBar.querySelector('.user-chip'); }
+    else if (topBar) { target = topBar; before = topBar.querySelector('.user-chip'); }
     if (btn && btn.parentElement === target && btn.nextElementSibling === before) return;
     if (btn) btn.remove();
     btn = document.createElement('button');

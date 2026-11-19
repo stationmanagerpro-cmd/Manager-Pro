@@ -118,8 +118,8 @@ a { color: var(--p-text); }
 .user-menu a:hover, .user-menu a:focus-visible { background: var(--pl); color: var(--pl-text); }
 .user-menu a.um-danger { color: var(--r-text); }
 /* Nom du compte client visible sur toutes les tailles d'écran. */
-#tenant-brandbar { display:flex; border-bottom-color: var(--bd); padding:14px 0 16px; margin-bottom:12px; }
-#tenant-brandbar[hidden] { display:none !important; }
+#tenant-brand { display:flex; border-bottom-color: var(--bd); padding:14px 0 16px; margin-bottom:12px; }
+#tenant-brand[hidden] { display:none !important; }
 .tenant-brand-copy b { font-size:clamp(21px, 2vw, 28px); font-weight:850; line-height:1.15; letter-spacing:-.025em; }
 .tenant-brand-copy b { color: var(--p-text); }
 .tenant-brand-copy small { color: var(--m); }

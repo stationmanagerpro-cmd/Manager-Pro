@@ -5,14 +5,10 @@
    et chaque fond coloré garde son texte explicite (--on-p) pour la lisibilité. */
 
 /* ===== Bandeau (identité du client) ===== */
-html[data-skin=pro] .tenant-brandbar { position: relative; min-height: 96px; padding: 14px 0; margin: 0; border-bottom: 1px solid var(--sb-line, rgba(255,255,255,.09)); overflow: hidden; }
+html[data-skin=pro] #app-header #tenant-brand { position: relative; min-height: 96px; padding: 14px 0; margin: 0; border-bottom: 1px solid var(--sb-line, rgba(255,255,255,.09)); overflow: hidden; }
 html[data-skin=pro] .tenant-brand { flex: 0 0 auto; max-width: 34%; z-index: 2; }
 html[data-skin=pro] .tenant-brand-copy b { color: #fff; }
-html[data-skin=pro] #tenant-brand .tenant-brand-copy small { display: none !important; }          /* le slogan passe au centre du bandeau */
 html[data-skin=pro] .tenant-brand-mark { background: rgba(255,255,255,.1); color: #fff; border: 2px solid rgba(255,255,255,.35); border-radius: 18px; }
-html[data-skin=pro] .skin-slogan { flex: 1 1 0; min-width: 0; z-index: 2; text-align: center; color: #fff; font-style: italic; font-weight: 800; font-size: clamp(13px, 1.4vw, 22px); line-height: 1.25; text-shadow: 0 2px 6px rgba(0,10,40,.55); padding: 0 12px; }
-html[data-skin=pro] .skin-slogan:empty { display: none; }
-html[data-skin=pro] .brandbar-right { z-index: 2; }
 
 /* ===== Menu latéral ===== */
 html[data-skin=pro] .nav2 .nav-link { border-radius: 13px; font-weight: 600; }
@@ -119,19 +115,18 @@ html[data-skin=pro] .sp-save { background: linear-gradient(100deg, var(--p), var
 
 /* ===== Mobile ===== */
 @media (max-width: 760px) {
-  html[data-skin=pro] .tenant-brandbar { min-height: 64px; }
-  html[data-skin=pro] .skin-slogan, html[data-skin=pro] .skin-datepill { display: none; }
+  html[data-skin=pro] #app-header #tenant-brand { min-height: 64px; }
+  html[data-skin=pro] .skin-datepill { display: none; }
   html[data-skin=pro] #pg { border-radius: 17px; padding: 11px; min-height: 0; }
   html[data-skin=pro] .tabs a { padding: 9px 12px; }
 }
 @media print { html[data-skin=pro] .skin-crumbbar { display: none !important; } html[data-skin=pro] #pg { box-shadow: none; border: 0; } }
 
 /* Grand bandeau d'accueil affiché : le petit bandeau du haut (photo + slogan) est masqué pour ne pas répéter */
-html[data-skin=pro][data-hero] .skin-slogan { display: none; }
 
 /* Grand bandeau affiché tout en haut : il porte déjà le logo et le nom de la station → on retire la ligne d'identité en double.
    L'heure n'est plus dans l'en-tête : elle descend sous le profil, à côté de la date (fil d'Ariane). */
-html[data-skin=pro][data-hero] #app-header #tenant-brandbar { display: none !important; }
+html[data-skin=pro][data-hero] #app-header #tenant-brand { display: none !important; }
 html[data-skin=pro] #app-header .header-clock { display: none !important; }
 html[data-skin=pro] .skin-datepill .skin-time { font-variant-numeric: tabular-nums; margin-left: 6px; padding-left: 8px; border-left: 1px solid var(--bd); color: var(--p-text, var(--p)); }
 html[data-skin=pro] .skin-crumb a.skin-crumb-link { color: var(--m); font-weight: 600; cursor: pointer; text-decoration: none; border-radius: 6px; padding: 2px 4px; margin: -2px -4px; }
@@ -149,5 +144,5 @@ html[data-skin=pro] .b2.on, html[data-skin=pro] .bar .b2.on, html[data-skin=pro]
 
 /* Ancien en-tête masqué pendant le calcul du bandeau (évite l'affichage en deux temps).
    Repli : si aucune décision n'est prise après 2,5 s, l'en-tête redevient visible. */
-html[data-skin=pro][data-hero-pending] #app-header #tenant-brandbar { visibility: hidden; animation: heroPendingReveal 0s linear 2.5s forwards; }
+html[data-skin=pro][data-hero-pending] #app-header #tenant-brand { visibility: hidden; animation: heroPendingReveal 0s linear 2.5s forwards; }
 @keyframes heroPendingReveal { to { visibility: visible; } }

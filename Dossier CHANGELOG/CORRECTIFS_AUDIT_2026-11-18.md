@@ -77,3 +77,19 @@ Décision du propriétaire : une clôture de quart ne peut pas être antérieure
 - Versions : `ext-skin-pro.css?v=4`, `ext-banner.js?v=3`, `sw.js` régénéré (`smp-static-bc28ec0beba`).
 - Tests : `banner-pending-static` 5/5 ; `banner-static` mis à jour (version). Suite : 204 réussis, 2 échecs d'environnement (zod factice).
 - Non vérifié : rendu réel sur téléphone (la capture ci-dessus provient de l'utilisateur) ; comportement sur les pages sans bandeau.
+
+## Refonte de l'en-tête (ancien bandeau supprimé) — branche `refactor/en-tete-unique`
+
+- Tâche : supprimer l'ancien bloc `#tenant-brandbar` et répartir ses fonctions dans l'en-tête (Option B, retour arrière accepté par le propriétaire).
+- Changements réalisés :
+  - `#tenant-brandbar` supprimé du HTML ; `#tenant-brand` (identité, affichée seulement sans grand bandeau) est directement dans `#app-header`.
+  - Horloge `#live-clock` et profil `#user-chip` déplacés dans la barre supérieure `#topbar-ctx`.
+  - Raccourci « Besoin d'aide » : repli dans `#topbar-ctx`, avant le profil (bandeau `#hero` inchangé).
+  - Slogan : `skin-slogan` injecté par JS supprimé (le slogan est déjà porté par le grand bandeau et par `#tenant-brand`) ; `skinResetBanner` devient sans effet et reste appelé après enregistrement du bandeau.
+  - CSS : sélecteurs `tenant-brandbar` / `brandbar-right` / `skin-slogan` remplacés ou retirés (ext-skin-pro.css, ext-shell.css, design-v2.css, responsive-v3.css, app.css).
+  - Versions : `ext-skin-pro.css?v=5`, `ext-skin-pro.js?v=4`, `ext-help.js?v=5`.
+- Fichiers : public/index.html, public/ext-shell.js, public/ext-shell.css, public/ext-skin-pro.js, public/ext-skin-pro.css, public/ext-help.js, public/design-v2.css, public/responsive-v3.css, public/app.css, public/sw.js (régénéré), tests listés ci-dessous.
+- Tests : 6 fichiers statiques ciblés mis à jour et verts (client-company-name-header 10/10, besoin-aide 14, step10-ux-branding 12/12, banner-pending 5/5, banner-static 15, demo-mode 10/10). Suite complète : 204 réussis ; 2 échecs connus d'environnement (employee-actions-unit, stock-movement-validation-unit, stub zod).
+- Non vérifié : rendu visuel (pas de base PostgreSQL locale, donc pas de parcours navigateur réel), mobile réel, pages sans grand bandeau.
+- Retour arrière : revert du commit sur la branche `refactor/en-tete-unique`.
+- Statut : commit local uniquement. Ni poussé, ni PR, ni fusion, ni déploiement.

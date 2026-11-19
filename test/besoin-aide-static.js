@@ -6,7 +6,7 @@ const idx = rd('public/index.html'), help = rd('public/ext-help.js'), app = rd('
 const srv = rd('src/server.js'), route = rd('src/help_guides.js'), mig = rd('migrations/120_help_guides.sql');
 
 // 1. Raccourci permanent en haut à droite : dans la bannière (#hero) ou la barre d'en-tête, réinséré à chaque rendu.
-assert(!idx.includes('help-top-btn') && help.includes("btn.className = 'help-top-btn'") && help.includes("document.getElementById('hero')") && help.includes("#tenant-brandbar .brandbar-right"), 'raccourci « Besoin d\'aide » en haut à droite (bannière ou barre d\'en-tête)');
+assert(!idx.includes('help-top-btn') && help.includes("btn.className = 'help-top-btn'") && help.includes("document.getElementById('hero')") && help.includes("document.getElementById('topbar-ctx')"), 'raccourci « Besoin d\'aide » en haut à droite (bannière ou barre d\'en-tête)');
 // 2. Accès : vue ouverte à tout compte connecté, sans passer par SUPERADMIN_VIEWS (alias de GLOBAL_ONLY_VIEWS).
 assert(/if \(k === 'besoin_aide'\) return true;/.test(app), 'canView autorise besoin_aide pour tous les comptes');
 assert(!help.includes("SUPERADMIN_VIEWS.add('besoin_aide')") && !/SUPERADMIN_VIEWS = new Set\([^)]*besoin_aide/.test(app), 'besoin_aide n\'est pas réservé à la plateforme');

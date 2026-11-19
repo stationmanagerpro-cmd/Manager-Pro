@@ -30,8 +30,7 @@ body::before {
 @media (min-width: 861px) {
   #app-header { z-index: 79; }
 }
-#app-header .tenant-brandbar,
-#app-header #tenant-brandbar {
+#app-header #tenant-brand {
   display: flex;
   align-items: center;
   justify-content: space-between;

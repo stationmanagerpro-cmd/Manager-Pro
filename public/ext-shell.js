@@ -610,8 +610,8 @@ const visible = k => V[k] && (typeof canView === 'function' ? canView(k) : can(V
     refreshChip();
     // L'identité de l'entreprise est affichée sur toutes les pages client,
     // mais pas dans l'espace du Superadmin qui gère plusieurs clients.
-    const tenantBar = document.getElementById('tenant-brandbar');
-    if (tenantBar) tenantBar.hidden = !!(ME && ME.is_global);
+    const tenantBrand = document.getElementById('tenant-brand');
+    if (tenantBrand) tenantBrand.hidden = !!(ME && ME.is_global);
     const fb = document.querySelector('.top-focus'); if (fb) fb.hidden = !!(ME && ME.is_global);
     const sc = document.getElementById('top-shortcuts'); if (sc) sc.innerHTML = shortcutsHtml();
     if (typeof updateThemeToggleBtn === 'function') updateThemeToggleBtn();

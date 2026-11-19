@@ -15,7 +15,7 @@ check('Identité station renvoie le nom du compte client', /c\.name AS client_na
 check('Modification du logo station autorisée avec settings.edit ou appearance.manage', /stationIdentity[\s\S]*settings\.edit[\s\S]*appearance\.manage/.test(admin));
 check('Suppression du logo station utilise la même vérification dédiée', /r\.delete\('\/images\/:entity\/:id', canManageImage/.test(admin));
 check('Interface propose l’édition du logo station avec permission identité', /ent === 'stations'[\s\S]*can\('settings\.edit'\)[\s\S]*can\('appearance\.manage'\)/.test(core));
-check('Bandeau client et profil réunis avant la barre supérieure', /tenant-brandbar[\s\S]*id="tenant-brand"[\s\S]*id="user-chip"[\s\S]*id="topbar-ctx"/.test(html));
+check('Bandeau client et profil réunis avant la barre supérieure', /id="tenant-brand"[\s\S]*id="topbar-ctx"[\s\S]*id="user-chip"/.test(html));
 check('Bandeau de marque affiche client, station et logo', /refreshTenantBrand[\s\S]*client_name[\s\S]*images\/stations/.test(shell));
 check('Identité rafraîchie après chargement de l’apparence', /refreshTenantBrand\(\)/.test(core));
 check('Logo de station rafraîchi après remplacement ou suppression', /__tenantLogoKey = null/.test(core) && /applyAppearance\(\)/.test(core));

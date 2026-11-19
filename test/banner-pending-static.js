@@ -12,7 +12,7 @@ check('chaque décision (bandeau affiché ou non) retire le marqueur : 5 points'
   assert(b.includes("function decided() { if (d.dataset.heroPending) delete d.dataset.heroPending; }"));
 });
 check("l'ancien en-tête est masqué tant que le marqueur est présent", () => {
-  assert(css.includes('html[data-skin=pro][data-hero-pending] #app-header #tenant-brandbar { visibility: hidden;'));
+  assert(css.includes('html[data-skin=pro][data-hero-pending] #app-header #tenant-brand { visibility: hidden;'));
 });
 check("repli : l'en-tête redevient visible après 2,5 s si aucune décision n'est prise", () => {
   assert(css.includes('animation: heroPendingReveal 0s linear 2.5s forwards;'));
@@ -20,6 +20,6 @@ check("repli : l'en-tête redevient visible après 2,5 s si aucune décision n'e
 });
 check('versions de chargement incrémentées (cache navigateur)', () => {
   const html = read('index.html');
-  assert(html.includes('/ext-skin-pro.css?v=4') && html.includes('/ext-banner.js?v=3'));
+  assert(html.includes('/ext-skin-pro.css?v=5') && html.includes('/ext-banner.js?v=3'));
 });
 console.log(`\n${n}/5 contrôles réussis.`);
