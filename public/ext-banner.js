@@ -111,7 +111,7 @@
   function purgeHeroes(keep) { Array.prototype.slice.call(document.querySelectorAll('#hero, .hero-top')).forEach(function (n) { if (n !== keep) n.remove(); }); }
   async function paint() {
     var my = ++paintSeq;   // un rendu plus récent annule les rendus en attente (évite deux bandeaux superposés)
-    var pg = document.getElementById('pg'), hd = document.getElementById('app-header'), host = hd && hd.parentNode; if (!pg || !host) return;
+    var pg = document.getElementById('pg'), hd = document.getElementById('app-header'), host = hd && hd.parentNode; if (!pg || !host) { decided(); return; }
     var sa = typeof ME !== 'undefined' && ME && ME.is_global;   // Superadmin : bandeau aux couleurs de la plateforme (nom, logo, slogan du site)
     var on = typeof cur !== 'undefined' && cur && typeof ME !== 'undefined' && ME && (sa || (typeof SID !== 'undefined' && SID));
     var ex = document.getElementById('hero');

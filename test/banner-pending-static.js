@@ -7,16 +7,15 @@ let n = 0; const check = (l, fn) => { fn(); n++; console.log('✔ ' + l); };
 check('le marqueur data-hero-pending est posé dès le chargement', () => {
   assert(b.includes("d.dataset.heroPending = '1';"));
 });
-check('chaque décision (bandeau affiché ou non) retire le marqueur : 5 points', () => {
-  assert.strictEqual(b.split('decided();').length - 1, 5);
+check('chaque décision (bandeau affiché ou non) retire le marqueur : 6 points', () => {
+  assert.strictEqual(b.split('decided();').length - 1, 6);
   assert(b.includes("function decided() { if (d.dataset.heroPending) delete d.dataset.heroPending; }"));
 });
 check("l'ancien en-tête est masqué tant que le marqueur est présent", () => {
   assert(css.includes('html[data-skin=pro][data-hero-pending] #app-header #tenant-brand { visibility: hidden;'));
 });
-check("repli : l'en-tête redevient visible après 10 s si aucune décision n'est prise", () => {
-  assert(css.includes('animation: heroPendingReveal 0s linear 10s forwards;'));
-  assert(css.includes('@keyframes heroPendingReveal { to { visibility: visible; } }'));
+check("pas de repli temporisé : l'en-tête reste masqué tant que le bandeau n'est pas posé", () => {
+  assert(!css.includes('heroPendingReveal'));
 });
 check('versions de chargement incrémentées (cache navigateur)', () => {
   const html = read('index.html');
