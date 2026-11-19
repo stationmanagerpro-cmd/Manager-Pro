@@ -73,7 +73,7 @@ Décision du propriétaire : une clôture de quart ne peut pas être antérieure
 ## Bandeau : affichage initial (2026-11-18)
 - Constat : au chargement, l'ancien en-tête (« S Station M… » + « Besoin d'aide ») s'affichait avant le bandeau « STATION DÉMONSTRATION ».
 - Cause : l'ancien en-tête n'était masqué que lorsque le bandeau était déjà posé (`data-hero`). Le bouton « Besoin d'aide » était placé dans cet en-tête en attendant le bandeau.
-- Correction : `public/ext-banner.js` pose `data-hero-pending` dès le chargement et le retire à chaque décision (bandeau affiché ou non). `public/ext-skin-pro.css` masque l'ancien en-tête tant que le marqueur est présent, avec un repli : il redevient visible après 2,5 s si aucune décision n'est prise.
+- Correction : `public/ext-banner.js` pose `data-hero-pending` dès le chargement et le retire à chaque décision (bandeau affiché ou non). `public/ext-skin-pro.css` masque l'ancien en-tête tant que le marqueur est présent, avec un repli : il redevient visible après 10 s si aucune décision n'est prise (valeur réelle du CSS, vérifiée par `banner-pending-static` ; la mention « 2,5 s » des premières versions de cette note était erronée).
 - Versions : `ext-skin-pro.css?v=4`, `ext-banner.js?v=3`, `sw.js` régénéré (`smp-static-bc28ec0beba`).
 - Tests : `banner-pending-static` 5/5 ; `banner-static` mis à jour (version). Suite : 204 réussis, 2 échecs d'environnement (zod factice).
 - Non vérifié : rendu réel sur téléphone (la capture ci-dessus provient de l'utilisateur) ; comportement sur les pages sans bandeau.
@@ -83,7 +83,7 @@ Décision du propriétaire : une clôture de quart ne peut pas être antérieure
 - Tâche : supprimer l'ancien bloc `#tenant-brandbar` et répartir ses fonctions dans l'en-tête (Option B, retour arrière accepté par le propriétaire).
 - Changements réalisés :
   - `#tenant-brandbar` supprimé du HTML ; `#tenant-brand` (identité, affichée seulement sans grand bandeau) est directement dans `#app-header`.
-  - Horloge `#live-clock` et profil `#user-chip` déplacés dans la barre supérieure `#topbar-ctx`.
+  - Horloge `#live-clock` et profil `#user-chip` déplacés dans la barre supérieure `#topbar-ctx`. Précision : sous le skin « pro » (par défaut), `#live-clock` est masqué par `ext-skin-pro.css` (`display:none !important`) ; l'heure s'affiche dans le fil d'Ariane (`.skin-datepill`). L'horloge de la barre supérieure n'est visible qu'avec le skin « classique ».
   - Raccourci « Besoin d'aide » : repli dans `#topbar-ctx`, avant le profil (bandeau `#hero` inchangé).
   - Slogan : `skin-slogan` injecté par JS supprimé (le slogan est déjà porté par le grand bandeau et par `#tenant-brand`) ; `skinResetBanner` devient sans effet et reste appelé après enregistrement du bandeau.
   - CSS : sélecteurs `tenant-brandbar` / `brandbar-right` / `skin-slogan` remplacés ou retirés (ext-skin-pro.css, ext-shell.css, design-v2.css, responsive-v3.css, app.css).

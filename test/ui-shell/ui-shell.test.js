@@ -43,6 +43,7 @@ async function mock(page) {
     return json(r, [], 200);
   });
 }
+// NB : /admin/platform/usage n'est volontairement pas simulé (réponse [] par défaut) : il vérifie que sadUsage supporte une réponse mal formée.
 // ANO-09 : serviceWorkers: 'block' (le SW PWA contourne page.route) ; /public/home → 404 (accueil public facultatif)
 (async () => {
   await new Promise(r => srv.listen(0, r)); const base = 'http://localhost:' + srv.address().port;
@@ -53,9 +54,9 @@ async function mock(page) {
   await page.goto(base); await page.waitForSelector('.login-brand');
   ok((await page.textContent('.login-brand h1')) === 'Station Manager Pro', 'login : nom par défaut à gauche');
   ok((await page.textContent('.login-tagline')).includes('intelligente'), 'login : slogan par défaut');
-  await page.fill('#lu', 'admin'); await page.fill('#lp', 'bad'); await page.click('.login-card button');
+  await page.fill('#lu', 'admin'); await page.fill('#lp', 'bad'); await page.click('.login-card button:has-text("Se connecter")');
   await page.waitForSelector('#toast.show'); ok((await page.textContent('#toast')).includes('incorrect'), 'mauvais mot de passe refusé');
-  await page.fill('#lp', 'good'); await page.click('.login-card button'); await page.waitForSelector('#app.ready');
+  await page.fill('#lp', 'good'); await page.click('.login-card button:has-text("Se connecter")'); await page.waitForSelector('#app.ready');
   console.log('== Profil / barre supérieure');
   await page.waitForSelector('#user-chip .uc-text b');
   ok((await page.textContent('#user-chip .uc-text b')) === 'Moussa Diarra', 'nom complet affiché');
@@ -94,7 +95,7 @@ async function mock(page) {
   console.log('== Superadmin : connexion, menus, profil, périmètre');
   await page.evaluate(() => logout()); await page.waitForSelector('.login-brand');
   blocked.length = 0; const toasts = []; await page.exposeFunction('__t', t => toasts.push(t));
-  await page.fill('#lu', 'sa'); await page.fill('#lp', 'good'); await page.click('.login-card button'); await page.waitForSelector('#app.ready'); await page.waitForTimeout(800);
+  await page.fill('#lu', 'sa'); await page.fill('#lp', 'good'); await page.click('.login-card button:has-text("Se connecter")'); await page.waitForSelector('#app.ready'); await page.waitForTimeout(800);
   ok(await page.locator('#nav .nav-link').count() > 0, 'menus visibles dès la connexion (sans cliquer sur la cloche)');
   ok(!(await page.textContent('#toast')).includes('interdites'), 'aucun message « données métier interdites » après connexion');
   ok(blocked.length === 0, 'aucune requête métier envoyée par le Superadmin (bloquées : ' + blocked.join(', ') + ')');
@@ -135,7 +136,7 @@ async function mock(page) {
   ok((await page.textContent('.login-brand h1')) === 'Total Énergies Kati', 'login : nouveau nom à gauche');
   ok((await page.textContent('.login-tagline')) === 'Votre énergie au quotidien', 'login : nouveau slogan');
   console.log('== Utilisateur non administrateur');
-  await page.fill('#lu', 'caisse'); await page.fill('#lp', 'good'); await page.click('.login-card button'); await page.waitForFunction(() => (document.querySelector('#user-chip .uc-text b') || {}).textContent === 'Awa Traoré');
+  await page.fill('#lu', 'caisse'); await page.fill('#lp', 'good'); await page.click('.login-card button:has-text("Se connecter")'); await page.waitForFunction(() => (document.querySelector('#user-chip .uc-text b') || {}).textContent === 'Awa Traoré');
   ok((await page.textContent('#user-chip .uc-text b')) === 'Awa Traoré', 'profil caissier affiché');
   ok(!(await page.isVisible('#nav .nav-parent:has-text("Administration")')), 'pas de menu Administration pour le caissier');
   await page.evaluate(() => go('cli')); await page.waitForSelector('.pc-q');
@@ -147,7 +148,7 @@ async function mock(page) {
   ok(true, 'déconnexion');
   console.log('== Responsive');
   for (const [w, h, n] of [[1920, 1080, 'grand écran'], [1366, 768, 'portable'], [820, 1100, 'tablette'], [390, 800, 'mobile']]) {
-    await page.setViewportSize({ width: w, height: h }); await page.fill('#lu', 'admin'); await page.fill('#lp', 'good'); await page.click('.login-card button'); await page.waitForSelector('#app.ready'); await page.waitForTimeout(400);
+    await page.setViewportSize({ width: w, height: h }); await page.fill('#lu', 'admin'); await page.fill('#lp', 'good'); await page.click('.login-card button:has-text("Se connecter")'); await page.waitForSelector('#app.ready'); await page.waitForTimeout(400);
     await page.evaluate(() => go('cli')); await page.waitForSelector('.pc-q');
     const over = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
     ok(!over, n + ' (' + w + 'px) : pas de débordement horizontal');

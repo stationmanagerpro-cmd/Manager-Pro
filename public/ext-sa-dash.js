@@ -70,6 +70,10 @@
   window.sadUsage = async function (days) {
     const box = document.getElementById('sad_usage_body'); if (!box) return;
     let d; try { d = await G('/admin/platform/usage?days=' + (days || 30)); } catch (e) { box.textContent = 'Statistiques indisponibles : ' + (e.message || e); return; }
+    // Réponse absente ou mal formée (ex. tableau vide, ancien serveur) : valeurs par défaut au lieu d'une erreur JS.
+    d = (d && typeof d === 'object' && !Array.isArray(d)) ? d : {};
+    ['clients', 'users', 'daily', 'views'].forEach(k => { if (!Array.isArray(d[k])) d[k] = []; });
+    if (!Array.isArray(d.hours)) d.hours = new Array(24).fill(0);
     lastUsage = d;
     usageCharts.forEach(c => { try { c.destroy(); } catch (_) { /* déjà détruit */ } }); usageCharts = [];
     const totS = d.clients.reduce((a, c) => a + c.seconds, 0), totL = d.clients.reduce((a, c) => a + c.logins, 0);
