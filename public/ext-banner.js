@@ -23,7 +23,14 @@
   function idbOpen() { return new Promise(function (ok, ko) { var q = indexedDB.open('smp-banner', 1); q.onupgradeneeded = function () { q.result.createObjectStore('img'); }; q.onsuccess = function () { ok(q.result); }; q.onerror = ko; }); }
   function idbGet(k) { return idbOpen().then(function (db) { return new Promise(function (ok, ko) { var t = db.transaction('img').objectStore('img').get(k); t.onsuccess = function () { db.close(); ok(t.result || null); }; t.onerror = ko; }); }); }
   function idbPut(k, v) { return idbOpen().then(function (db) { return new Promise(function (ok, ko) { var t = db.transaction('img', 'readwrite'); t.objectStore('img').put(v, k); t.oncomplete = function () { db.close(); ok(); }; t.onerror = ko; }); }); }
-  function fetchImg() { return fetch('/api/images/banner/' + encodeURIComponent(SID), { headers: { Authorization: 'Bearer ' + TK, 'X-Station-Id': String(SID) }, cache: 'no-store' }).then(function (r) { return r.ok ? r.blob() : null; }); }
+  /* Délai maximum de téléchargement de la photo : au-delà, le bandeau s'affiche sans photo plutôt que d'attendre. */
+  function fetchImg() {
+    var ac = typeof AbortController === 'function' ? new AbortController() : null;
+    var t = ac ? setTimeout(function () { ac.abort(); }, 5000) : null;
+    return fetch('/api/images/banner/' + encodeURIComponent(SID), { headers: { Authorization: 'Bearer ' + TK, 'X-Station-Id': String(SID) }, cache: 'no-store', signal: ac ? ac.signal : undefined })
+      .then(function (r) { return r.ok ? r.blob() : null; })
+      .finally(function () { if (t) clearTimeout(t); });
+  }
   async function sameBytes(x, y) {
     if (x.size !== y.size) return false;
     var a = new Uint8Array(await x.arrayBuffer()), b = new Uint8Array(await y.arrayBuffer());

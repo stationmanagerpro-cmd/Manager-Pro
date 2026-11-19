@@ -144,6 +144,7 @@ html[data-skin=pro] .b2.on, html[data-skin=pro] .bar .b2.on, html[data-skin=pro]
   font-weight: 700;
 }
 
-/* Ancien en-tête masqué pendant le calcul du bandeau (évite l'affichage en deux temps).
-   Repli : si aucune décision n'est prise après 10 s, l'en-tête redevient visible. */
-html[data-skin=pro][data-hero-pending] #app-header #tenant-brand { visibility: hidden; }
+/* Marque de l'en-tête masquée pendant le calcul du bandeau (évite l'affichage en deux temps).
+   Repli : si aucune décision n'est prise après 10 s, la marque redevient visible (animation CSS, sans JavaScript). */
+html[data-skin=pro][data-hero-pending] #app-header #tenant-brand { visibility: hidden; animation: smp-hero-reveal 0s linear 10s forwards; }
+@keyframes smp-hero-reveal { to { visibility: visible; } }
