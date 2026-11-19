@@ -127,6 +127,8 @@ html[data-skin=pro] .sp-save { background: linear-gradient(100deg, var(--p), var
 /* Grand bandeau affiché tout en haut : il porte déjà le logo et le nom de la station → on retire la ligne d'identité en double.
    L'heure n'est plus dans l'en-tête : elle descend sous le profil, à côté de la date (fil d'Ariane). */
 html[data-skin=pro][data-hero] #app-header #tenant-brand { display: none !important; }
+/* Téléphone et tablette sans grand bandeau : pas de ligne d'identité en plus, le sélecteur de station porte déjà le nom. */
+@media (max-width: 860px) { html[data-skin=pro]:not([data-hero]) #app-header #tenant-brand { display: none !important; } }
 html[data-skin=pro] #app-header .header-clock { display: none !important; }
 html[data-skin=pro] .skin-datepill .skin-time { font-variant-numeric: tabular-nums; margin-left: 6px; padding-left: 8px; border-left: 1px solid var(--bd); color: var(--p-text, var(--p)); }
 html[data-skin=pro] .skin-crumb a.skin-crumb-link { color: var(--m); font-weight: 600; cursor: pointer; text-decoration: none; border-radius: 6px; padding: 2px 4px; margin: -2px -4px; }
