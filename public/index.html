@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="/responsive-phone.css?v=2">
   <link rel="stylesheet" href="/ext-banner.css?v=1">
   <link rel="stylesheet" href="/ext-license-ticker.css?v=1">
-  <link rel="stylesheet" href="/ext-skin-pro.css?v=3">
+  <link rel="stylesheet" href="/ext-skin-pro.css?v=5">
   <link rel="stylesheet" href="/ext-tabs-motion.css?v=1">
 </head>
 <body>
@@ -40,16 +40,8 @@
     <nav id="nav"></nav>
     <main>
       <header id="app-header">
-      <div class="tenant-brandbar" id="tenant-brandbar">
-        <div class="tenant-brand" id="tenant-brand" aria-label="Identité du compte">
-          <span class="tenant-brand-mark">S</span><span class="tenant-brand-copy"><b>Station Manager PRO</b><small></small></span>
-        </div>
-        <div class="brandbar-right">
-          <div class="header-clock" id="live-clock" role="timer" aria-label="Date et heure">
-            <span class="clk-date"></span><b class="clk-time"></b>
-          </div>
-          <div class="user-chip" id="user-chip"></div>
-        </div>
+      <div class="tenant-brand" id="tenant-brand" aria-label="Identité du compte">
+        <span class="tenant-brand-mark">S</span><span class="tenant-brand-copy"><b>Station Manager PRO</b><small></small></span>
       </div>
       <div class="top" id="topbar-ctx">
         <button class="b2 icon-btn nav-toggle" id="nav-toggle" aria-label="Ouvrir le menu" aria-expanded="false" onclick="toggleNavDrawer()">&#9776;</button>
@@ -63,8 +55,12 @@
         <div id="top-shortcuts" class="top-shortcuts"></div>
         <button class="b2 keep-focus top-focus" onclick="toggleFocusMode()" title="Mode pompiste (écran simplifié)">Focus</button>
         <button class="b2 icon-btn" id="theme-toggle" onclick="toggleDayNight()" title="Mode jour / nuit" aria-label="Basculer mode jour ou nuit">🌙</button>
+        <div class="header-clock" id="live-clock" role="timer" aria-label="Date et heure">
+          <span class="clk-date"></span><b class="clk-time"></b>
+        </div>
         <button class="b2 icon-btn bell" id="bell" onclick="bellClick()" title="Notifications" aria-label="Notifications">&#128276;<span id="bell-n" hidden></span></button>
         <button type="button" class="b2 icon-btn" data-pwa-install hidden onclick="pwaInstall()" title="Installer l’application" aria-label="Installer l’application">⬇ App</button>
+        <div class="user-chip" id="user-chip"></div>
       </div>
       </header>
       <div id="pg" class="fade-in"></div>
@@ -124,8 +120,8 @@
   <script src="/ext-money-match.js?v=1"></script>
   <script src="/ext-market.js?v=1"></script>
   <script src="/ext-gaps.js?v=1"></script>
-  <script src="/ext-skin-pro.js?v=3"></script>
-  <script src="/ext-banner.js?v=2"></script>
+  <script src="/ext-skin-pro.js?v=4"></script>
+  <script src="/ext-banner.js?v=3"></script>
   <script src="/ext-license-ticker.js?v=1"></script>
   <script src="/ext-accounting.js?v=3"></script>
   <script src="/ext-import.js?v=3"></script>
@@ -170,7 +166,7 @@
   <script src="/ext-myday.js"></script>
   <script src="/ext-push.js"></script>
   <script src="/ext-confort.js"></script>
-  <script src="/ext-help.js?v=4"></script>
+  <script src="/ext-help.js?v=5"></script>
   <script src="/ext-sidebar-pub.js"></script>
   <script src="/ext-about.js"></script>
   <script src="/ext-aide-demo.js"></script>

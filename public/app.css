@@ -1235,7 +1235,7 @@ body.focus-mode .focus-quick select {
 }
 
 @media print {
-  nav, #topbar-ctx, .top, .bar button, .tenant-brandbar, #bn { display: none !important; }
+  nav, #topbar-ctx, .top, .bar button, #tenant-brand, #bn { display: none !important; }
   #app, main, #pg { display: block !important; width: 100% !important; }
   body { background: #fff; }
 }

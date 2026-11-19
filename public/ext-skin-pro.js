@@ -12,16 +12,6 @@
   if (typeof window.G === 'undefined' && typeof G === 'undefined') { /* écran de connexion seulement */ }
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); };
 
-  /* ---- Bandeau : slogan centré. La photo est affichée par le grand bandeau #hero (ext-banner.js) : plus de vignette dans la barre. ---- */
-  async function paintBanner() {
-    var bar = document.getElementById('tenant-brandbar'); if (!bar || d.dataset.skin !== 'pro') return;
-    var st = (typeof AP !== 'undefined' && AP && AP.station) || {}, sc = typeof ME !== 'undefined' && ME && ME.is_global;
-    var old = bar.querySelector('.skin-banner'); if (old) old.remove();   // ancienne vignette photo : doublon du grand bandeau
-    var sl = bar.querySelector('.skin-slogan');
-    if (!sl) { sl = document.createElement('div'); sl.className = 'skin-slogan'; var right = bar.querySelector('.brandbar-right'); bar.insertBefore(sl, right); }
-    sl.textContent = sc ? '' : (st.tagline || '');
-  }
-  window.skinResetBanner = function () { return paintBanner(); };
 
   /* ---- Fil d'Ariane : Accueil › Section › Page (cliquables), + date et heure ---- */
   function homeKey() { try { return typeof defaultView === 'function' ? defaultView() : 'dash'; } catch (_) { return 'dash'; } }
@@ -55,7 +45,7 @@
     tickTime(); if (!window.__skinClock) window.__skinClock = setInterval(tickTime, 1000);
   }
   function boot() {
-    paintBanner(); paintCrumbs();
+    paintCrumbs();
     var ttl = document.getElementById('ttl');
     if (ttl && !ttl.__skinObs) { ttl.__skinObs = new MutationObserver(function () { setTimeout(paintCrumbs, 60); }); ttl.__skinObs.observe(ttl, { childList: true, characterData: true, subtree: true }); }
     var nav = document.getElementById('nav');
@@ -103,7 +93,7 @@
   window.addEventListener('load', function () { hook(); setTimeout(hook, 800); setTimeout(boot, 1200); });
   /* Photo de bandeau : mise à jour après téléversement / suppression (modale « Photo / logo » existante) */
   var _up = window.uploadImage;
-  if (typeof _up === 'function') window.uploadImage = async function (ent) { var r = await _up.apply(this, arguments); if (ent === 'banner') { try { if (window.applyAppearance) await applyAppearance(); } catch (_) {} await window.skinResetBanner(); } return r; };
+  if (typeof _up === 'function') window.uploadImage = async function (ent) { var r = await _up.apply(this, arguments); if (ent === 'banner') { try { if (window.applyAppearance) await applyAppearance(); } catch (_) {} } return r; };
   var _api = window.api;
-  if (typeof _api === 'function' && !_api.__skin) { window.api = async function (m, p) { var r = await _api.apply(this, arguments); if (m === 'DELETE' && /^\/images\/banner\//.test(p || '')) { try { if (window.applyAppearance) await applyAppearance(); } catch (_) {} window.skinResetBanner(); } return r; }; window.api.__skin = true; }
+  if (typeof _api === 'function' && !_api.__skin) { window.api = async function (m, p) { var r = await _api.apply(this, arguments); if (m === 'DELETE' && /^\/images\/banner\//.test(p || '')) { try { if (window.applyAppearance) await applyAppearance(); } catch (_) {} } return r; }; window.api.__skin = true; }
 })();

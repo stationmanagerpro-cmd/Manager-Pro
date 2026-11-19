@@ -3,7 +3,7 @@
  * - /api/** → network-only (jamais de cache : auth JWT, données métier)
  * - Navigation HTML → network-first, fallback cache index si offline total
  */
-const CACHE = 'smp-static-b69e72ec4a4';
+const CACHE = 'smp-static-b3ff0b7f99b';
 
 /* PRECACHE:BEGIN (généré par scripts/build-sw.js — ne pas modifier à la main) */
 const PRECACHE = [
@@ -22,7 +22,7 @@ const PRECACHE = [
   '/ext-archive.js',
   '/ext-avenir.js',
   '/ext-banner.css?v=1',
-  '/ext-banner.js?v=2',
+  '/ext-banner.js?v=3',
   '/ext-billing.js?v=2',
   '/ext-brand-admin.js',
   '/ext-branded-pdf.js?v=2',
@@ -45,7 +45,7 @@ const PRECACHE = [
   '/ext-fleet.js?v=2',
   '/ext-form-drafts.js?v=1',
   '/ext-gaps.js?v=1',
-  '/ext-help.js?v=4',
+  '/ext-help.js?v=5',
   '/ext-home.js',
   '/ext-hr-v2.js',
   '/ext-import.js?v=3',
@@ -108,8 +108,8 @@ const PRECACHE = [
   '/ext-shell.js',
   '/ext-shifts-sales-pdf.js?v=1',
   '/ext-sidebar-pub.js',
-  '/ext-skin-pro.css?v=3',
-  '/ext-skin-pro.js?v=3',
+  '/ext-skin-pro.css?v=5',
+  '/ext-skin-pro.js?v=4',
   '/ext-stock-reports.js',
   '/ext-tabs-motion.css?v=1',
   '/ext-tanks.js',

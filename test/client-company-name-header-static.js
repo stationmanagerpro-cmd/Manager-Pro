@@ -7,20 +7,21 @@ const shellCss = fs.readFileSync('public/ext-shell.css', 'utf8');
 const designCss = fs.readFileSync('public/design-v2.css', 'utf8');
 let passed = 0;
 function check(label, fn) { fn(); passed++; console.log(`✓ ${label}`); }
-check('une barre de marque dédiée existe au-dessus du contenu', () => {
-  assert.match(html, /<div class="tenant-brandbar" id="tenant-brandbar">[\s\S]*?id="tenant-brand"/);
-  assert.ok(html.indexOf('id="tenant-brandbar"') < html.indexOf('id="topbar-ctx"'));
+check('le bloc identité est dans l\'en-tête, au-dessus de la barre supérieure (sans wrapper tenant-brandbar)', () => {
+  assert.match(html, /<div class="tenant-brand" id="tenant-brand"/);
+  assert.doesNotMatch(html, /tenant-brandbar/);
+  assert.ok(html.indexOf('id="tenant-brand"') < html.indexOf('id="topbar-ctx"'));
 });
 check('le nom affiché vient de la station active, puis du compte client', () => assert.match(shell, /name\s*=\s*st\.name\s*\|\|\s*st\.client_name\s*\|\|/));
 check('la barre est visible sur écran large aussi', () => {
-  assert.doesNotMatch(designCss, /@media\s*\(min-width:\s*861px\)\s*\{\s*#tenant-brandbar\s*\{\s*display:\s*none/);
-  assert.match(designCss, /#tenant-brandbar\s*\{\s*display:\s*flex/);
+  assert.doesNotMatch(designCss, /@media\s*\(min-width:\s*861px\)\s*\{\s*#tenant-brand\s*\{\s*display:\s*none/);
+  assert.match(designCss, /#tenant-brand\s*\{\s*display:\s*flex/);
 });
 check('le nom utilise une grande taille adaptative', () => {
   assert.match(shellCss, /\.tenant-brand-copy b\s*\{[^}]*font-size:\s*clamp\(21px,\s*2vw,\s*28px\)/s);
   assert.match(shellCss, /\.tenant-brand-copy b\s*\{[^}]*font-weight:\s*850/s);
 });
-check('la barre est masquée pour le Superadmin multi-clients', () => assert.match(shell, /tenantBar\.hidden\s*=\s*!!\(ME\s*&&\s*ME\.is_global\)/));
+check('la barre est masquée pour le Superadmin multi-clients', () => assert.match(shell, /tenantBrand\.hidden\s*=\s*!!\(ME\s*&&\s*ME\.is_global\)/));
 check('le nom long peut revenir à la ligne sans déborder', () => assert.match(shellCss, /overflow-wrap:\s*anywhere/));
 check('le style tient compte des petits écrans', () => assert.match(shellCss, /\.tenant-brand-copy b\s*\{\s*font-size:\s*clamp\(19px,\s*5vw,\s*23px\)/));
 check('le logo réel du compte/station est chargé depuis son image enregistrée', () => {
