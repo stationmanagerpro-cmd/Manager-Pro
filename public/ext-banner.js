@@ -193,7 +193,7 @@
         else if (S.removed && s.has_banner) await api('DELETE', '/images/banner/' + SID);
         var legib = S.img ? (last.ok ? 'ok' : 'warn') : null;
         await api('PUT', '/station-banner', { title: $$('bn-title').value.trim() || null, tagline: $$('bn-tag').value.trim() || null, align: S.style.align, color: S.style.color, overlay: S.style.overlay, legibility: legib, ratio: last.ratio });
-        resetImage(); try { if (window.skinResetBanner) await window.skinResetBanner(); } catch (_) {}
+        resetImage();
         closeM(); if (window.applyAppearance) await applyAppearance(); await window.paintHeroBanner();
         toast('Bandeau enregistré');
         if (typeof cur !== 'undefined' && cur === 'param') go('param');

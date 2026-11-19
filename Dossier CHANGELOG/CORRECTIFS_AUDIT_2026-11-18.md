@@ -93,3 +93,10 @@ Décision du propriétaire : une clôture de quart ne peut pas être antérieure
 - Non vérifié : rendu visuel (pas de base PostgreSQL locale, donc pas de parcours navigateur réel), mobile réel, pages sans grand bandeau.
 - Retour arrière : revert du commit sur la branche `refactor/en-tete-unique`.
 - Statut : commit local uniquement. Ni poussé, ni PR, ni fusion, ni déploiement.
+
+### Nettoyage de l'en-tête (code mort retiré)
+
+- Supprimés : règles CSS `.brandbar-right` (responsive-v3.css) ; fonction `skinResetBanner` devenue vide et ses 3 appels (ext-skin-pro.js, ext-banner.js).
+- Conservées et rattachées à `#app-header .user-chip` : les couleurs du profil sur fond sombre.
+- Vérification : suite statique/unitaire 204 réussis ; 2 échecs d'environnement connus (stub zod). Rendu visuel non vérifié.
+- Statut : commit local de nettoyage, non poussé.

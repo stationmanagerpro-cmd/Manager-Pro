@@ -56,15 +56,6 @@ body::before {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* Zone droite : date/heure + compte, même ligne que le nom client */
-#app-header .brandbar-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 0 0 auto;
-  margin-left: auto;
-  min-width: 0;
-}
 #app-header .header-clock {
   text-align: right;
   line-height: 1.15;
@@ -112,7 +103,6 @@ body.dv2-home #app-header .top h2 { display: none; }
 @media (max-width: 560px) {
   #app-header .header-clock .clk-date { font-size: 10px; }
   #app-header .header-clock .clk-time { font-size: 12.5px; }
-  #app-header .brandbar-right { gap: 6px; }
 }
 @media (max-width: 480px) {
   #app-header .user-chip .uc-text { display: none; }
@@ -122,16 +112,15 @@ body.dv2-home #app-header .top h2 { display: none; }
 @media print { #app-header { display: none !important; } }
 
 
-/* Profil utilisateur sur bandeau sombre : contraste lisible */
-#app-header .brandbar-right .user-chip { margin-left: 0; order: 0; }
-#app-header .brandbar-right .uc-btn {
+/* Profil utilisateur dans la barre supérieure (fond sombre) : contraste lisible */
+#app-header .user-chip .uc-btn {
   background: rgba(255,255,255,.10);
   border-color: rgba(255,255,255,.18);
   color: #fff;
 }
-#app-header .brandbar-right .uc-text b { color: #fff; }
-#app-header .brandbar-right .uc-text small { color: var(--sb-muted, rgba(255,255,255,.7)); }
-#app-header .brandbar-right .uc-caret { color: rgba(255,255,255,.7); }
+#app-header .user-chip .uc-text b { color: #fff; }
+#app-header .user-chip .uc-text small { color: var(--sb-muted, rgba(255,255,255,.7)); }
+#app-header .user-chip .uc-caret { color: rgba(255,255,255,.7); }
 
 /* ---- Tableaux : défilement horizontal au lieu d'être coupés ---- */
 .tw-auto { display: block; max-width: 100%; overflow-x: auto; overflow-y: hidden; -webkit-overflow-scrolling: touch; overscroll-behavior-x: contain; margin-bottom: 12px; }

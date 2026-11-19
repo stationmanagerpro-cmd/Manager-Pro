@@ -12,8 +12,6 @@
   if (typeof window.G === 'undefined' && typeof G === 'undefined') { /* écran de connexion seulement */ }
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); };
 
-  /* ---- Bandeau : nom, logo et slogan sont portés par le grand bandeau #hero (ext-banner.js) ou, sans bandeau, par #tenant-brand (ext-shell.js). ---- */
-  window.skinResetBanner = function () { return Promise.resolve(); };
 
   /* ---- Fil d'Ariane : Accueil › Section › Page (cliquables), + date et heure ---- */
   function homeKey() { try { return typeof defaultView === 'function' ? defaultView() : 'dash'; } catch (_) { return 'dash'; } }
@@ -95,7 +93,7 @@
   window.addEventListener('load', function () { hook(); setTimeout(hook, 800); setTimeout(boot, 1200); });
   /* Photo de bandeau : mise à jour après téléversement / suppression (modale « Photo / logo » existante) */
   var _up = window.uploadImage;
-  if (typeof _up === 'function') window.uploadImage = async function (ent) { var r = await _up.apply(this, arguments); if (ent === 'banner') { try { if (window.applyAppearance) await applyAppearance(); } catch (_) {} await window.skinResetBanner(); } return r; };
+  if (typeof _up === 'function') window.uploadImage = async function (ent) { var r = await _up.apply(this, arguments); if (ent === 'banner') { try { if (window.applyAppearance) await applyAppearance(); } catch (_) {} } return r; };
   var _api = window.api;
-  if (typeof _api === 'function' && !_api.__skin) { window.api = async function (m, p) { var r = await _api.apply(this, arguments); if (m === 'DELETE' && /^\/images\/banner\//.test(p || '')) { try { if (window.applyAppearance) await applyAppearance(); } catch (_) {} window.skinResetBanner(); } return r; }; window.api.__skin = true; }
+  if (typeof _api === 'function' && !_api.__skin) { window.api = async function (m, p) { var r = await _api.apply(this, arguments); if (m === 'DELETE' && /^\/images\/banner\//.test(p || '')) { try { if (window.applyAppearance) await applyAppearance(); } catch (_) {} } return r; }; window.api.__skin = true; }
 })();
