@@ -155,7 +155,8 @@
     var known = imgCache.key === key;   // photo déjà connue pour cette station : pas d'attente
     var url = known ? imgCache.url : null;
     if (!known) {
-      try { url = await stationImageUrl(); } catch (_) { url = null; }
+      window.__heroFetching = true;
+      try { url = await stationImageUrl(); } catch (_) { url = null; } finally { window.__heroFetching = false; }
       if (my !== paintSeq) return;   // un autre rendu a démarré pendant le chargement de l'image
       imgCache = { key: key, url: url };
     }
@@ -164,6 +165,12 @@
   function schedule() { if (busy) return; busy = true; setTimeout(function () { busy = false; paint(); }, 40); }
   function watch() { var pg = document.getElementById('pg'); if (!pg || pg.__heroObs) return; pg.__heroObs = new MutationObserver(function () { schedule(); }); pg.__heroObs.observe(pg, { childList: true }); schedule(); }
   window.addEventListener('load', function () { watch(); setTimeout(watch, 700); setTimeout(watch, 2000); prefetch(); });
+  /* Filet de sécurité : si la session est prête mais que le bandeau est absent (aucun changement de page détecté), on relance la pose toutes les secondes. */
+  setInterval(function () {
+    if (window.__heroFetching || document.getElementById('hero') || typeof cur === 'undefined' || !cur || typeof ME === 'undefined' || !ME) return;   // jamais pendant un téléchargement : chaque rendu annule le précédent
+    if (!(ME.is_global || (typeof SID !== 'undefined' && SID))) return;
+    paint();
+  }, 1000);
   /* Téléchargement anticipé de la photo : prête quand le bandeau se pose. */
   function prefetch() { try { stationImageUrl().catch(function () {}); } catch (_) {} }
   window.paintHeroBanner = function () { imgCache = { key: null, url: null }; var ex = document.getElementById('hero'); if (ex) ex.__sig = ''; return paint(); };
