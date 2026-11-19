@@ -14,8 +14,8 @@ check('chaque décision (bandeau affiché ou non) retire le marqueur : 5 points'
 check("l'ancien en-tête est masqué tant que le marqueur est présent", () => {
   assert(css.includes('html[data-skin=pro][data-hero-pending] #app-header #tenant-brand { visibility: hidden;'));
 });
-check("repli : l'en-tête redevient visible après 2,5 s si aucune décision n'est prise", () => {
-  assert(css.includes('animation: heroPendingReveal 0s linear 2.5s forwards;'));
+check("repli : l'en-tête redevient visible après 10 s si aucune décision n'est prise", () => {
+  assert(css.includes('animation: heroPendingReveal 0s linear 10s forwards;'));
   assert(css.includes('@keyframes heroPendingReveal { to { visibility: visible; } }'));
 });
 check('versions de chargement incrémentées (cache navigateur)', () => {

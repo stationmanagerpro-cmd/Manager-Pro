@@ -127,6 +127,8 @@ html[data-skin=pro] .sp-save { background: linear-gradient(100deg, var(--p), var
 /* Grand bandeau affiché tout en haut : il porte déjà le logo et le nom de la station → on retire la ligne d'identité en double.
    L'heure n'est plus dans l'en-tête : elle descend sous le profil, à côté de la date (fil d'Ariane). */
 html[data-skin=pro][data-hero] #app-header #tenant-brand { display: none !important; }
+/* Téléphone et tablette sans grand bandeau : pas de ligne d'identité en plus, le sélecteur de station porte déjà le nom. */
+@media (max-width: 860px) { html[data-skin=pro]:not([data-hero]) #app-header #tenant-brand { display: none !important; } }
 html[data-skin=pro] #app-header .header-clock { display: none !important; }
 html[data-skin=pro] .skin-datepill .skin-time { font-variant-numeric: tabular-nums; margin-left: 6px; padding-left: 8px; border-left: 1px solid var(--bd); color: var(--p-text, var(--p)); }
 html[data-skin=pro] .skin-crumb a.skin-crumb-link { color: var(--m); font-weight: 600; cursor: pointer; text-decoration: none; border-radius: 6px; padding: 2px 4px; margin: -2px -4px; }
@@ -143,6 +145,6 @@ html[data-skin=pro] .b2.on, html[data-skin=pro] .bar .b2.on, html[data-skin=pro]
 }
 
 /* Ancien en-tête masqué pendant le calcul du bandeau (évite l'affichage en deux temps).
-   Repli : si aucune décision n'est prise après 2,5 s, l'en-tête redevient visible. */
-html[data-skin=pro][data-hero-pending] #app-header #tenant-brand { visibility: hidden; animation: heroPendingReveal 0s linear 2.5s forwards; }
+   Repli : si aucune décision n'est prise après 10 s, l'en-tête redevient visible. */
+html[data-skin=pro][data-hero-pending] #app-header #tenant-brand { visibility: hidden; animation: heroPendingReveal 0s linear 10s forwards; }
 @keyframes heroPendingReveal { to { visibility: visible; } }
