@@ -139,7 +139,7 @@
     if (ex && ex.__sig === sig && ex.nextElementSibling === hd) { purgeHeroes(ex); d.dataset.hero = '1'; decided(); return; }
     var h = build({ name: s.banner_title || s.name || '', slogan: s.tagline, style: sy, img: url, logo: logo, compact: !home, warn: canEdit() && url && s.banner_legibility === 'warn',
       cta: home && (function () { try { return can('sale.create'); } catch (_) { return false; } })() });
-    h.id = 'hero'; h.__sig = sig; h.setAttribute('role', 'banner');
+    h.id = 'hero'; h.__sig = sig; h.setAttribute('role', 'banner'); if (url === DEFAULT_IMG) h.classList.add('is-default');
     purgeHeroes(null); host.insertBefore(h, hd); d.dataset.hero = '1'; decided();   // tout en haut de la page, au-dessus de la barre d'en-tête
   }
   var busy = false, paintSeq = 0;
