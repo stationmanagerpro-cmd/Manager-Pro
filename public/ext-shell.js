@@ -137,6 +137,8 @@ const visible = k => V[k] && (typeof canView === 'function' ? canView(k) : can(V
     nav.classList.add('nav2');
     nav.classList.toggle('collapsed', collapsed && !isMobile());
     nav.classList.toggle('user-hidden', navHidden);
+    // Premier affichage : le menu est posé sans animation, puis la règle de démarrage est retirée (les animations reviennent pour les clics).
+    requestAnimationFrame(function () { requestAnimationFrame(function () { var b = document.getElementById('nav-boot'); if (b) b.remove(); }); });
     // Identité du menu : toujours celle du site (« Manager Pro » + son logo), pour tous les comptes.
     // L'identité de la station / du client reste affichée dans la barre du haut.
     const siteLogo = BRAND.has_logo ? brandMarkInner() : '<img src="/icons/icon-192.png" alt="Station Manager PRO">';
