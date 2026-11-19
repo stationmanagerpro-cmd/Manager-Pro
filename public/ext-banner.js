@@ -20,6 +20,8 @@
   var cache = { url: null, key: null };
   /* Photo par défaut de Manager PRO : affichée pendant le téléchargement, ou si la station n'a pas de photo. */
   var DEFAULT_IMG = '/banner-defaut.webp';
+  /* Charge (et décode) une image avant de l'afficher ; repli après 3 s. */
+  function warm(src) { return new Promise(function (ok) { var i = new Image(), t = setTimeout(ok, 3000); function done() { clearTimeout(t); ok(); } i.src = src; if (i.decode) { i.decode().then(done, done); } else { i.onload = done; i.onerror = done; } }); }
   /* Photo du bandeau : gardée dans le navigateur (IndexedDB) entre deux chargements, pour un affichage instantané à l'actualisation. */
   var imgVer = 0;   // incrémenté quand la photo a changé en arrière-plan : déclenche un nouveau rendu du bandeau
   function idbOpen() { return new Promise(function (ok, ko) { var q = indexedDB.open('smp-banner', 1); q.onupgradeneeded = function () { q.result.createObjectStore('img'); }; q.onsuccess = function () { ok(q.result); }; q.onerror = ko; }); }
@@ -164,6 +166,7 @@
     var known = imgCache.key === key;   // photo déjà connue pour cette station : pas d'attente
     var url = known ? imgCache.url : null;
     if (!known) {
+      await warm(DEFAULT_IMG); if (my !== paintSeq) return;   // la photo par défaut est chargée avant d'être posée (pas de bandeau vide)
       place(DEFAULT_IMG);   // la photo par défaut s'affiche tout de suite, en attendant celle de la station
       window.__heroFetching = true;
       try { url = await stationImageUrl(); } catch (_) { url = null; } finally { window.__heroFetching = false; }
@@ -182,7 +185,7 @@
     paint();
   }, 1000);
   /* Téléchargement anticipé de la photo : prête quand le bandeau se pose. */
-  function prefetch() { try { stationImageUrl().catch(function () {}); } catch (_) {} }
+  function prefetch() { try { warm(DEFAULT_IMG); stationImageUrl().catch(function () {}); } catch (_) {} }
   window.paintHeroBanner = function () { imgCache = { key: null, url: null }; var ex = document.getElementById('hero'); if (ex) ex.__sig = ''; return paint(); };
   ['applyAppearance', 'refreshTenantBrand', 'loadBrand'].forEach(function (n) { var t = setInterval(function () { if (typeof window[n] === 'function' && !window[n].__hero) { var o = window[n]; window[n] = function () { var r = o.apply(this, arguments); Promise.resolve(r).then(function () { watch(); schedule(); }); return r; }; window[n].__hero = true; clearInterval(t); } }, 300); setTimeout(function () { clearInterval(t); }, 8000); });
 
