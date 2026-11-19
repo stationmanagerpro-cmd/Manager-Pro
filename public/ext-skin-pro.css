@@ -144,7 +144,6 @@ html[data-skin=pro] .b2.on, html[data-skin=pro] .bar .b2.on, html[data-skin=pro]
   font-weight: 700;
 }
 
-/* Marque de l'en-tête masquée pendant le calcul du bandeau (évite l'affichage en deux temps).
-   Repli : si aucune décision n'est prise après 10 s, la marque redevient visible (animation CSS, sans JavaScript). */
-html[data-skin=pro][data-hero-pending] #app-header #tenant-brand { visibility: hidden; animation: smp-hero-reveal 0s linear 10s forwards; }
-@keyframes smp-hero-reveal { to { visibility: visible; } }
+/* En-tête entier masqué tant que le bandeau n'est pas posé (évite deux en-têtes successifs de hauteurs différentes, sans espace vide).
+   Repli : index.html retire l'attribut après 10 s si le bandeau n'a pas été posé. */
+html[data-hero-pending] #app-header { display: none; }
