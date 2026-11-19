@@ -111,7 +111,7 @@
   function purgeHeroes(keep) { Array.prototype.slice.call(document.querySelectorAll('#hero, .hero-top')).forEach(function (n) { if (n !== keep) n.remove(); }); }
   async function paint() {
     var my = ++paintSeq;   // un rendu plus récent annule les rendus en attente (évite deux bandeaux superposés)
-    var pg = document.getElementById('pg'), hd = document.getElementById('app-header'), host = hd && hd.parentNode; if (!pg || !host) return;
+    var pg = document.getElementById('pg'), hd = document.getElementById('app-header'), host = hd && hd.parentNode; if (!pg || !host) { decided(); return; }
     var sa = typeof ME !== 'undefined' && ME && ME.is_global;   // Superadmin : bandeau aux couleurs de la plateforme (nom, logo, slogan du site)
     var on = typeof cur !== 'undefined' && cur && typeof ME !== 'undefined' && ME && (sa || (typeof SID !== 'undefined' && SID));
     var ex = document.getElementById('hero');
@@ -127,7 +127,6 @@
     var key = String(SID || '') + '|' + String(cur || '');
     var known = imgCache.key === key;   // photo déjà connue pour cette station : pas d'attente
     var url = known ? imgCache.url : null;
-    if (!known && !document.getElementById('hero')) place(null);   // bandeau texte immédiat, la photo arrive ensuite
     if (!known) {
       try { url = await stationImageUrl(); } catch (_) { url = null; }
       if (my !== paintSeq) return;   // un autre rendu a démarré pendant le chargement de l'image
@@ -137,7 +136,9 @@
   }
   function schedule() { if (busy) return; busy = true; setTimeout(function () { busy = false; paint(); }, 40); }
   function watch() { var pg = document.getElementById('pg'); if (!pg || pg.__heroObs) return; pg.__heroObs = new MutationObserver(function () { schedule(); }); pg.__heroObs.observe(pg, { childList: true }); schedule(); }
-  window.addEventListener('load', function () { watch(); setTimeout(watch, 700); setTimeout(watch, 2000); });
+  window.addEventListener('load', function () { watch(); setTimeout(watch, 700); setTimeout(watch, 2000); prefetch(); });
+  /* Téléchargement anticipé de la photo : prête quand le bandeau se pose. */
+  function prefetch() { try { stationImageUrl().catch(function () {}); } catch (_) {} }
   window.paintHeroBanner = function () { imgCache = { key: null, url: null }; var ex = document.getElementById('hero'); if (ex) ex.__sig = ''; return paint(); };
   ['applyAppearance', 'refreshTenantBrand', 'loadBrand'].forEach(function (n) { var t = setInterval(function () { if (typeof window[n] === 'function' && !window[n].__hero) { var o = window[n]; window[n] = function () { var r = o.apply(this, arguments); Promise.resolve(r).then(function () { watch(); schedule(); }); return r; }; window[n].__hero = true; clearInterval(t); } }, 300); setTimeout(function () { clearInterval(t); }, 8000); });
 
