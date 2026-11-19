@@ -166,14 +166,18 @@
     var known = imgCache.key === key;   // photo déjà connue pour cette station : pas d'attente
     var url = known ? imgCache.url : null;
     if (!known) {
-      await warm(DEFAULT_IMG); if (my !== paintSeq) return;   // la photo par défaut est chargée avant d'être posée (pas de bandeau vide)
-      place(DEFAULT_IMG);   // la photo par défaut s'affiche tout de suite, en attendant celle de la station
+      // Photo déjà enregistrée dans le navigateur : elle est posée directement, sans passer par la photo par défaut.
+      var saved = null; try { saved = await idbGet(String(SID)); } catch (_) {}
+      if (my !== paintSeq) return;
+      if (!saved) { await warm(DEFAULT_IMG); if (my !== paintSeq) return; place(DEFAULT_IMG); }   // pas de photo enregistrée : photo par défaut en attendant
       window.__heroFetching = true;
       try { url = await stationImageUrl(); } catch (_) { url = null; } finally { window.__heroFetching = false; }
       if (my !== paintSeq) return;   // un autre rendu a démarré pendant le chargement de l'image
       imgCache = { key: key, url: url };
     }
-    place(url || DEFAULT_IMG);   // sans photo propre de la station : photo par défaut
+    var shown = url || DEFAULT_IMG;   // sans photo propre de la station : photo par défaut
+    await warm(shown); if (my !== paintSeq) return;   // chargée avant d'être posée
+    place(shown);
   }
   function schedule() { if (busy) return; busy = true; setTimeout(function () { busy = false; paint(); }, 40); }
   function watch() { var pg = document.getElementById('pg'); if (!pg || pg.__heroObs) return; pg.__heroObs = new MutationObserver(function () { schedule(); }); pg.__heroObs.observe(pg, { childList: true }); schedule(); }
