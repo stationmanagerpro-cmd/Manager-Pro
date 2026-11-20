@@ -26,6 +26,7 @@ Documentation consolidée (`docs/REFERENCE.md` et ce fichier) et vérifications 
 | 2026-11-20 | Migrations sur PostgreSQL 16 : 122 fichiers appliqués | — | 0 échec au premier passage, 173 tables |
 | 2026-11-20 | Superadmin : 12 cartes d'aide, 12 boutons « Modifier » (simulation) | — | script navigateur `aide_super.js` (session) |
 | 2026-11-20 | Règle de comptoir : produit Carburant imposé côté serveur | 6eaaa9b | syntaxe OK ; SQL vérifié sur PostgreSQL ; tests statiques 5/5 et 11/11 |
+| 2026-11-20 | Test statique de la règle de comptoir `test:pump-fuel` | — | 7/7 |
 | 2026-11-20 | Précision d'idempotence dans `docs/MIGRATIONS_INDEX.md` | — | second passage PostgreSQL |
 | 2026-11-20 | Tests statiques : migration-numbering 3/3, tenant-isolation 11/11, dynamic-html-security 10/10, auth-lockout 9/9, besoin-aide 14 assertions, homepage-mobile 8/8, links-audit OK | — | sorties des commandes |
 
@@ -33,6 +34,7 @@ Documentation consolidée (`docs/REFERENCE.md` et ce fichier) et vérifications 
 - Consolidation de la documentation (en cours de validation par l'utilisateur).
 
 ## 4. Bloqué
+- **Incident dépendances** : le 2026-11-20, une tentative `npm ci` (registre injoignable) a vidé le dossier `node_modules` local (il était déjà incomplet). Effet : le serveur ne se lance plus dans cet environnement. Sans effet sur le dépôt, le ZIP ou la production. Réinstallation : `npm ci` quand le registre sera accessible.
 - Tests serveur (`npm test`) : registre npm injoignable depuis la session (ENOTFOUND, retenté le 2026-11-20 après accord de l'utilisateur ; le blocage vient de la politique réseau de la session, pas du dépôt). À lever côté paramètres réseau de la session.
 
 ## 5. Restant (non commencé ou non vérifié)

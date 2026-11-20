@@ -194,7 +194,8 @@
     "test:sidebar-pub-fit": "node test/sidebar-pub-fit.test.js",
     "test:links-audit": "node test/links-audit-static.js",
     "test:client-usage": "node test/client-usage-unit.js",
-    "test:contract-module-switches": "node test/contract-module-switches-static.js"
+    "test:contract-module-switches": "node test/contract-module-switches-static.js",
+    "test:pump-fuel": "node test/pump-fuel-rule-static.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
