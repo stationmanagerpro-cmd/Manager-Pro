@@ -141,7 +141,7 @@
     if (ex && ex.__sig === sig && ex.nextElementSibling === hd) { purgeHeroes(ex); d.dataset.hero = '1'; decided(); return; }
     var h = build({ name: s.banner_title || s.name || '', slogan: s.tagline, style: sy, img: url, logo: logo, compact: !home, warn: canEdit() && url && s.banner_legibility === 'warn',
       cta: home && (function () { try { return can('sale.create'); } catch (_) { return false; } })() });
-    h.id = 'hero'; h.__sig = sig; h.setAttribute('role', 'banner'); if (url === DEFAULT_IMG) h.classList.add('is-default');
+    h.id = 'hero'; h.__sig = sig; h.setAttribute('role', 'banner');
     purgeHeroes(null); host.insertBefore(h, hd); d.dataset.hero = '1'; decided();   // tout en haut de la page, au-dessus de la barre d'en-tête
   }
   var busy = false, paintSeq = 0;
@@ -154,6 +154,7 @@
     var on = typeof cur !== 'undefined' && cur && typeof ME !== 'undefined' && ME && (sa || (typeof SID !== 'undefined' && SID));
     var ex = document.getElementById('hero');
     if (!on) { purgeHeroes(null); if (d.dataset.hero) delete d.dataset.hero; decided(); return; }
+    if (!window.__viewSettled) return;   // attendre la vue de démarrage (sinon le bandeau est posé en version compacte, puis remplacé)
     if (sa) {
       var B = (typeof BRAND !== 'undefined' && BRAND) || {}, bn = (typeof brandName === 'function' && brandName()) || 'Station Manager PRO', lg = B.has_logo ? '/api/branding/logo?v=' + (B.v || 0) : '/icons/icon-192.png', hm = cur === 'admin';
       var bi = B.has_banner ? '/api/branding/banner?v=' + (B.v || 0) : null, sg = JSON.stringify(['sa', hm, bn, B.tagline || '', lg, bi]);
@@ -182,6 +183,7 @@
   function schedule() { if (busy) return; busy = true; setTimeout(function () { busy = false; paint(); }, 40); }
   function watch() { var pg = document.getElementById('pg'); if (!pg || pg.__heroObs) return; pg.__heroObs = new MutationObserver(function () { schedule(); }); pg.__heroObs.observe(pg, { childList: true }); schedule(); }
   window.addEventListener('load', function () { watch(); setTimeout(watch, 700); setTimeout(watch, 2000); prefetch(); });
+  window.addEventListener('smp:boot-view', function () { schedule(); });
   /* Filet de sécurité : si la session est prête mais que le bandeau est absent (aucun changement de page détecté), on relance la pose toutes les secondes. */
   setInterval(function () {
     if (window.__heroFetching || document.getElementById('hero') || typeof cur === 'undefined' || !cur || typeof ME === 'undefined' || !ME) return;   // jamais pendant un téléchargement : chaque rendu annule le précédent

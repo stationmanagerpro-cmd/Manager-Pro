@@ -1142,6 +1142,8 @@ async function boot() {
   else if (ME.successful_login_count <= 3 && typeof VM.onboard === 'function' && !localStorage.getItem('smp-onboard-done-' + ME.id)) go('onboard');
   else if (!ME.is_global && typeof VM.direction === 'function' && (can('report.view') || can('finance.view') || can('user.manage'))) go(typeof canView === 'function' && canView('dash') && typeof VM.dash === 'function' ? 'dash' : 'direction');
   else go(defaultView());
+  // Vue de démarrage choisie : le bandeau peut être posé (il dépend de la vue affichée).
+  window.__viewSettled = true; window.dispatchEvent(new Event('smp:boot-view'));
 }
 function showLogin() {
   $('#app').style.display = 'none';
