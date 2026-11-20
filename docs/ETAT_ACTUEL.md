@@ -3,7 +3,7 @@
 Mis à jour le 2026-11-20. Fusionne l'ancien état actuel et le suivi d'exécution. Référence technique : `docs/REFERENCE.md`.
 
 ## 0. Dernier commit vérifié
-- `origin/main` : `ab772cf` (au moment de la mise à jour). Branches distantes : seule `main` au 2026-11-20 (vérifié par `git branch -r`).
+- `origin/main` : `57cf79d` (P-02, au moment de la mise à jour). Branches distantes : seule `main` au 2026-11-20 (vérifié par `git branch -r`).
 - Procédure de mise à jour : voir `docs/REFERENCE.md`, section 0.
 
 ## 1. Dernière tâche effectuée
