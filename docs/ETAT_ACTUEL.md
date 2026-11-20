@@ -64,3 +64,5 @@ Documentation consolidée (`docs/REFERENCE.md` et ce fichier) et vérifications 
 - Cause identifiée : le bandeau, posé après la vue de démarrage, pousse le contenu (sur le tableau de bord, il fait plusieurs centaines de pixels de haut). Corriger demande de choisir l'approche (réserver la place par vue, ou accepter le décalage).
 - Règle métier appliquée (`docs/PRIORITES_DEV.md`) : « Sécurité et intégrité financière avant l'apparence ». P-06 est un sujet d'apparence : il est reporté après les sujets de sécurité et de finances.
 - Non approuvés, non faits : P-01, P-02, P-03 (performance), P-09 (documentation, rien pour l'instant), P-04, P-07, P-08, P-10 (à conserver).
+- P-09 (validé) : 5 instantanés d'octobre supprimés (commit `816796d`), récupérables par git. Reste : 322 fichiers de `Dossier CHANGELOG/` et les rapports d'étapes, à traiter séparément après revue.
+- P-01, P-02, P-03 : non approuvés (en attente).
