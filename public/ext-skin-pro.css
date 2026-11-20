@@ -145,5 +145,5 @@ html[data-skin=pro] .b2.on, html[data-skin=pro] .bar .b2.on, html[data-skin=pro]
 }
 
 /* En-tête entier masqué tant que le bandeau n'est pas posé (évite deux en-têtes successifs de hauteurs différentes, sans espace vide).
-   Repli : index.html retire l'attribut après 10 s si le bandeau n'a pas été posé. */
+   Pas de repli temporisé : l'en-tête reste masqué tant que le bandeau n'est pas posé (décision du 19 novembre). */
 html[data-hero-pending] #app-header { display: none; }
