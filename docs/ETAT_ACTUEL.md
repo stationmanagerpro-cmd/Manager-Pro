@@ -25,6 +25,7 @@ Documentation consolidée (`docs/REFERENCE.md` et ce fichier) et vérifications 
 | 2026-11-20 | Documentation de référence | c80fbfe, ab772cf | `repo-hygiene-static` 7/7 |
 | 2026-11-20 | Migrations sur PostgreSQL 16 : 122 fichiers appliqués | — | 0 échec au premier passage, 173 tables |
 | 2026-11-20 | Superadmin : 12 cartes d'aide, 12 boutons « Modifier » (simulation) | — | script navigateur `aide_super.js` (session) |
+| 2026-11-20 | Règle de comptoir : produit Carburant imposé côté serveur | 6eaaa9b | syntaxe OK ; SQL vérifié sur PostgreSQL ; tests statiques 5/5 et 11/11 |
 | 2026-11-20 | Précision d'idempotence dans `docs/MIGRATIONS_INDEX.md` | — | second passage PostgreSQL |
 | 2026-11-20 | Tests statiques : migration-numbering 3/3, tenant-isolation 11/11, dynamic-html-security 10/10, auth-lockout 9/9, besoin-aide 14 assertions, homepage-mobile 8/8, links-audit OK | — | sorties des commandes |
 
@@ -32,21 +33,22 @@ Documentation consolidée (`docs/REFERENCE.md` et ce fichier) et vérifications 
 - Consolidation de la documentation (en cours de validation par l'utilisateur).
 
 ## 4. Bloqué
-- Tests serveur (`npm test`) : registre npm injoignable ; dépendances incomplètes. Pour débloquer : autoriser le registre npm pour cette session.
+- Tests serveur (`npm test`) : registre npm injoignable depuis la session (ENOTFOUND, retenté le 2026-11-20 après accord de l'utilisateur ; le blocage vient de la politique réseau de la session, pas du dépôt). À lever côté paramètres réseau de la session.
 
 ## 5. Restant (non commencé ou non vérifié)
 - Vérifier sur appareil réel (Android) : bandeau unique, menu sans mouvement, bouton « Besoin d'aide » dans la bannière.
 - Vérifier le bouton « Modifier » des cartes d'aide pour le superadmin sur le déploiement réel. En simulation (superadmin, `is_global` vrai) : 12 cartes, 12 boutons « Modifier » ; cause de l'absence signalée non reproduite.
-- Appliquer côté serveur la règle de comptoir des produits (`src/catalog.js`). Aujourd'hui seule l'interface la restreint à CARBURANT.
 - Doublons de préfixe de migrations (`docs/MIGRATIONS_INDEX.md`).
 - Compiler et vérifier le projet Android.
 - Vérifier une skin autre que « pro ».
 
-## 6. Questions ouvertes pour l'utilisateur
-1. Autoriser le registre npm pour cette session, afin de lancer `npm test` ?
-2. Appliquer la règle de comptoir côté serveur (`src/catalog.js`) ?
-3. Mettre à jour l'URL du dépôt distant local vers `stationmanagerpro-cmd/Manager-Pro` ?
-4. Fusionner les anciens documents datés de `docs/` dans `REFERENCE.md` et supprimer ceux qui sont redondants ? C'est une suppression : je ne le ferai qu'après votre accord, fichier par fichier.
+## 6. Décisions de l'utilisateur (2026-11-20)
+- Registre npm : autorisation demandée, mais toujours bloqué par la politique réseau de la session. Action à faire côté paramètres réseau.
+- Règle de comptoir côté serveur : appliquée (`src/catalog.js`, commit `6eaaa9b`).
+- URL du dépôt distant local : mise à jour vers `stationmanagerpro-cmd/Manager-Pro` (fetch vérifié).
+- Anciens documents de `docs/` : pas de suppression pour l'instant. Une liste fichier par fichier sera proposée plus tard.
 
 ## 7. Prochaine tâche précise
-Attendre les réponses aux questions 1 à 4. Ensuite, si la question 1 est « oui » : `npm ci`, puis `npm test`, et consigner le résultat ici.
+1. Lever le blocage npm (paramètres réseau), puis `npm ci` et `npm test`, et consigner le résultat ici.
+2. Test d'API de la règle de comptoir une fois le serveur lançable.
+3. Vérifier sur appareil réel : bandeau unique, menu sans mouvement, bouton « Besoin d'aide » dans la bannière.
