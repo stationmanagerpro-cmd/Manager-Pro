@@ -60,6 +60,7 @@ Documentation consolidée (`docs/REFERENCE.md` et ce fichier) et vérifications 
 - Mesures initiales (Chromium local, sans throttling, API simulée, sans gzip) : 102 scripts JS (2,27 Mo), 21 CSS (262 Ko, 18 % utilisé), FCP 660 ms, LCP 1 060 ms (téléphone), CLS 0,445 (téléphone) et 0,261 (ordinateur).
 - Rapport complet hors dépôt (scratchpad de session) : P-01 à P-10, groupes A à D.
 - Groupe C autorisé : P-06 (stabilité visuelle) uniquement. Tentative annulée : aucune amélioration mesurée. Branche locale `perf/stabilite-mise-en-page` (vide) et tag `point-restauration-audit` (62de753), non poussés.
+- Décision de l'utilisateur (2026-11-20, choix cliqué) : P-06 reporté après les sujets de sécurité et de finances.
 - Cause identifiée : le bandeau, posé après la vue de démarrage, pousse le contenu (sur le tableau de bord, il fait plusieurs centaines de pixels de haut). Corriger demande de choisir l'approche (réserver la place par vue, ou accepter le décalage).
 - Règle métier appliquée (`docs/PRIORITES_DEV.md`) : « Sécurité et intégrité financière avant l'apparence ». P-06 est un sujet d'apparence : il est reporté après les sujets de sécurité et de finances.
 - Non approuvés, non faits : P-01, P-02, P-03 (performance), P-09 (documentation, rien pour l'instant), P-04, P-07, P-08, P-10 (à conserver).
