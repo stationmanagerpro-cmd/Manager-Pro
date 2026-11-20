@@ -11,6 +11,11 @@ D'autres agents peuvent commit ou pousser pendant une pause. Avant de se fier à
 4. Si un commit touche un fichier cité ici ou dans `ETAT_ACTUEL.md`, relire ce fichier avant d'agir. En cas de contradiction, signaler le conflit ; ne pas trancher seul.
 5. Noter dans `ETAT_ACTUEL.md` le nouveau dernier commit vérifié.
 
+## 0 bis. Préférences de travail (validées par l'utilisateur)
+- Présenter les recommandations sous forme de choix cliquables (liste déroulante ou boutons), plutôt que de longs textes.
+- Demander une décision par choix fermé, avec une option recommandée en premier.
+- Réponses courtes ; pas de répétition de l'historique.
+
 ## 1. Objet
 Application de gestion de stations-service : ventes et carburant, quarts et caisse, stocks et produits, achats, RH et paie, comptabilité OHADA, fiscalité, flotte, contrats clients, messagerie, alertes et sauvegardes. Plusieurs stations par compte client ; un superadmin plateforme sans station (`SID` null).
 
