@@ -7,7 +7,7 @@ Mis à jour le 2026-11-20. Fusionne l'ancien état actuel et le suivi d'exécuti
 - Procédure de mise à jour : voir `docs/REFERENCE.md`, section 0.
 
 ## 1. Dernière tâche effectuée
-P-02 : Chart.js chargé à la demande (vérifié par test navigateur au chargement et au premier appel).
+P-01 : inventaire et mesures de démarrage (lecture seule), chantier arrêté sur décision de l'utilisateur. Précédent : P-02 (Chart.js à la demande).
 
 ## 2. Terminé et vérifié
 | Date | Tâche | Commit | Preuve |
@@ -67,4 +67,4 @@ P-02 : Chart.js chargé à la demande (vérifié par test navigateur au chargeme
 - P-09 (validé) : 5 instantanés d'octobre supprimés (commit `816796d`), récupérables par git. Reste : 322 fichiers de `Dossier CHANGELOG/` et les rapports d'étapes, à traiter séparément après revue.
 - P-03 (approuvé) : icônes optimisées sans perte (−26 Ko, pixels identiques), commit `408eaf5`. Le gain de 300 Ko n'est atteignable qu'en WebP (changement de format, à décider) ou avec perte visible (refusé).
 - P-02 (approuvé) : Chart.js (201 Ko) chargé seulement sur les vues qui dessinent un graphique (`whenChart` / `chartTask` dans `public/index.html`). Au chargement : 0 requête vers Chart.js (test navigateur). Détail : `Dossier CHANGELOG/CHARTJS_A_LA_DEMANDE_P02_2026-11-20.md`. Affichage réel à vérifier sur l'application.
-- P-01 : non approuvé (en attente de l'inventaire des 102 scripts).
+- P-01 (chargement différé des scripts) : inventaire et mesure faits, chantier arrêté (décision de l'utilisateur, 2026-11-20). Mesures (Chromium, sans bridage) : 101 scripts, 2,07 Mo ; session connectée simulée : 16 % du code exécuté au démarrage, 116 à 124 ms de temps de scripts ; 51 fichiers sans effet de bord (0,90 Mo) exécutés à 13 % seulement. Risques d'ordre : 16 fichiers redéfinissent des fonctions partagées (go, paint, initShell, api…), 22 écrivent dans la table des vues `V`, 27 ont des effets au chargement. Gain réel non mesuré avec compression. Rien modifié.
