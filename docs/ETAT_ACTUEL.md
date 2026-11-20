@@ -24,6 +24,8 @@ Documentation consolidée (`docs/REFERENCE.md` et ce fichier) et vérifications 
 | 2026-11-20 | Bouton « Besoin d'aide » dans la bannière, sans saut d'en-tête | 485c128 | enregistrement : un seul état (108 px) |
 | 2026-11-20 | Documentation de référence | c80fbfe, ab772cf | `repo-hygiene-static` 7/7 |
 | 2026-11-20 | Migrations sur PostgreSQL 16 : 122 fichiers appliqués | — | 0 échec au premier passage, 173 tables |
+| 2026-11-20 | Superadmin : 12 cartes d'aide, 12 boutons « Modifier » (simulation) | — | script navigateur `aide_super.js` (session) |
+| 2026-11-20 | Précision d'idempotence dans `docs/MIGRATIONS_INDEX.md` | — | second passage PostgreSQL |
 | 2026-11-20 | Tests statiques : migration-numbering 3/3, tenant-isolation 11/11, dynamic-html-security 10/10, auth-lockout 9/9, besoin-aide 14 assertions, homepage-mobile 8/8, links-audit OK | — | sorties des commandes |
 
 ## 3. En cours
@@ -34,10 +36,9 @@ Documentation consolidée (`docs/REFERENCE.md` et ce fichier) et vérifications 
 
 ## 5. Restant (non commencé ou non vérifié)
 - Vérifier sur appareil réel (Android) : bandeau unique, menu sans mouvement, bouton « Besoin d'aide » dans la bannière.
-- Vérifier le bouton « Modifier » des cartes d'aide pour le superadmin après déploiement. Cause non établie.
+- Vérifier le bouton « Modifier » des cartes d'aide pour le superadmin sur le déploiement réel. En simulation (superadmin, `is_global` vrai) : 12 cartes, 12 boutons « Modifier » ; cause de l'absence signalée non reproduite.
 - Appliquer côté serveur la règle de comptoir des produits (`src/catalog.js`). Aujourd'hui seule l'interface la restreint à CARBURANT.
 - Doublons de préfixe de migrations (`docs/MIGRATIONS_INDEX.md`).
-- Corriger la phrase « conçu idempotent » de `docs/MIGRATIONS_INDEX.md` (`001_initial.sql` ne l'est pas).
 - Compiler et vérifier le projet Android.
 - Vérifier une skin autre que « pro ».
 

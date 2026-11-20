@@ -1,7 +1,7 @@
 # Index des migrations — Station Manager Pro v21
 
 Les migrations s’appliquent **dans l’ordre alphabétique des noms de fichiers** (`src/migrate.js`).  
-Elles ne sont **jamais réécrites** une fois livrées. Contenu conçu idempotent (`IF NOT EXISTS`, `ON CONFLICT`, `ADD COLUMN IF NOT EXISTS`).
+Elles ne sont **jamais réécrites** une fois livrées. La plupart des fichiers sont idempotents (`IF NOT EXISTS`, `ON CONFLICT`, `ADD COLUMN IF NOT EXISTS`). Ce n'est pas le cas de `001_initial.sql` (`CREATE TABLE` simple) : il ne doit être exécuté qu'une fois, ce que garantit `schema_migrations` (vérifié le 2026-11-20 : second passage sur PostgreSQL 16, seul `001_initial.sql` échoue, les autres réussissent).
 
 ## Doublons de préfixe connus (ordre alphabétique réel)
 
