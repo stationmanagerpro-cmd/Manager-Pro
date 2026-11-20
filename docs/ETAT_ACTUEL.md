@@ -65,4 +65,5 @@ Documentation consolidée (`docs/REFERENCE.md` et ce fichier) et vérifications 
 - Règle métier appliquée (`docs/PRIORITES_DEV.md`) : « Sécurité et intégrité financière avant l'apparence ». P-06 est un sujet d'apparence : il est reporté après les sujets de sécurité et de finances.
 - Non approuvés, non faits : P-01, P-02, P-03 (performance), P-09 (documentation, rien pour l'instant), P-04, P-07, P-08, P-10 (à conserver).
 - P-09 (validé) : 5 instantanés d'octobre supprimés (commit `816796d`), récupérables par git. Reste : 322 fichiers de `Dossier CHANGELOG/` et les rapports d'étapes, à traiter séparément après revue.
-- P-01, P-02, P-03 : non approuvés (en attente).
+- P-03 (approuvé) : icônes optimisées sans perte (−26 Ko, pixels identiques), commit `408eaf5`. Le gain de 300 Ko n'est atteignable qu'en WebP (changement de format, à décider) ou avec perte visible (refusé).
+- P-01, P-02 : non approuvés (en attente).
