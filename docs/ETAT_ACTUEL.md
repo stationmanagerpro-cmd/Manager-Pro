@@ -1,6 +1,6 @@
 # État actuel — Station Manager Pro
 
-Date : 2026-11-20. Commit de référence : `485c128` sur `main`.
+Date : 2026-11-20. Dernier commit fonctionnel : `485c128` ; ajout de la documentation : `c80fbfe`, sur `main`.
 
 ## Dernière tâche effectuée
 Bouton « Besoin d'aide » : placé dans la bannière dès sa pose ; plus de saut d'en-tête au chargement (`public/ext-help.js`).
