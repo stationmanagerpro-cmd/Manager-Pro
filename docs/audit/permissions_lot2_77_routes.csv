@@ -1,0 +1,78 @@
+methode;chemin;fichier:ligne;verdict
+GET;/api/public/access/status;access_keys.js:111;AUCUN_CONTROLE_LU
+POST;/api/public/access/verify;access_keys.js:116;CONTROLE_DANS_GESTIONNAIRE (l.140)
+GET;/api/appearance;admin.js:160;AUCUN_CONTROLE_LU
+PUT;/api/settings/:key;admin.js:172;CONTROLE_DANS_GESTIONNAIRE (l.175)
+POST;/api/settings/reset/:key;admin.js:198;CONTROLE_DANS_GESTIONNAIRE (l.201)
+PUT;/api/station-banner;admin.js:264;CONTROLE_DANS_GESTIONNAIRE (l.265)
+GET;/api/config/map;admin.js:458;AUCUN_CONTROLE_LU
+GET;/api/admin/stations/:id/permission-caps;admin.js:478;CONTROLE_DANS_GESTIONNAIRE (l.478)
+PUT;/api/admin/stations/:id/permission-caps;admin.js:487;CONTROLE_DANS_GESTIONNAIRE (l.487)
+GET;/api/me/preferences/theme;auth.js:86;AUCUN_CONTROLE_LU
+PUT;/api/me/preferences/theme;auth.js:92;CONTROLE_DANS_GESTIONNAIRE (l.93)
+GET;/api/me/preferences/nav-colors;auth.js:101;AUCUN_CONTROLE_LU
+PUT;/api/me/preferences/nav-colors;auth.js:106;CONTROLE_DANS_GESTIONNAIRE (l.107)
+DELETE;/api/me/preferences/nav-colors;auth.js:113;AUCUN_CONTROLE_LU
+GET;/api/me/preferences/motion;auth.js:120;AUCUN_CONTROLE_LU
+PUT;/api/me/preferences/motion;auth.js:124;CONTROLE_DANS_GESTIONNAIRE (l.125)
+POST;/api/auth/logout;auth.js:131;AUCUN_CONTROLE_LU
+GET;/api/me;auth.js:140;CONTROLE_DANS_GESTIONNAIRE (l.143)
+GET;/api/me/photo;auth.js:496;AUCUN_CONTROLE_LU
+PUT;/api/me/photo;auth.js:502;AUCUN_CONTROLE_LU
+DELETE;/api/me/photo;auth.js:510;AUCUN_CONTROLE_LU
+GET;/api/branding/;branding.js:68;AUCUN_CONTROLE_LU
+GET;/api/branding/manifest.json;branding.js:89;AUCUN_CONTROLE_LU
+GET;/api/branding/logo;branding.js:94;AUCUN_CONTROLE_LU
+GET;/api/branding/favicon;branding.js:95;AUCUN_CONTROLE_LU
+GET;/api/branding/login-bg;branding.js:96;AUCUN_CONTROLE_LU
+PUT;/api/admin/branding;branding.js:122;AUCUN_CONTROLE_LU
+POST;/api/admin/branding/reset;branding.js:147;AUCUN_CONTROLE_LU
+PUT;/api/admin/branding/:kind;branding.js:164;AUCUN_CONTROLE_LU
+GET;/api/categories;catalog.js:17;AUCUN_CONTROLE_LU
+GET;/api/products;catalog.js:55;AUCUN_CONTROLE_LU
+GET;/api/pumps;catalog.js:149;AUCUN_CONTROLE_LU
+GET;/api/public/portal/:token;client_portal.js:42;AUCUN_CONTROLE_LU
+GET;/api/me/subscription-payment-info;contracts.js:1659;CONTROLE_DANS_GESTIONNAIRE (l.1660)
+GET;/api/me/license/history;contracts.js:1666;CONTROLE_DANS_GESTIONNAIRE (l.1667)
+POST;/api/docs/render;docs_render.js:44;CONTROLE_DANS_GESTIONNAIRE (l.47)
+POST;/api/docs/render-xlsx;docs_render.js:70;CONTROLE_DANS_GESTIONNAIRE (l.73)
+GET;/api/hr/employees/:id/actions;employee_actions.js:92;CONTROLE_DANS_GESTIONNAIRE (l.96)
+POST;/api/hr/actions/:id/reject;employee_actions.js:106;CONTROLE_DANS_GESTIONNAIRE (l.110)
+POST;/api/hr/actions/:id/review;employee_actions.js:137;CONTROLE_DANS_GESTIONNAIRE (l.138)
+GET;/api/hr/employees/:id/customer-debts;employee_actions.js:149;CONTROLE_DANS_GESTIONNAIRE (l.153)
+GET;/api/exports/:kind/preferences;exports.js:42;AUCUN_CONTROLE_LU
+GET;/api/dashboard/my-prefs;gaps.js:142;AUCUN_CONTROLE_LU
+PUT;/api/dashboard/my-prefs;gaps.js:146;AUCUN_CONTROLE_LU
+GET;/api/help-guides;help_guides.js:58;CONTROLE_DANS_GESTIONNAIRE (l.61)
+GET;/api/public/home;home_page.js:58;AUCUN_CONTROLE_LU
+GET;/api/hr/me;hr.js:31;AUCUN_CONTROLE_LU
+GET;/api/hr/debts/:id/attachment;hr.js:226;CONTROLE_DANS_GESTIONNAIRE (l.228)
+GET;/api/hr/payroll;hr.js:1531;CONTROLE_DANS_GESTIONNAIRE (l.1532)
+GET;/api/hr/me/payslips;hr.js:2604;AUCUN_CONTROLE_LU
+GET;/api/messaging/status;messaging.js:147;CONTROLE_DANS_GESTIONNAIRE (l.148)
+GET;/api/messaging/support/clients;messaging.js:1323;CONTROLE_DANS_GESTIONNAIRE (l.1324)
+GET;/api/me/profile/activity;my_profile.js:279;AUCUN_CONTROLE_LU
+GET;/api/me/profile/activity/modules;my_profile.js:287;AUCUN_CONTROLE_LU
+GET;/api/sales;operations.js:223;AUCUN_CONTROLE_LU
+GET;/api/alerts/center;ops_plus.js:365;CONTROLE_DANS_GESTIONNAIRE (l.480)
+POST;/api/alerts/center/:source/:id/ack;ops_plus.js:536;AUCUN_CONTROLE_LU
+GET;/api/packs;premium.js:77;AUCUN_CONTROLE_LU
+POST;/api/license/renewal-request;premium.js:386;CONTROLE_DANS_GESTIONNAIRE (l.391)
+GET;/api/push/key;push.js:25;AUCUN_CONTROLE_LU
+POST;/api/push/subscribe;push.js:27;AUCUN_CONTROLE_LU
+PUT;/api/admin/clients/:id/dashboard-config;reports.js:452;CONTROLE_DANS_GESTIONNAIRE (l.453)
+DELETE;/api/admin/clients/:id/dashboard-config;reports.js:469;CONTROLE_DANS_GESTIONNAIRE (l.470)
+GET;/api/dashboard/config;reports.js:478;CONTROLE_DANS_GESTIONNAIRE (l.484)
+GET;/api/notifications;reports.js:595;AUCUN_CONTROLE_LU
+POST;/api/notifications/:id/read;reports.js:604;AUCUN_CONTROLE_LU
+GET;/api/seller-commissions/config;seller_commissions.js:380;CONTROLE_DANS_GESTIONNAIRE (l.380)
+PUT;/api/seller-commissions/config;seller_commissions.js:384;CONTROLE_DANS_GESTIONNAIRE (l.384)
+PUT;/api/seller-commissions/employees/:id;seller_commissions.js:404;CONTROLE_DANS_GESTIONNAIRE (l.404)
+POST;/api/seller-commissions/freeze;seller_commissions.js:445;CONTROLE_DANS_GESTIONNAIRE (l.445)
+POST;/api/seller-commissions/primes;seller_commissions.js:521;CONTROLE_DANS_GESTIONNAIRE (l.521)
+POST;/api/seller-commissions/reglements;seller_commissions.js:553;CONTROLE_DANS_GESTIONNAIRE (l.553)
+POST;/api/seller-commissions/entries/:id/cancel;seller_commissions.js:641;CONTROLE_DANS_GESTIONNAIRE (l.641)
+GET;/api/shifts/;shifts.js:272;CONTROLE_DANS_GESTIONNAIRE (l.290)
+GET;/api/shifts/current;shifts.js:296;AUCUN_CONTROLE_LU
+POST;/api/usage/ping;usage.js:8;CONTROLE_DANS_GESTIONNAIRE (l.9)
+GET;/api/usage/team;usage.js:37;CONTROLE_DANS_GESTIONNAIRE (l.38)
