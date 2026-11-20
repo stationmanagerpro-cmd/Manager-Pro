@@ -1,0 +1,976 @@
+fichier;ligne;methode;chemin;statut
+app.js;114;GET;/branding;OK
+app.js;383;GET;/dashboard;OK
+app.js;383;GET;/dashboard/daily;OK
+app.js;383;GET;/dashboard/pilotage;OK
+app.js;420;GET;/shifts/current;OK
+app.js;420;GET;/shifts+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+app.js;463;GET;/shifts/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+app.js;504;GET;/shifts/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+app.js;509;POST;/shifts/:v/anomalies;OK
+app.js;513;GET;/pumps;OK
+app.js;513;GET;/cash/registers;OK
+app.js;513;GET;/employees;OK
+app.js;603;POST;/shifts/open;OK
+app.js;634;GET;/shifts/current;OK
+app.js;634;GET;/products;OK
+app.js;634;GET;/customers;OK
+app.js;684;POST;/shifts/:v/close;OK
+app.js;689;POST;/shifts/:v/sales/:v/reassign-to-pump-owner;OK
+app.js;700;POST;/shifts/:v/close;OK
+app.js;708;POST;/shifts/:v/report-email;OK
+app.js;717;GET;/shifts/:v/report-contacts;OK
+app.js;737;GET;/shifts/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+app.js;743;GET;/sales+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+app.js;743;GET;/shifts/current;OK
+app.js;762;GET;/products;OK
+app.js;762;GET;/customers;OK
+app.js;762;GET;/employees;OK
+app.js;765;POST;/sales;OK
+app.js;767;POST;/sales/:v/cancel;OK
+app.js;771;GET;/products+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+app.js;775;GET;/categories;OK
+app.js;780;POST;/categories;OK
+app.js;782;GET;/categories;OK
+app.js;782;PATCH;/categories/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+app.js;783;DELETE;/categories/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+app.js;784;POST;/products;OK
+app.js;803;PATCH;/products/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+app.js;809;POST;/stock/movements;OK
+app.js;812;GET;/pumps;OK
+app.js;828;GET;/products;OK
+app.js;829;POST;/pumps;OK
+app.js;843;PATCH;/pumps/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+app.js;868;PATCH;/pumps/:v/counters/:v/index;OK
+app.js;882;GET;/customers;OK
+app.js;885;POST;/customers;OK
+app.js;886;POST;/customers/:v/payments;OK
+app.js;887;GET;/employees;OK
+app.js;888;POST;/employees;OK
+app.js;891;GET;/suppliers;OK
+app.js;891;GET;/purchases;OK
+app.js;895;POST;/suppliers;OK
+app.js;901;GET;/purchases/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+app.js;910;GET;/purchases/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+app.js;917;GET;/cash/registers;OK
+app.js;917;GET;/cash/movements;OK
+app.js;923;GET;/expenses/responsables;OK
+app.js;925;POST;/expenses;OK
+app.js;930;GET;/money/accounts;OK
+app.js;944;POST;/cash/movements;OK
+app.js;949;GET;/notifications;OK
+app.js;949;POST;/notifications/:v/read;OK
+app.js;950;GET;/audit;OK
+app.js;952;GET;/users;OK
+app.js;959;POST;/users/:v/unlock;OK
+app.js;1099;GET;/me;OK
+app.js;1181;POST;/auth/login;OK
+app.js;1191;POST;/auth/logout;OK
+app.js;1333;GET;/search+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+app.js;1340;GET;/products;OK
+app.js;1345;GET;/customers;OK
+espace-client.js;16;GET;/public/portal/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-about.js;240;PUT;/admin/about;OK
+ext-about.js;245;POST;/admin/about/complete;OK
+ext-about.js;250;GET;/admin/about/history;OK
+ext-about.js;260;POST;/admin/about/restore;OK
+ext-about.js;264;POST;/admin/about/reset;OK
+ext-about.js;270;GET;/me/about;OK
+ext-accounting.js;85;GET;/accounting/summary+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-accounting.js;100;GET;/accounting/journals;OK
+ext-accounting.js;114;GET;/accounting/ledger;OK
+ext-accounting.js;119;GET;/accounting/ledger;OK
+ext-accounting.js;128;GET;/accounting/trial-balance+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-accounting.js;138;GET;/accounting/income-statement+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-accounting.js;152;GET;/accounting/balance-sheet+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-accounting.js;161;GET;/accounting/vat+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-accounting.js;170;GET;/accounting/accounts+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-accounting.js;178;POST;/accounting/accounts;OK
+ext-accounting.js;184;GET;/accounting/assets+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-accounting.js;190;GET;/accounting/payment-methods;OK
+ext-accounting.js;198;POST;/accounting/assets;OK
+ext-accounting.js;206;POST;/accounting/assets/:v/dispose;OK
+ext-accounting.js;212;GET;/accounting/fiscal-years;OK
+ext-accounting.js;220;POST;/accounting/fiscal-years;OK
+ext-accounting.js;222;POST;/accounting/fiscal-years/:v/close;OK
+ext-accounting.js;223;POST;/accounting/fiscal-years/:v/reopen;OK
+ext-accounting.js;226;GET;/accounting/accounts+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-accounting.js;251;POST;/accounting/entries;OK
+ext-accounting.js;255;POST;/accounting/entries/:v/cancel;OK
+ext-accounting.js;260;GET;/accounting/export;OK
+ext-accounting.js;278;GET;/accounting/summary+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-accounting.js;295;GET;/accounting/journals;OK
+ext-accounting.js;321;GET;/accounting/ledger;OK
+ext-accounting.js;326;GET;/accounting/ledger;OK
+ext-accounting.js;327;GET;/accounting/ledger;OK
+ext-accounting.js;338;GET;/accounting/trial-balance+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-accounting.js;347;GET;/accounting/income-statement+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-accounting.js;362;GET;/accounting/balance-sheet+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-accounting.js;370;GET;/accounting/vat+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-accounting.js;380;GET;/accounting/accounts+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-accounting.js;387;GET;/accounting/assets+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-accounting.js;397;GET;/accounting/fiscal-years;OK
+ext-achats.js;175;GET;/purchases+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-achats.js;176;GET;/suppliers;OK
+ext-aggregates.js;99;GET;/aggregates+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-alert-config.js;45;GET;/messaging/alert-config;OK
+ext-alert-config.js;176;PUT;/messaging/alert-config;OK
+ext-alert-config.js;195;PATCH;/messaging/alert-config/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-banner.js;34;GET;/images/banner/+ (concat);PREFIXE_SANS_ROUTE
+ext-banner.js;257;PUT;/images/banner/+ (concat);PREFIXE_SANS_ROUTE
+ext-banner.js;258;DELETE;/images/banner/+ (concat);PREFIXE_SANS_ROUTE
+ext-banner.js;260;PUT;/station-banner;OK
+ext-billing.js;29;GET;/invoices+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-billing.js;30;GET;/customers;OK
+ext-billing.js;107;GET;/customers;OK
+ext-billing.js;108;GET;/products;OK
+ext-billing.js;198;POST;/invoices;OK
+ext-billing.js;217;GET;/invoices/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-billing.js;255;GET;/invoices/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-billing.js;257;GET;/employees;OK
+ext-billing.js;287;POST;/invoices/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-billing.js;306;POST;/invoices/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-billing.js;322;POST;/invoices/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-billing.js;331;GET;/invoices/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-billing.js;357;POST;/invoices/from-sale/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-brand-admin.js;6;GET;/admin/branding;OK
+ext-brand-admin.js;52;PUT;/admin/branding;OK
+ext-brand-admin.js;67;POST;/admin/branding/reset;OK
+ext-brand-admin.js;90;PUT;/admin/branding/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-brand-admin.js;97;DELETE;/admin/branding/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-branded-pdf.js;109;POST;/docs/render;OK
+ext-calc.js;163;GET;/shifts/current;OK
+ext-calc.js;176;GET;/shifts/current;OK
+ext-calc.js;262;GET;/shifts/current;OK
+ext-client-usage.js;276;GET;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-confort.js;49;GET;/pumps;OK
+ext-confort.js;49;GET;/pumps/status;OK
+ext-confort.js;49;GET;/pumps/history;OK
+ext-confort.js;104;GET;/messaging/system-alerts+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-confort.js;121;GET;/messaging/email-status;OK
+ext-contracts.js;470;GET;/me/contract;OK
+ext-contracts.js;495;GET;/admin/licenses/dashboard;OK
+ext-contracts.js;496;GET;/admin/platform/overview;OK
+ext-contracts.js;497;GET;/admin/clients;OK
+ext-contracts.js;660;POST;/admin/clients;OK
+ext-contracts.js;683;GET;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-contracts.js;685;GET;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-contracts.js;723;PATCH;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-contracts.js;730;PUT;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-contracts.js;741;PATCH;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-contracts.js;763;POST;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-contracts.js;790;POST;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-contracts.js;823;POST;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-contracts.js;832;POST;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-contracts.js;841;POST;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-contracts.js;855;POST;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-contracts.js;864;GET;/me/license/status-message;OK
+ext-contracts.js;896;POST;/me/license/renewal-request;OK
+ext-contracts.js;901;POST;/messaging/support/to-admin;OK
+ext-contracts.js;920;GET;/admin/packs;OK
+ext-contracts.js;920;GET;/packs;OK
+ext-contracts.js;925;POST;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-contracts.js;940;POST;/me/license/renewal-request;OK
+ext-contracts.js;958;GET;/admin/license-renewal-requests;OK
+ext-contracts.js;987;POST;/admin/license-renewal-requests/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-contracts.js;1012;POST;/admin/license-renewal-requests/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-contracts.js;1024;GET;/admin/licenses/warning-thresholds;OK
+ext-contracts.js;1030;PUT;/admin/licenses/warning-thresholds;OK
+ext-contracts.js;1037;GET;/admin/subscription-payment-info;OK
+ext-contracts.js;1041;GET;/me/license/status-message;OK
+ext-contracts.js;1041;GET;/me/subscription-payment-info;OK
+ext-contracts.js;1041;GET;/me/license/history;OK
+ext-contracts.js;1079;GET;/admin/subscription-payment-info;OK
+ext-contracts.js;1081;PUT;/admin/subscription-payment-info;OK
+ext-contracts.js;1089;POST;/me/license/renewal-request;OK
+ext-core.js;10;GET;/appearance;OK
+ext-core.js;35;GET;/appearance;OK
+ext-core.js;44;GET;/me/preferences/motion;OK
+ext-core.js;57;GET;/me/preferences/theme;OK
+ext-core.js;88;GET;/me/preferences/theme;OK
+ext-core.js;97;PUT;/me/preferences/theme;OK
+ext-core.js;112;GET;/me/preferences/theme;OK
+ext-core.js;135;PUT;/me/preferences/theme;OK
+ext-core.js;142;POST;/auth/login-change;OK
+ext-core.js;144;POST;/auth/password;OK
+ext-core.js;156;GET;/images/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;160;PUT;/images/:v/:v;OK
+ext-core.js;166;DELETE;/images/:v/:v;OK
+ext-core.js;171;GET;/pumps;OK
+ext-core.js;171;GET;/cash/registers;OK
+ext-core.js;171;GET;/employees;OK
+ext-core.js;249;POST;/shifts/open;OK
+ext-core.js;296;GET;/shifts/placement+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;338;GET;/products;OK
+ext-core.js;338;GET;/customers;OK
+ext-core.js;338;GET;/employees;OK
+ext-core.js;338;GET;/loyalty/settings;OK
+ext-core.js;349;POST;/sales;OK
+ext-core.js;365;GET;/shifts/current;OK
+ext-core.js;366;GET;/customers;OK
+ext-core.js;366;GET;/employees;OK
+ext-core.js;366;GET;/loyalty/settings;OK
+ext-core.js;379;GET;/sales/fuel/expected+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;397;POST;/sales/fuel;OK
+ext-core.js;428;GET;/employees+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;455;GET;/employees+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;472;GET;/hr/employees/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;476;GET;/employees;OK
+ext-core.js;483;GET;/employees;OK
+ext-core.js;495;GET;/sales;OK
+ext-core.js;555;PATCH;/hr/employees/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;560;GET;/hr/employees/:v/access;OK
+ext-core.js;568;PUT;/hr/employees/:v/personal-role;OK
+ext-core.js;572;GET;/admin/roles/assignable;OK
+ext-core.js;573;POST;/hr/employees/:v/personal-role/revert;OK
+ext-core.js;579;POST;/hr/actions/:v/reject;OK
+ext-core.js;582;POST;/hr/actions/:v/review;OK
+ext-core.js;586;GET;/hr/employees/:v/actions;OK
+ext-core.js;594;GET;/hr/employees/:v/customer-debts;OK
+ext-core.js;601;GET;/hr/employees/:v/access;OK
+ext-core.js;613;GET;/hr/employees/:v/shifts;OK
+ext-core.js;617;GET;/hr/employees/:v/performance;OK
+ext-core.js;634;GET;/hr/employees/:v/gaps;OK
+ext-core.js;634;GET;/hr/employees/:v/anomalies;OK
+ext-core.js;640;GET;/hr/employees/:v/debts;OK
+ext-core.js;640;GET;/hr/employees/:v/advances;OK
+ext-core.js;650;GET;/hr/adjustments;OK
+ext-core.js;650;GET;/hr/payroll;OK
+ext-core.js;657;GET;/hr/employees/:v/finance;OK
+ext-core.js;665;GET;/hr/employees/:v/operations;OK
+ext-core.js;676;POST;/hr/gaps/:v/justify;OK
+ext-core.js;677;POST;/hr/gaps/:v/decide;OK
+ext-core.js;678;POST;/hr/gaps/:v/to-debt;OK
+ext-core.js;684;POST;/hr/debts;OK
+ext-core.js;686;POST;/hr/debts/:v/pay;OK
+ext-core.js;687;PATCH;/hr/debts/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;688;POST;/hr/debts/:v/cancel;OK
+ext-core.js;689;POST;/hr/advances;OK
+ext-core.js;691;POST;/hr/adjustments;OK
+ext-core.js;692;DELETE;/hr/adjustments/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;695;POST;/hr/payroll/preview;OK
+ext-core.js;709;POST;/hr/payroll;OK
+ext-core.js;712;POST;/hr/payroll/:v/validate;OK
+ext-core.js;713;DELETE;/hr/payroll/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;714;POST;/hr/payroll/:v/pay;OK
+ext-core.js;715;POST;/hr/payroll/:v/rectify;OK
+ext-core.js;717;GET;/hr/payroll/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;728;POST;/hr/payroll/dry-run;OK
+ext-core.js;740;GET;/hr/gaps;OK
+ext-core.js;740;GET;/hr/debts;OK
+ext-core.js;740;GET;/hr/advances;OK
+ext-core.js;740;GET;/hr/payroll+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;740;GET;/hr/gaps/recurrence;OK
+ext-core.js;750;GET;/employees;OK
+ext-core.js;750;POST;/hr/gaps/:v/assign;OK
+ext-core.js;750;POST;/hr/gaps/:v/assign;OK
+ext-core.js;752;GET;/hr/me;OK
+ext-core.js;759;GET;/hr/payroll+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;831;GET;/hr/reports/forecast+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;840;GET;/hr/reports/stats;OK
+ext-core.js;850;GET;/hr/reports/:v;ROUTE_ABSENTE
+ext-core.js;887;GET;/hr/payroll-modules;OK
+ext-core.js;957;GET;/hr/payroll-modules;OK
+ext-core.js;990;PUT;/hr/payroll-modules/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;994;POST;/hr/payroll-modules/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;1010;POST;/hr/payroll-modules/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;1023;POST;/hr/payroll-modules/activate-all;OK
+ext-core.js;1045;GET;/hr/audit+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;1046;GET;/hr/audit/integrity+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;1092;PATCH;/employees/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;1101;POST;/employees/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;1108;POST;/employees/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;1125;POST;/employees/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;1152;POST;/hr/payroll/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-core.js;1158;POST;/hr/payroll/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-design.js;205;GET;/me/advertising;OK
+ext-design.js;260;GET;/dashboard;OK
+ext-design.js;261;GET;/dashboard;OK
+ext-design.js;263;GET;/dashboard/daily;OK
+ext-design.js;264;GET;/dashboard/jour;OK
+ext-detail-pages.js;51;GET;/admin/clients/:v/dashboard-config;OK
+ext-detail-pages.js;53;PUT;/admin/clients/:v/dashboard-config;OK
+ext-detail-pages.js;60;DELETE;/admin/clients/:v/dashboard-config;OK
+ext-detail-pages.js;72;GET;/customers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;72;GET;/customers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;72;GET;/customers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;73;GET;/products;OK
+ext-detail-pages.js;74;GET;/employees;OK
+ext-detail-pages.js;103;GET;/suppliers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;103;GET;/suppliers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;104;GET;/products;OK
+ext-detail-pages.js;125;GET;/customers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;139;POST;/customers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;148;POST;/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;164;GET;/products;OK
+ext-detail-pages.js;169;POST;/sales;OK
+ext-detail-pages.js;190;POST;/purchases;OK
+ext-detail-pages.js;201;GET;/customers+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;231;GET;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;251;PUT;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;286;POST;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;290;DELETE;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;292;GET;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;292;PUT;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;302;GET;/me/advertising;OK
+ext-detail-pages.js;332;GET;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;359;GET;/admin/clients;OK
+ext-detail-pages.js;364;GET;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;365;GET;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;366;GET;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;367;GET;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;391;GET;/admin/maintenance/backup-status;OK
+ext-detail-pages.js;392;GET;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;399;GET;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;417;GET;/admin/clients;OK
+ext-detail-pages.js;417;GET;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;449;POST;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;463;POST;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-detail-pages.js;479;GET;/admin/clients;OK
+ext-detail-pages.js;505;POST;/admin/clients/:v/isolated-backups;OK
+ext-detail-pages.js;512;GET;/admin/clients/:v/isolated-backups/:v;OK
+ext-detail-pages.js;520;POST;/admin/clients/:v/isolated-restore;OK
+ext-detail-pages.js;529;POST;/admin/clients/:v/isolated-reset;OK
+ext-direction.js;111;GET;/stations/overview;OK
+ext-direction.js;112;GET;/dashboard/jour;OK
+ext-direction.js;113;GET;/notifications;OK
+ext-export-all.js;62;POST;/docs/render-xlsx;OK
+ext-fin.js;9;GET;/finance/kinds;OK
+ext-fin.js;9;GET;/employees;OK
+ext-fin.js;9;GET;/pumps;OK
+ext-fin.js;9;GET;/products;OK
+ext-fin.js;43;GET;/finance/situation+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fin.js;43;GET;/finance/report;OK
+ext-fin.js;48;GET;/finance/controls+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fin.js;53;POST;/finance/validations;OK
+ext-fin.js;61;GET;/settings;OK
+ext-fin.js;78;GET;/admin/roles;OK
+ext-fin.js;87;GET;/money/accounts;OK
+ext-fin.js;88;GET;/money/recent;OK
+ext-fin.js;125;GET;/hr/payroll-items/to-confirm;OK
+ext-fin.js;167;GET;/admin/backups;OK
+ext-fin.js;168;GET;/admin/info;OK
+ext-fin.js;169;GET;/admin/maintenance/backup-status;OK
+ext-fin.js;170;GET;/admin/maintenance/platform-backup-history;OK
+ext-fin.js;194;POST;/admin/maintenance/restore;OK
+ext-fin.js;203;POST;/admin/maintenance/reset-global;OK
+ext-fin.js;206;PUT;/settings/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fin.js;208;POST;/stations;OK
+ext-fin.js;209;PATCH;/stations/current;OK
+ext-fin.js;213;POST;/settings/reset/theme;OK
+ext-fin.js;220;POST;/settings/reset/footer;OK
+ext-fin.js;221;PUT;/money/methods/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fin.js;222;PUT;/money/methods/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fin.js;223;POST;/money/methods;OK
+ext-fin.js;224;POST;/money/accounts;OK
+ext-fin.js;225;GET;/money/accounts;OK
+ext-fin.js;226;POST;/money/movements;OK
+ext-fin.js;227;POST;/money/deposit;OK
+ext-fin.js;230;POST;/money/transfer;OK
+ext-fin.js;233;POST;/money/statements;OK
+ext-fin.js;234;POST;/admin/backups;OK
+ext-fin.js;245;POST;/admin/maintenance/platform-backups;OK
+ext-fin.js;248;GET;/admin/maintenance/platform-backups/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fin.js;249;POST;/admin/maintenance/platform-restore;OK
+ext-fin.js;256;GET;/signature;OK
+ext-fin.js;292;PUT;/signature;OK
+ext-fin.js;318;DELETE;/signature/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fin.js;322;PUT;/signature;OK
+ext-fin.js;323;POST;/signature/activation;OK
+ext-finance-p4.js;12;GET;/finance/events;OK
+ext-finance-p4.js;30;GET;/finance/events;OK
+ext-fiscal-admin.js;12;GET;/admin/fiscal/rules;OK
+ext-fiscal-admin.js;50;POST;/fiscal/rules/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal-admin.js;60;POST;/fiscal/rules/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal-admin.js;98;POST;/admin/fiscal/rules/new-version;OK
+ext-fiscal-admin.js;110;GET;/admin/fiscal/overview;OK
+ext-fiscal-wizard.js;172;POST;/fiscal/wizard/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal-wizard.js;183;PUT;/fiscal/wizard/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal-wizard.js;183;POST;/fiscal/wizard/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal-wizard.js;198;GET;/fiscal/wizard/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal-wizard.js;213;POST;/fiscal/wizard/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal-wizard.js;218;GET;/fiscal/wizard/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;42;GET;/fiscal/profile;OK
+ext-fiscal.js;97;PUT;/fiscal/profile;OK
+ext-fiscal.js;107;GET;/fiscal/modules;OK
+ext-fiscal.js;141;POST;/fiscal/modules/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;149;POST;/fiscal/modules/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;173;GET;/fiscal/modules;OK
+ext-fiscal.js;174;GET;/fiscal/periods+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;255;GET;/fiscal/modules;OK
+ext-fiscal.js;260;GET;/fiscal/periods/suggest-next+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;274;POST;/fiscal/periods;OK
+ext-fiscal.js;333;GET;/fiscal/periods;OK
+ext-fiscal.js;364;PATCH;/fiscal/periods/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;422;GET;/fiscal/deadlines;OK
+ext-fiscal.js;446;POST;/fiscal/deadlines/refresh;OK
+ext-fiscal.js;462;POST;/fiscal/deadlines/generate-year;OK
+ext-fiscal.js;479;POST;/fiscal/deadlines;OK
+ext-fiscal.js;488;PATCH;/fiscal/deadlines/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;496;POST;/fiscal/periods/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;504;POST;/fiscal/periods/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;516;POST;/fiscal/periods/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;526;POST;/fiscal/periods/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;537;POST;/fiscal/periods/bulk-archive;OK
+ext-fiscal.js;548;POST;/fiscal/periods/bulk-ready;OK
+ext-fiscal.js;556;POST;/fiscal/periods/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;566;POST;/fiscal/periods/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;580;POST;/fiscal/periods/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;591;POST;/fiscal/periods/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;604;POST;/fiscal/periods/bulk-export.xlsx;OK
+ext-fiscal.js;629;GET;/fiscal/periods/compare+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;644;GET;/fiscal/periods/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;675;GET;/fiscal/dashboard;OK
+ext-fiscal.js;676;GET;/fiscal/dashboard/summary;OK
+ext-fiscal.js;722;GET;/fiscal/audit;OK
+ext-fiscal.js;741;GET;/fiscal/rules/applicable;OK
+ext-fiscal.js;786;GET;/fiscal/dashboard/summary;OK
+ext-fiscal.js;787;GET;/fiscal/health;OK
+ext-fiscal.js;844;GET;/fiscal/year-overview+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;872;GET;/fiscal/modules;OK
+ext-fiscal.js;880;POST;/fiscal/periods/batch-year;OK
+ext-fiscal.js;890;GET;/fiscal/activity;OK
+ext-fiscal.js;908;GET;/fiscal/completeness;OK
+ext-fiscal.js;938;GET;/fiscal/periods/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;939;GET;/fiscal/periods/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;980;PATCH;/fiscal/periods/:v/checklist/:v;OK
+ext-fiscal.js;1000;POST;/fiscal/periods/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;1019;DELETE;/fiscal/documents/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;1031;GET;/fiscal/documents/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fiscal.js;1083;GET;/fiscal/storage;OK
+ext-fleet.js;38;GET;/customers;OK
+ext-fleet.js;38;GET;/fleet/cards+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fleet.js;95;GET;/products;OK
+ext-fleet.js;120;POST;/fleet/cards;OK
+ext-fleet.js;130;PATCH;/fleet/cards/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fleet.js;135;POST;/fleet/cards/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fleet.js;140;POST;/fleet/cards/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fleet.js;143;GET;/fleet/cards/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fleet.js;153;GET;/fleet/statement+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-fleet.js;162;GET;/fleet/invoices/pending;OK
+ext-fleet.js;171;POST;/fleet/invoices/generate;OK
+ext-gaps.js;22;GET;/hr/v2/modules;OK
+ext-gaps.js;33;GET;/employees;OK
+ext-gaps.js;38;GET;/hr/v2/teams;OK
+ext-gaps.js;43;POST;/hr/v2/teams;OK
+ext-gaps.js;49;GET;/hr/v2/skills;OK
+ext-gaps.js;49;GET;/hr/v2/employee-skills;OK
+ext-gaps.js;56;POST;/hr/v2/employee-skills;OK
+ext-gaps.js;57;POST;/hr/v2/skills;OK
+ext-gaps.js;62;GET;/hr/v2/trainings;OK
+ext-gaps.js;78;POST;/hr/v2/trainings;OK
+ext-gaps.js;83;GET;/hr/v2/trainings/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-gaps.js;88;POST;/hr/v2/trainings/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-gaps.js;93;GET;/hr/v2/evaluations;OK
+ext-gaps.js;93;GET;/hr/v2/evaluation-templates;OK
+ext-gaps.js;99;GET;/hr/v2/evaluation-templates;OK
+ext-gaps.js;113;POST;/hr/v2/evaluations;OK
+ext-gaps.js;120;GET;/hr/v2/disciplinary;OK
+ext-gaps.js;131;POST;/hr/v2/disciplinary;OK
+ext-gaps.js;136;GET;/hr/v2/me/summary;OK
+ext-gaps.js;150;GET;/hr/v2/leave-types;OK
+ext-gaps.js;155;GET;/hr/v2/leave-types;OK
+ext-gaps.js;160;POST;/hr/v2/leaves;OK
+ext-gaps.js;166;GET;/hr/v2/attendance+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-gaps.js;175;POST;/hr/v2/attendance/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-gaps.js;180;GET;/hr/v2/overtime/approved-hours;OK
+ext-gaps.js;189;GET;/hr/v2/periods/check+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-gaps.js;189;GET;/hr/payroll+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-gaps.js;197;POST;/hr/v2/periods/reopen;OK
+ext-gaps.js;198;POST;/hr/payroll/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-gaps.js;200;GET;/hr/payroll/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-gaps.js;209;GET;/hr/v2/email-template;OK
+ext-gaps.js;214;GET;/admin/smtp/diagnostics;OK
+ext-gaps.js;220;PUT;/hr/v2/email-template;OK
+ext-gaps.js;221;POST;/admin/smtp/test;OK
+ext-gaps.js;226;GET;/hr/activation-status;OK
+ext-gaps.js;226;GET;/hr/rules;OK
+ext-gaps.js;226;GET;/hr/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-gaps.js;242;POST;/hr/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-gaps.js;245;POST;/hr/activation/enable-flag;OK
+ext-gaps.js;246;POST;/hr/activation/disable-flag;OK
+ext-gaps.js;260;POST;/hr/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-gaps.js;265;GET;/finance/loans/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-gaps.js;271;GET;/stock/transfers;OK
+ext-gaps.js;271;GET;/stock/transfers/stations;OK
+ext-gaps.js;281;GET;/stock/transfers/stations;OK
+ext-gaps.js;281;GET;/products;OK
+ext-gaps.js;295;POST;/stock/transfers;OK
+ext-gaps.js;297;POST;/stock/transfers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-gaps.js;298;POST;/stock/transfers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-gaps.js;302;GET;/pumps/counter-history;OK
+ext-gaps.js;311;GET;/me/quotas;OK
+ext-gaps.js;311;GET;/modules/catalog;OK
+ext-gaps.js;311;GET;/license/warnings;OK
+ext-gaps.js;323;GET;/dashboard/config;OK
+ext-gaps.js;323;GET;/dashboard/my-prefs;OK
+ext-gaps.js;329;PUT;/dashboard/my-prefs;OK
+ext-gaps.js;330;PUT;/dashboard/my-prefs;OK
+ext-gaps.js;334;GET;/fiscal/modules;OK
+ext-gaps.js;341;POST;/fiscal/estimate;OK
+ext-gaps.js;348;GET;/seller-commissions/entries+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-gaps.js;356;POST;/seller-commissions/entries/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-gaps.js;362;GET;/finance/integrity/cash;OK
+ext-gaps.js;362;GET;/finance/events/summary+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-gaps.js;362;GET;/money/commission-rates/history;OK
+ext-gaps.js;375;GET;/messaging/broadcast-roles;OK
+ext-gaps.js;377;GET;/admin/roles;OK
+ext-gaps.js;385;PUT;/messaging/broadcast-roles;OK
+ext-gaps.js;391;GET;/admin/platform/overview;OK
+ext-gaps.js;397;GET;/admin/stations/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-gaps.js;403;PUT;/admin/stations/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-help.js;36;GET;/help-guides;OK
+ext-help.js;74;GET;/help-guides;OK
+ext-help.js;101;PUT;/help-guides/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-help.js;102;POST;/help-guides;OK
+ext-home.js;33;GET;/public/home;OK
+ext-home.js;86;POST;/public/access/recovery;OK
+ext-home.js;102;POST;/public/access/verify;OK
+ext-home.js;122;GET;/admin/access-keys/settings;OK
+ext-home.js;122;GET;/admin/access-keys+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-home.js;122;GET;/admin/access-keys/events;OK
+ext-home.js;122;GET;/admin/access-keys/recovery;OK
+ext-home.js;169;PUT;/admin/access-keys/settings;OK
+ext-home.js;170;POST;/admin/access-keys/generate;OK
+ext-home.js;171;POST;/admin/access-keys/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-home.js;172;POST;/admin/access-keys/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-home.js;174;POST;/admin/access-keys/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-home.js;180;POST;/admin/access-keys/recovery/generate;OK
+ext-home.js;186;POST;/admin/access-keys/recovery/revoke;OK
+ext-hr-v2.js;6;GET;/hr/v2/dashboard;OK
+ext-hr-v2.js;35;GET;/hr/v2/payroll-control+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-hr-v2.js;49;GET;/hr/v2/alerts;OK
+ext-hr-v2.js;60;GET;/hr/v2/leaves;OK
+ext-hr-v2.js;72;GET;/hr/v2/attendance;OK
+ext-hr-v2.js;81;GET;/hr/v2/overtime;OK
+ext-hr-v2.js;94;GET;/hr/v2/contracts;OK
+ext-hr-v2.js;103;GET;/hr/v2/documents;OK
+ext-hr-v2.js;114;GET;/hr/v2/schedules;OK
+ext-hr-v2.js;122;POST;/hr/v2/alerts/refresh;OK
+ext-hr-v2.js;123;POST;/hr/v2/alerts/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-hr-v2.js;124;POST;/hr/v2/leaves/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-hr-v2.js;125;POST;/hr/v2/overtime/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-hr-v2.js;128;POST;/hr/v2/overtime/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-hr-v2.js;134;POST;/hr/v2/overtime/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-hr-v2.js;139;GET;/hr/v2/periods;OK
+ext-hr-v2.js;149;GET;/hr/v2/modules;OK
+ext-hr-v2.js;181;POST;/hr/v2/periods/close;OK
+ext-hr-v2.js;188;GET;/hr/v2/modules;OK
+ext-hr-v2.js;190;PUT;/hr/v2/modules;OK
+ext-import.js;14;GET;/imports/kinds;OK
+ext-import.js;31;GET;/imports/template/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-import.js;78;POST;/imports/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-import.js;120;POST;/imports/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-import.js;145;GET;/imports/kinds;OK
+ext-improvements.js;99;GET;/pumps;OK
+ext-improvements.js;100;GET;/shifts/current;OK
+ext-improvements.js;105;GET;/loyalty/settings;OK
+ext-improvements.js;141;POST;/sales/fuel;OK
+ext-license-ticker.js;67;GET;/me/license/status-message;OK
+ext-magasins.js;241;GET;/stations/performance+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-magasins.js;247;GET;/stations/overview;OK
+ext-magasins.js;250;GET;/me;OK
+ext-manager-extras.js;21;POST;/expenses/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-manager-screens.js;22;GET;/reports/weekly-summary+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-manager-screens.js;62;GET;/treasury/expenses+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-manager-screens.js;86;GET;/expenses/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-manager-screens.js;100;GET;/expenses/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-map.js;65;GET;/config/map;OK
+ext-map.js;172;GET;/admin/platform/clients-map;OK
+ext-map.js;214;GET;/stations/map;OK
+ext-map.js;239;GET;/stations/map;OK
+ext-market.js;24;GET;/prices/board;OK
+ext-market.js;42;GET;/products/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-market.js;51;POST;/prices/board;OK
+ext-market.js;58;GET;/stock/forecast+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-market.js;71;GET;/risk/shifts+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-market.js;84;GET;/loyalty/accounts+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-market.js;97;GET;/loyalty/settings;OK
+ext-market.js;105;PUT;/loyalty/settings;OK
+ext-market.js;110;GET;/sales;OK
+ext-market.js;118;POST;/loyalty/earn;OK
+ext-market.js;123;GET;/loyalty/accounts/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-market.js;133;POST;/loyalty/accounts/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-market.js;137;POST;/loyalty/accounts/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-market.js;140;POST;/loyalty/accounts/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-market.js;145;GET;/portal/links;OK
+ext-market.js;145;GET;/customers;OK
+ext-market.js;157;POST;/portal/links;OK
+ext-market.js;164;POST;/portal/links/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-market.js;170;GET;/money/sales-reconcile+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-market.js;224;GET;/loyalty/lookup+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-messaging.js;46;GET;/messaging/status;OK
+ext-messaging.js;55;GET;/messaging/conversations;OK
+ext-messaging.js;61;GET;/messaging/presence;OK
+ext-messaging.js;137;GET;/messaging/users/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-messaging.js;169;GET;/messaging/attachments/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-messaging.js;405;GET;/messaging/conversations/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-messaging.js;411;GET;/messaging/conversations/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-messaging.js;479;GET;/messaging/stream;OK
+ext-messaging.js;519;GET;/messaging/conversations/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-messaging.js;544;GET;/messaging/system-alerts;OK
+ext-messaging.js;560;PATCH;/messaging/system-alerts/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-messaging.js;569;GET;/messaging/alert-config;OK
+ext-messaging.js;633;PUT;/messaging/alert-config;OK
+ext-messaging.js;651;GET;/messaging/report-schedules;OK
+ext-messaging.js;705;POST;/messaging/report-schedules;OK
+ext-messaging.js;710;PATCH;/messaging/report-schedules/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-messaging.js;711;DELETE;/messaging/report-schedules/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-messaging.js;769;POST;/messaging/conversations/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-messaging.js;782;DELETE;/messaging/messages/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-messaging.js;841;POST;/messaging/conversations/bulk-delete;OK
+ext-messaging.js;856;DELETE;/messaging/conversations/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-messaging.js;864;GET;/messaging/support/clients;OK
+ext-messaging.js;870;POST;/messaging/support/open;OK
+ext-messaging.js;882;POST;/messaging/support/to-admin;OK
+ext-messaging.js;913;GET;/messaging/users+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-messaging.js;942;POST;/messaging/conversations/direct;OK
+ext-messaging.js;944;POST;/messaging/conversations/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-messaging.js;965;POST;/messaging/conversations/group;OK
+ext-messaging.js;980;POST;/messaging/broadcast;OK
+ext-messaging.js;1021;POST;/messaging/conversations/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-messaging.js;1033;GET;/messaging/attachments/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-messaging.js;1043;GET;/messaging/status;OK
+ext-messaging.js;1060;POST;/messaging/send-document;OK
+ext-modern-pack.js;58;GET;/pumps;OK
+ext-modern-pack.js;59;GET;/products;OK
+ext-modern-pack.js;60;GET;/employees;OK
+ext-modern-pack.js;61;GET;/shifts;OK
+ext-modern-pack.js;114;POST;/notifications/email-digest;OK
+ext-modern-pack.js;131;POST;/messaging/report-schedules/preset-direction;OK
+ext-modern-pack.js;143;GET;/dashboard/jour;OK
+ext-modern-pack.js;144;GET;/stations/overview;OK
+ext-modern-pack.js;145;GET;/notifications;OK
+ext-modern-pack.js;240;GET;/dashboard/jour+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-modern-pack.js;243;GET;/shifts;OK
+ext-modern-pack.js;303;GET;/reports/eod-period+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-modern-pack.js;380;GET;/notifications;OK
+ext-modern-pack.js;452;GET;/reports/eod.pdf+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-modern-pack.js;539;GET;/reports/reconciliation+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-modern-pack.js;627;GET;/money/commission-rates;OK
+ext-modern-pack.js;631;GET;/money/commission-report+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-modern-pack.js;703;PUT;/money/commission-rates;OK
+ext-money-match.js;14;GET;/money/reconcile-lines+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-money-match.js;37;POST;/money/statement-lines/import;OK
+ext-money-match.js;43;GET;/money/reconcile-lines+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-money-match.js;48;POST;/money/statement-lines/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-money-match.js;53;POST;/money/statement-lines/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-money-match.js;56;POST;/money/statement-lines/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-multistation-views.js;251;GET;/stations/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-multistation-views.js;317;GET;/exports/archive/monthly/summary+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-multistation-views.js;337;GET;/exports/archive/monthly+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-multistation.js;28;GET;/me;OK
+ext-multistation.js;48;GET;/stations/overview;OK
+ext-multistation.js;129;POST;/stations;OK
+ext-my-profile.js;54;GET;/me/photo;OK
+ext-my-profile.js;90;GET;/me/profile/summary+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-my-profile.js;168;GET;/me/profile/permissions;OK
+ext-my-profile.js;188;GET;/me/profile/activity/modules;OK
+ext-my-profile.js;189;GET;/me/profile/activity+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-my-profile.js;216;POST;/hr/actions/:v/reject;OK
+ext-my-profile.js;223;GET;/hr/payroll+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-my-profile.js;233;GET;/me/preferences/motion;OK
+ext-my-profile.js;256;GET;/me/profile;OK
+ext-myday.js;9;GET;/my-day;OK
+ext-myday.js;30;PUT;/my-day/target;OK
+ext-nav-colors.js;53;GET;/me/preferences/nav-colors;OK
+ext-nav-colors.js;108;GET;/me/preferences/nav-colors;OK
+ext-nav-colors.js;125;PUT;/me/preferences/nav-colors;OK
+ext-nav-colors.js;133;DELETE;/me/preferences/nav-colors;OK
+ext-nav-colors.js;156;PUT;/settings/nav_colors;OK
+ext-nav-colors.js;163;POST;/settings/reset/nav_colors;OK
+ext-notif-rules.js;14;GET;/notification-rules/meta;OK
+ext-notif-rules.js;19;GET;/notification-rules;OK
+ext-notif-rules.js;223;POST;/notification-rules/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-notif-rules.js;290;PUT;/notification-rules/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-notif-rules.js;291;POST;/notification-rules;OK
+ext-notif-rules.js;302;PATCH;/notification-rules/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-notif-rules.js;313;DELETE;/notification-rules/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-ops.js;6;GET;/dashboard/jour;OK
+ext-ops.js;38;GET;/hr/declarations+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-ops.js;68;GET;/audit/modules;OK
+ext-ops.js;90;GET;/audit/search+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-ops.js;117;GET;/audit/search+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-ops.js;129;POST;/notifications/scan;OK
+ext-ops.js;143;POST;/notifications/email-digest;OK
+ext-p10.js;31;GET;/dashboard;OK
+ext-p10.js;32;GET;/dashboard/daily;OK
+ext-p10.js;33;GET;/dashboard/config;OK
+ext-p11.js;45;GET;/dashboard/config;OK
+ext-p11.js;105;GET;/dashboard/config;OK
+ext-p11.js;108;PUT;/settings/dashboard_config;OK
+ext-p11.js;117;POST;/settings/reset/dashboard_config;OK
+ext-p12.js;99;GET;/admin/overview;OK
+ext-p12.js;100;GET;/admin/licenses/dashboard;OK
+ext-p12.js;102;GET;/admin/info;OK
+ext-p12.js;103;GET;/users;OK
+ext-p12.js;104;GET;/admin/roles;OK
+ext-p12.js;105;GET;/settings;OK
+ext-p12.js;151;GET;/users;OK
+ext-p12.js;162;POST;/users/:v/unlock;OK
+ext-p12.js;174;GET;/admin/roles;OK
+ext-p12.js;196;PATCH;/stations/:v/archive;OK
+ext-p12.js;207;PATCH;/stations/:v/suspension;OK
+ext-p12.js;214;GET;/stations/current;OK
+ext-p12.js;215;GET;/stations/archived;OK
+ext-p12.js;270;PATCH;/stations/current;OK
+ext-p12.js;288;PATCH;/stations/current;OK
+ext-p12.js;299;GET;/settings;OK
+ext-p12.js;328;GET;/settings;OK
+ext-p12.js;340;PUT;/settings/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-p12.js;349;POST;/settings/reset/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-p12.js;364;GET;/admin/backups;OK
+ext-p12.js;365;GET;/admin/backups/logs;OK
+ext-p12.js;366;GET;/admin/info;OK
+ext-p12.js;367;GET;/admin/maintenance/backup-status;OK
+ext-p12.js;415;POST;/admin/maintenance/restore;OK
+ext-p12.js;426;POST;/admin/maintenance/reset-global;OK
+ext-p12.js;435;POST;/admin/backups;OK
+ext-p12.js;447;GET;/admin/info;OK
+ext-p3.js;6;GET;/customers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-p3.js;25;GET;/customers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-p3.js;39;PATCH;/customers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-p3.js;46;POST;/customers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-p3.js;52;GET;/suppliers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-p3.js;67;GET;/suppliers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-p3.js;78;PATCH;/suppliers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-p3.js;85;POST;/suppliers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-p3.js;97;GET;/customers+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-p3.js;111;GET;/suppliers+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-p3.js;111;GET;/purchases;OK
+ext-p3.js;139;POST;/customers;OK
+ext-p3.js;151;POST;/suppliers;OK
+ext-p5.js;8;GET;/cash/overview;OK
+ext-p5.js;27;GET;/cash/overview;OK
+ext-p6.js;6;GET;/stock/overview;OK
+ext-p6.js;32;GET;/products;OK
+ext-p6.js;45;POST;/stock/movements;OK
+ext-p6.js;57;GET;/pumps/status;OK
+ext-p7.js;37;GET;/shifts/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-p8.js;6;GET;/alerts/center;OK
+ext-p8.js;33;POST;/alerts/center/:v/:v/ack;OK
+ext-p9.js;6;GET;/exports/kinds;OK
+ext-p9.js;34;GET;/exports/kinds;OK
+ext-p9.js;56;GET;/report-export-colors;OK
+ext-p9.js;68;PUT;/report-export-colors;OK
+ext-parties.js;67;GET;/suppliers+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-parties.js;67;GET;/purchases;OK
+ext-parties.js;109;GET;/customers+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-platform-insights.js;13;POST;/errors/client;OK
+ext-platform-insights.js;25;GET;/admin/platform/health+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-platform-insights.js;26;GET;/admin/platform/license-reminders;OK
+ext-platform-insights.js;36;POST;/admin/platform/license-reminders/run;OK
+ext-platform-insights.js;39;GET;/admin/platform/errors+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-platform.js;27;GET;/admin/platform/summary+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-platform.js;43;GET;/admin/platform/invoices;OK
+ext-platform.js;50;GET;/admin/platform/expenses;OK
+ext-platform.js;57;GET;/admin/platform/reports;OK
+ext-platform.js;58;GET;/admin/platform/report-colors;OK
+ext-platform.js;73;GET;/admin/clients;OK
+ext-platform.js;77;POST;/admin/platform/invoices;OK
+ext-platform.js;84;POST;/admin/platform/expenses;OK
+ext-platform.js;91;POST;/admin/platform/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-platform.js;95;POST;/admin/platform/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-platform.js;99;PUT;/admin/platform/report-colors;OK
+ext-platform.js;103;GET;/admin/platform/reports/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-platform.js;109;GET;/admin/platform/reports/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-platform.js;114;GET;/admin/platform/reports/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-premium.js;20;GET;/reconcile/runs;OK
+ext-premium.js;36;POST;/reconcile/run;OK
+ext-premium.js;41;GET;/shifts;OK
+ext-premium.js;44;POST;/reconcile/run;OK
+ext-premium.js;49;GET;/reconcile/runs/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-premium.js;62;GET;/period-locks;OK
+ext-premium.js;78;POST;/period-locks;OK
+ext-premium.js;85;POST;/period-locks/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-premium.js;93;GET;/admin/packs;OK
+ext-premium.js;93;GET;/packs;OK
+ext-premium.js;94;GET;/admin/renewal-requests;OK
+ext-premium.js;147;GET;/admin/packs;OK
+ext-premium.js;150;PUT;/admin/packs/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-premium.js;156;POST;/admin/packs;OK
+ext-premium.js;162;POST;/admin/renewal-requests/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-premium.js;176;POST;/license/renewal-request;OK
+ext-premium.js;188;GET;/sales/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-product-catalog.js;105;GET;/products+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-product-profile.js;113;GET;/products/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-product-profile.js;114;GET;/products/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-product-profile.js;291;POST;/products/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-product-profile.js;347;GET;/products/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-product-profile.js;389;GET;/products;OK
+ext-product-profile.js;389;GET;/products;OK
+ext-product-profile.js;394;POST;/stock/movements;OK
+ext-product-profile.js;402;GET;/products/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-product-profile.js;441;GET;/products/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-profile-stats.js;325;GET;/hr/employees/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-profile-stats.js;334;GET;/hr/employees/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-profit.js;63;GET;/reports/client-profit+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-proposals.js;9;GET;/messaging/alert-health;OK
+ext-proposals.js;47;POST;/messaging/alert-health/run;OK
+ext-proposals.js;143;GET;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-proposals.js;229;GET;/roles/presets;OK
+ext-purchase-order.js;8;GET;/suppliers;OK
+ext-purchase-order.js;8;GET;/products;OK
+ext-purchase-order.js;91;POST;/purchases;OK
+ext-purchase-orders.js;25;GET;/purchase-orders+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-purchase-orders.js;25;GET;/suppliers;OK
+ext-purchase-orders.js;68;POST;/purchase-orders/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-purchase-orders.js;77;GET;/purchase-orders/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-purchase-orders.js;86;GET;/products;OK
+ext-purchase-orders.js;123;GET;/suppliers;OK
+ext-purchase-orders.js;123;GET;/products;OK
+ext-purchase-orders.js;123;GET;/purchase-orders/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-purchase-orders.js;166;PUT;/purchase-orders/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-purchase-orders.js;166;POST;/purchase-orders;OK
+ext-purchase-orders.js;167;POST;/purchase-orders/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-purchase-orders.js;177;GET;/purchase-orders/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-purchase-orders.js;203;POST;/purchase-orders/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-purchase-orders.js;206;POST;/purchase-orders/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-purchase-orders.js;210;GET;/payment-methods/linked;OK
+ext-purchase-orders.js;217;GET;/purchase-orders/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-purchase-orders.js;221;GET;/tanks;OK
+ext-purchase-orders.js;277;POST;/purchase-orders/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-purchase-orders.js;290;GET;/purchase-orders/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-purchase-orders.js;300;POST;/purchase-orders/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-purchase-orders.js;322;GET;/purchase-orders/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-purchase-orders.js;323;POST;/docs/render;OK
+ext-purchase-orders.js;337;GET;/purchase-orders/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-purchase-orders.js;340;GET;/purchase-orders/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-push.js;71;GET;/alerts/center;OK
+ext-push.js;107;GET;/push/key;OK
+ext-push.js;113;POST;/push/subscribe;OK
+ext-push.js;120;POST;/push/unsubscribe;OK
+ext-push.js;158;POST;/usage/ping;OK
+ext-push.js;168;GET;/usage/team+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-push.js;202;GET;/admin/system-status;OK
+ext-roles.js;12;GET;/admin/roles;OK
+ext-roles.js;13;GET;/admin/permissions;OK
+ext-roles.js;34;POST;/admin/roles;OK
+ext-roles.js;41;GET;/admin/permissions;OK
+ext-roles.js;53;PUT;/admin/roles/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-roles.js;73;GET;/admin/roles/assignable;OK
+ext-roles.js;74;GET;/employees/unlinked;OK
+ext-roles.js;128;POST;/users;OK
+ext-roles.js;148;GET;/users/role-consistency;OK
+ext-roles.js;158;POST;/users/role-consistency/fix;OK
+ext-roles.js;173;PATCH;/users/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-roles.js;174;PATCH;/users/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-roles.js;198;GET;/admin/roles/assignable;OK
+ext-roles.js;211;PATCH;/users/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-sa-dash.js;72;GET;/admin/platform/usage+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-sa-dash.js;106;GET;/admin/platform/overview;OK
+ext-sa-dash.js;107;GET;/admin/clients;OK
+ext-sa-dash.js;117;POST;/admin/clients/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-sa-dash.js;123;GET;/admin/licenses/dashboard;OK
+ext-sa-dash.js;124;GET;/admin/overview;OK
+ext-sa-dash.js;125;GET;/admin/info;OK
+ext-sa-dash.js;126;GET;/admin/platform/summary;OK
+ext-sa-dash.js;127;GET;/admin/platform/overview;OK
+ext-sa-rules.js;37;PUT;/admin/platform/usage-report/settings;OK
+ext-sa-rules.js;42;POST;/admin/platform/usage-report/send-now;OK
+ext-sa-rules.js;71;PUT;/admin/platform/alert-rules/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-sa-rules.js;77;POST;/admin/platform/alert-rules/run;OK
+ext-sa-rules.js;88;GET;/admin/platform/usage-report/settings;OK
+ext-sa-rules.js;89;GET;/admin/platform/alert-rules;OK
+ext-sale-shift.js;18;GET;/payment-methods/linked;OK
+ext-sale-shift.js;54;GET;/shifts/current;OK
+ext-sale-shift.js;58;GET;/customers;OK
+ext-sale-shift.js;79;GET;/employees;OK
+ext-sale-shift.js;194;GET;/sales/fuel/expected+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-sale-shift.js;313;GET;/products;OK
+ext-sale-shift.js;313;GET;/customers;OK
+ext-sale-shift.js;313;GET;/employees;OK
+ext-sale-shift.js;313;GET;/shifts/current;OK
+ext-sale-shift.js;364;POST;/sales;OK
+ext-shell.js;350;GET;/admin/licenses/dashboard;OK
+ext-shell.js;355;GET;/messaging/unread;OK
+ext-shell.js;360;GET;/notifications;OK
+ext-shell.js;426;GET;/messaging/unread;OK
+ext-shell.js;457;GET;/messaging/unread;OK
+ext-shell.js;493;POST;/notifications/:v/read;OK
+ext-shell.js;509;GET;/me/photo;OK
+ext-shell.js;565;PUT;/me/photo;OK
+ext-shell.js;570;DELETE;/me/photo;OK
+ext-shell.js;596;GET;/images/stations/+ (concat);PREFIXE_SANS_ROUTE
+ext-sidebar-pub.js;102;GET;/me/advertising;OK
+ext-stock-reports.js;21;GET;/stock/overview;OK
+ext-stock-reports.js;28;GET;/products;OK
+ext-tanks.js;37;GET;/tanks;OK
+ext-tanks.js;63;GET;/tanks/reconcile+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-tanks.js;74;POST;/tanks/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-tanks.js;84;GET;/products;OK
+ext-tanks.js;89;POST;/tanks;OK
+ext-tanks.js;95;GET;/tanks/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-teamroles.js;12;GET;/admin/roles;OK
+ext-teamroles.js;12;GET;/admin/permissions;OK
+ext-teamroles.js;12;GET;/users;OK
+ext-teamroles.js;12;GET;/admin/roles/assignable;OK
+ext-teamroles.js;54;POST;/admin/roles/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-teamroles.js;62;PATCH;/users/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-teamroles.js;85;PUT;/admin/roles/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-teamroles.js;85;PATCH;/admin/roles/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-teamroles.js;86;POST;/admin/roles;OK
+ext-teamroles.js;92;DELETE;/admin/roles/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-treasury.js;46;GET;/treasury/overview;OK
+ext-treasury.js;46;GET;/treasury/movements+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-treasury.js;121;GET;/treasury/movements+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-treasury.js;135;GET;/treasury/expenses+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-treasury.js;146;GET;/treasury/transfers+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-treasury.js;155;GET;/treasury/reconciliation;OK
+ext-treasury.js;155;GET;/money/recent;OK
+ext-treasury.js;194;POST;/cash/movements;OK
+ext-treasury.js;195;POST;/money/movements;OK
+ext-treasury.js;207;POST;/money/deposit;OK
+ext-treasury.js;208;POST;/money/transfer;OK
+ext-treasury.js;214;POST;/money/accounts;OK
+ext-treasury.js;221;PUT;/money/accounts/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-treasury.js;230;POST;/money/statements;OK
+ext-treasury.js;253;GET;/treasury/movements+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-treasury.js;261;GET;/treasury/expenses+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-treasury.js;269;GET;/treasury/transfers+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-treasury.js;276;GET;/treasury/reconciliation;OK
+ext-treasury.js;276;GET;/money/recent;OK
+ext-treasury.js;320;GET;/debts/overview;OK
+ext-treasury.js;320;GET;/debts/reminders;OK
+ext-treasury.js;403;GET;/debts/payments+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-treasury.js;444;POST;/invoices/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-treasury.js;452;POST;/customers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-treasury.js;456;POST;/purchases/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-treasury.js;470;POST;/debts/reminders;OK
+ext-treasury.js;470;GET;/debts/reminders;OK
+ext-ux-v2.js;20;GET;/customers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-ux-v2.js;21;GET;/customers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-ux-v2.js;105;GET;/suppliers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-ux-v2.js;115;GET;/suppliers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-ux-v2.js;116;GET;/suppliers/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-ux-v2.js;163;GET;/finance/loans;OK
+ext-ux-v2.js;207;POST;/finance/loans;OK
+ext-ux-v2.js;228;POST;/finance/loans/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-ux-v2.js;242;GET;/hr/me;OK
+ext-ux-v2.js;244;GET;/hr/employees/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-ux-v2.js;245;GET;/hr/employees/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-ux-v2.js;246;GET;/hr/employees/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-ux-v2.js;256;GET;/me/preferences/motion;OK
+ext-ux-v2.js;273;PUT;/me/preferences/motion;OK
+ext-ux-v2.js;286;GET;/settings;OK
+ext-ux-v2.js;299;PUT;/settings/backup_emails;OK
+ext-vendeurs.js;49;GET;/seller-commissions/config;OK
+ext-vendeurs.js;74;PUT;/seller-commissions/config;OK
+ext-vendeurs.js;85;GET;/seller-commissions/summary+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-vendeurs.js;87;POST;/seller-commissions/freeze;OK
+ext-vendeurs.js;116;PUT;/seller-commissions/employees/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+ext-vendeurs.js;133;POST;/seller-commissions/primes;OK
+ext-vendeurs.js;153;POST;/seller-commissions/reglements;OK
+ext-vendeurs.js;196;PUT;/seller-commissions/module;OK
+ext-vendeurs.js;264;GET;/seller-commissions/entries;OK
+ext-vendeurs.js;282;GET;/seller-commissions/module;OK
+ext-vendeurs.js;294;GET;/seller-commissions/summary+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+home-editor.js;54;GET;/admin/home/image/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+home-editor.js;86;PUT;/admin/home/media;OK
+home-editor.js;117;PUT;/admin/home;OK
+home-editor.js;126;POST;/admin/home/publish;OK
+home-editor.js;130;POST;/admin/home/discard;OK
+home-editor.js;134;POST;/admin/home/reset;OK
+home-editor.js;137;GET;/admin/home;OK
+home-editor.js;487;DELETE;/admin/home/image/+ (concat);PREFIXE_DYNAMIQUE_COUVERT
+home-editor.js;769;GET;/admin/home;OK
