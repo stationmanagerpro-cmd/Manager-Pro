@@ -117,6 +117,8 @@
     const hero = document.getElementById('hero');
     const topBar = document.getElementById('topbar-ctx');
     let target = header, before = null;
+    // Bannière encore en attente : on ne met pas le bouton dans la barre (il l'élargirait puis serait déplacé).
+    if (!hero && document.documentElement.dataset.heroPending) { if (btn) btn.remove(); return; }
     if (hero) target = hero;
     else if (topBar) { target = topBar; before = topBar.querySelector('.user-chip'); }
     if (btn && btn.parentElement === target && btn.nextElementSibling === before) return;
@@ -138,5 +140,7 @@
   }
   const helpRoot = document.querySelector('main') || document.body;
   new MutationObserver(queueHelpShortcut).observe(helpRoot, { childList: true, subtree: true });
+  // La bannière est insérée hors de <main> : on surveille aussi l'application entière.
+  new MutationObserver(queueHelpShortcut).observe(document.getElementById('app') || document.body, { childList: true, subtree: true });
   queueHelpShortcut();
 })();
