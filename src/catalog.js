@@ -140,6 +140,12 @@ r.patch('/products/:id', need('price.edit'), body(z.object({
 }));
 
 // ---------- Pompes et compteurs (compteur → produit paramétrable) ----------
+// Un compteur de pompe ne peut être relié qu'à un produit de la catégorie Carburant (règle serveur, pas seulement interface).
+async function assertFuelProduct(c, productId, sid, label) {
+  const { rows: [p] } = await c.query('SELECT cat.code FROM products p JOIN categories cat ON cat.id = p.category_id WHERE p.id = $1 AND p.station_id = $2', [productId, sid]);
+  if (!p) throw new HttpError(400, 'Produit inconnu' + (label ? ' pour le compteur ' + label : ''));
+  if (p.code !== 'CARBURANT') throw new HttpError(400, 'Un compteur de pompe ne peut être relié qu\'à un produit de la catégorie Carburant' + (label ? ' (compteur ' + label + ')' : ''));
+}
 r.get('/pumps', wrap(async (req, res) => {
   const { rows } = await pool.query(
     `SELECT pu.*, COALESCE(json_agg(json_build_object('id', pc.id, 'counter_number', pc.counter_number, 'product_id', pc.product_id, 'product', pr.name, 'current_index', pc.current_index)
@@ -156,6 +162,7 @@ r.post('/pumps', need('settings.edit'), body(z.object({
   const p = await tx(async c => {
     const { rows: [p] } = await c.query('INSERT INTO pumps(station_id, number, name, location) VALUES ($1,$2,$3,$4) RETURNING *', [req.sid, b.number, b.name, b.location || null]);
     for (const k of b.counters) {
+      await assertFuelProduct(c, k.product_id, req.sid, k.counter_number);
       const { rowCount } = await c.query('INSERT INTO pump_counters(pump_id, counter_number, product_id, current_index) SELECT $1,$2,id,$4 FROM products WHERE id = $3 AND station_id = $5', [p.id, k.counter_number, k.product_id, k.current_index, req.sid]);
       if (!rowCount) throw new HttpError(400, 'Produit inconnu pour le compteur ' + k.counter_number);
     }
@@ -196,6 +203,7 @@ r.patch('/pumps/:pumpId', need('settings.edit'), body(z.object({
       const { rows: [cur] } = await c.query('SELECT pc.*, pr.name AS product FROM pump_counters pc JOIN products pr ON pr.id = pc.product_id WHERE pc.pump_id = $1 AND pc.counter_number = $2 FOR UPDATE OF pc', [old.id, k.counter_number]);
       const { rows: [np] } = await c.query('SELECT id, name FROM products WHERE id = $1 AND station_id = $2', [k.product_id, req.sid]);
       if (!np) throw new HttpError(400, 'Produit inconnu pour le compteur ' + k.counter_number);
+      if (!cur || cur.product_id !== np.id) await assertFuelProduct(c, np.id, req.sid, k.counter_number);
       if (!cur) {   // ajout d'un compteur (ex. 2e compteur), index de départ 0
         const { rows: [nc] } = await c.query('INSERT INTO pump_counters(pump_id, counter_number, product_id, current_index) VALUES ($1,$2,$3,0) RETURNING id', [old.id, k.counter_number, np.id]);
         await c.query('INSERT INTO pump_counter_history(counter_id, product_id, changed_by) VALUES ($1,$2,$3)', [nc.id, np.id, req.user.id]);
@@ -233,8 +241,7 @@ r.put('/pumps/:pumpId/counters/:n', need('settings.edit'), body(z.object({ produ
     const { rows: [k] } = await c.query(
       `SELECT pc.* FROM pump_counters pc JOIN pumps pu ON pu.id = pc.pump_id WHERE pu.id = $1 AND pu.station_id = $2 AND pc.counter_number = $3 FOR UPDATE OF pc`, [req.params.pumpId, req.sid, req.params.n]);
     if (!k) throw new HttpError(404, 'Compteur introuvable');
-    const { rowCount } = await c.query('SELECT 1 FROM products WHERE id = $1 AND station_id = $2', [req.body.product_id, req.sid]);
-    if (!rowCount) throw new HttpError(400, 'Produit inconnu');
+    await assertFuelProduct(c, req.body.product_id, req.sid, req.params.n);
     await c.query('UPDATE pump_counters SET product_id = $2 WHERE id = $1', [k.id, req.body.product_id]);
     await c.query('INSERT INTO pump_counter_history(counter_id, product_id, changed_by) VALUES ($1,$2,$3)', [k.id, req.body.product_id, req.user.id]);
     await audit(c, req, 'pompes', `Compteur ${k.counter_number} de la pompe ${req.params.pumpId} : nouveau produit`, 'pump_counters', k.id, { product_id: k.product_id }, { product_id: req.body.product_id });
