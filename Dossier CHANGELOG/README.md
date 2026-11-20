@@ -84,7 +84,7 @@ node --check src/auth.js
 
 Le contrôle syntaxique des fichiers JavaScript de cette archive a été exécuté sans erreur.
 
-Les tests d’intégration nécessitant PostgreSQL ne sont **pas déclarés verts** dans cette archive tant qu’ils n’ont pas été exécutés sur une base de test. La livraison contient le rapport `docs/RAPPORT_LIVRAISON_FINAL_2026-10-07.md` avec cette distinction.
+Les tests d’intégration nécessitant PostgreSQL ne sont **pas déclarés verts** dans cette archive tant qu’ils n’ont pas été exécutés sur une base de test. La livraison contient le rapport `docs/(supprimé le 2026-11-20 ; voir l’historique git).md` avec cette distinction.
 
 ## Commandes de validation complète sur une base de test
 
@@ -115,7 +115,7 @@ npm run test:ci
 
 - `LISEZMOI.txt` — démarrage et points importants.
 - `docs/PROMPT_CONSOLIDE_2026-10-07.md` — exigences de référence.
-- `docs/RAPPORT_LIVRAISON_FINAL_2026-10-07.md` — état de cette livraison et preuves disponibles.
+- `docs/(supprimé le 2026-11-20 ; voir l’historique git).md` — état de cette livraison et preuves disponibles.
 - `docs/HEBERGEMENT_PC_WINDOWS_TAILSCALE_FUNNEL.md` — hébergement autonome sur PC, PostgreSQL local, Tailscale et sauvegardes.
 - `docs/RH_PAIE_MALI.md` et `docs/ACTIVATION_PROGRESSIVE.md` — paie et activation progressive.
 
