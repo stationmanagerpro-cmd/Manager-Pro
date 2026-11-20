@@ -7,7 +7,7 @@ Mis à jour le 2026-11-20. Fusionne l'ancien état actuel et le suivi d'exécuti
 - Procédure de mise à jour : voir `docs/REFERENCE.md`, section 0.
 
 ## 1. Dernière tâche effectuée
-Documentation consolidée (`docs/REFERENCE.md` et ce fichier) et vérifications étendues (migrations sur PostgreSQL 16, tests statiques).
+P-02 : Chart.js chargé à la demande (vérifié par test navigateur au chargement et au premier appel).
 
 ## 2. Terminé et vérifié
 | Date | Tâche | Commit | Preuve |
@@ -66,4 +66,5 @@ Documentation consolidée (`docs/REFERENCE.md` et ce fichier) et vérifications 
 - Non approuvés, non faits : P-01, P-02, P-03 (performance), P-09 (documentation, rien pour l'instant), P-04, P-07, P-08, P-10 (à conserver).
 - P-09 (validé) : 5 instantanés d'octobre supprimés (commit `816796d`), récupérables par git. Reste : 322 fichiers de `Dossier CHANGELOG/` et les rapports d'étapes, à traiter séparément après revue.
 - P-03 (approuvé) : icônes optimisées sans perte (−26 Ko, pixels identiques), commit `408eaf5`. Le gain de 300 Ko n'est atteignable qu'en WebP (changement de format, à décider) ou avec perte visible (refusé).
-- P-01, P-02 : non approuvés (en attente).
+- P-02 (approuvé) : Chart.js (201 Ko) chargé seulement sur les vues qui dessinent un graphique (`whenChart` / `chartTask` dans `public/index.html`). Au chargement : 0 requête vers Chart.js (test navigateur). Détail : `Dossier CHANGELOG/CHARTJS_A_LA_DEMANDE_P02_2026-11-20.md`. Affichage réel à vérifier sur l'application.
+- P-01 : non approuvé (en attente de l'inventaire des 102 scripts).

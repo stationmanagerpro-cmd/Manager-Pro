@@ -15,7 +15,7 @@
   const dshort = d => (d ? new Date(d).toLocaleDateString('fr-FR') : '—');
 
   function drawCharts(lic, sum) {
-    if (typeof Chart === 'undefined') return;
+    if (typeof Chart === 'undefined') return whenChart(() => drawCharts(lic, sum));
     charts.forEach(c => { try { c.destroy(); } catch (_) { /* déjà détruit */ } }); charts = [];
     const mk = (id, cfg) => { const cv = document.getElementById(id); if (cv) charts.push(new Chart(cv, cfg)); };
     const grid = { color: 'rgba(148,163,184,.25)' };
@@ -90,7 +90,7 @@
       <h4 style="margin:12px 0 4px">Utilisateurs, du plus fréquent au moins fréquent</h4>
       <div style="overflow:auto;max-height:420px"><table><thead><tr><th>#</th><th>Utilisateur</th><th>Client</th><th>Temps passé</th><th>Connexions</th><th>Jours actifs</th><th>Dernière activité</th></tr></thead><tbody>${d.users.map((u, i) => `<tr><td>${i + 1}</td><td><b>${esc(u.display_name)}</b><br><small>${esc(u.login)}</small></td><td>${esc(u.client_name)}</td><td>${hm(u.seconds)}</td><td>${u.logins}</td><td>${u.active_days}</td><td>${ago(u.last_activity)}</td></tr>`).join('') || '<tr><td colspan="7">Aucun utilisateur</td></tr>'}</tbody></table></div>
       <p style="font-size:12px;margin:8px 0 0">Les connexions sont comptées depuis l’historique des sessions. Le temps passé est mesuré uniquement quand l’application est ouverte et visible${since ? ', depuis le ' + since : ' ; aucune mesure enregistrée pour l’instant (elle démarre à la prochaine ouverture de l’application par les clients)'}.</p>`;
-    if (typeof Chart === 'undefined') return;
+    if (typeof Chart === 'undefined') return whenChart(() => window.sadUsage(days));
     const top = d.clients.slice(0, 10);
     const a = document.getElementById('sad_u_cli'), b = document.getElementById('sad_u_day');
     if (a) usageCharts.push(new Chart(a, { type: 'bar', data: { labels: top.map(c => c.client_name), datasets: [{ data: top.map(c => Math.round(c.seconds / 36) / 100), backgroundColor: '#0ea5e9', borderRadius: 6, barThickness: 12 }] }, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', plugins: { legend: { display: false } } } }));

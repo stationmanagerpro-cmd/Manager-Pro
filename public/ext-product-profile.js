@@ -43,7 +43,7 @@
   const legend = { position: 'top', align: 'end', labels: { boxWidth: 8, usePointStyle: true } };
   const tipMoney = { callbacks: { label: c => ' ' + c.dataset.label + ' : ' + new Intl.NumberFormat('fr-FR').format(Math.round(c.raw || 0)) + ' ' + cur() } };
   function draw(key, spec) {
-    if (typeof Chart === 'undefined') return;
+    if (typeof Chart === 'undefined') return whenChart(() => draw(key, spec));
     (CH[key] || []).forEach(c => { try { c.destroy(); } catch (_) { /* déjà détruit */ } });
     CH[key] = [];
     spec.forEach(([id, cfg]) => { const el = document.getElementById(id); if (el) CH[key].push(new Chart(el, cfg)); });

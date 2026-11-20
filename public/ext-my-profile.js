@@ -39,7 +39,7 @@
 
   function charts(spec) {
     CH.forEach(c => { try { c.destroy(); } catch (_) { /* déjà détruit */ } }); CH = [];
-    if (typeof Chart === 'undefined') return;
+    if (typeof Chart === 'undefined') return whenChart(() => charts(spec));
     setTimeout(() => spec.forEach(([id, cfg]) => { const el = document.getElementById(id); if (el) CH.push(new Chart(el, cfg)); }), 30);
   }
   const base = { responsive: true, maintainAspectRatio: false };

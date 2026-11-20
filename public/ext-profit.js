@@ -87,7 +87,7 @@
     if (d.series.length > 0) { let tries = 0; const draw = () => {
       const ctx = document.getElementById(chartId);
       if (!ctx) { if (++tries < 40) setTimeout(draw, 100); return; }
-      if (typeof Chart === 'undefined') { ctx.parentNode.innerHTML = '<p style="color:var(--m);padding:12px">Graphique indisponible (bibliothèque non chargée) : rechargez la page.</p>'; return; }
+      if (typeof Chart === 'undefined') { whenChart(draw, () => { ctx.parentNode.innerHTML = '<p style="color:var(--m);padding:12px">Graphique indisponible (bibliothèque non chargée) : rechargez la page.</p>'; }); return; }
       new Chart(ctx, { type: 'bar', data: { labels: d.series.map(x => x.label), datasets: [
         { label: "Chiffre d'affaires", data: d.series.map(x => x.revenue), backgroundColor: 'rgba(13,122,107,.35)' },
         { label: 'Marge brute', data: d.series.map(x => x.gross_margin), backgroundColor: 'rgba(13,122,107,.8)' },

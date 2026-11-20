@@ -62,7 +62,7 @@
   const rankKnown = (rows, key) => rows.some(r => r.rk && r.rk[key] != null);
 
   function renderCharts(rows, days) {
-    if (typeof Chart === 'undefined') return;
+    if (typeof Chart === 'undefined') return whenChart(() => renderCharts(rows, days));
     (window.__dirCharts || []).forEach(c => { try { c.destroy(); } catch (_) { /* déjà détruit */ } });
     window.__dirCharts = [];
     const muted = cssVar('--m') || '#526178', grid = (document.documentElement.dataset.theme === 'dark') ? 'rgba(255,255,255,.08)' : 'rgba(15,23,42,.07)';

@@ -74,8 +74,7 @@
       });
     }
     // Chart CA par mois (agrégation simple)
-    setTimeout(function () {
-      if (typeof Chart === 'undefined') return;
+    chartTask(function () {
       var ctx = document.getElementById(chartId);
       if (!ctx) return;
       var byMonth = {};
@@ -136,8 +135,7 @@
         return [dt(p.paid_at), f(p.amount), esc(p.method || '')];
       })) +
       '<div class="r"><button class="b2" onclick="closeM()">Fermer</button></div></div>');
-    setTimeout(function () {
-      if (typeof Chart === 'undefined') return;
+    chartTask(function () {
       var ctx = document.getElementById(chartId);
       if (!ctx) return;
       var byMonth = {};

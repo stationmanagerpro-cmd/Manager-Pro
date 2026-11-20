@@ -31,7 +31,7 @@
   const tipMoney = { callbacks: { label: c => ' ' + new Intl.NumberFormat('fr-FR').format(Math.round(c.raw || 0)) + ' ' + (typeof CUR !== 'undefined' ? CUR : 'FCFA') } };
 
   function draw(spec, key) {
-    if (typeof Chart === 'undefined') return;
+    if (typeof Chart === 'undefined') return whenChart(() => draw(spec, key));
     const k = key || 'main';
     (charts[k] || []).forEach(c => { try { c.destroy(); } catch (_) { /* déjà détruit */ } }); charts[k] = [];
     spec.forEach(([id, cfg]) => { const cv = document.getElementById(id); if (cv) charts[k].push(new Chart(cv, cfg)); });

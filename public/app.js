@@ -382,8 +382,7 @@ const hb = (t, e) => { const mx = Math.max(1, ...e.map(x => x[1])); return `<div
 async function vDash() {
   const [a, b] = range(P), [d, dl, pilot] = await Promise.all([G(`/dashboard?from=${a}&to=${b}`), G('/dashboard/daily?days=7'), G(`/dashboard/pilotage?from=${a}&to=${b}`).catch(() => null)]), mx = Math.max(1, ...dl.map(x => x.revenue)), C = (l, v) => `<div class="card"><small>${l}</small><b>${v}</b></div>`;
   const chartId = 'dashChart' + Date.now();
-  setTimeout(() => {
-    if (typeof Chart === 'undefined') return;
+  chartTask(() => {
     const ctx = document.getElementById(chartId);
     if (!ctx) return;
     new Chart(ctx, {

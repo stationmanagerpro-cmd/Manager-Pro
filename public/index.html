@@ -77,7 +77,33 @@
 
   <script src="/ext-time24.js"></script>
   <script src="/native-bridge.js?v=2"></script>
-  <script src="/vendor/chart.umd.min.js"></script>
+  <script>
+    // Chart.js n'est chargé qu'à la demande (vues qui dessinent un graphique).
+    // whenChart(fn, onFail) : exécute fn une fois Chart disponible ; chartTask(fn, delay) = setTimeout + whenChart.
+    (function () {
+      var pending = null;
+      function load() {
+        if (typeof Chart !== 'undefined') return Promise.resolve();
+        if (!pending) {
+          pending = new Promise(function (ok, ko) {
+            var s = document.createElement('script');
+            s.src = '/vendor/chart.umd.min.js';
+            s.onload = function () { ok(); };
+            s.onerror = function () { pending = null; s.remove(); ko(); };
+            document.head.appendChild(s);
+          });
+        }
+        return pending;
+      }
+      window.whenChart = function (fn, onFail) {
+        if (typeof Chart !== 'undefined') return fn();
+        return load().then(function () { if (typeof Chart !== 'undefined') fn(); }, function () { if (onFail) onFail(); });
+      };
+      window.chartTask = function (fn, delay) {
+        return setTimeout(function () { window.whenChart(fn); }, delay);
+      };
+    })();
+  </script>
   <script src="/i18n.js"></script>
   <script src="/app.js"></script>
   <script src="/ext-core.js?v=3"></script>

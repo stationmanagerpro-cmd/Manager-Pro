@@ -215,7 +215,8 @@
 
   function renderChart(daily) {
     const cv = document.getElementById('dv2-chart');
-    if (!cv || typeof Chart === 'undefined') return;
+    if (!cv) return;
+    if (typeof Chart === 'undefined') return whenChart(() => renderChart(daily));
     if (window.__dv2Chart) { try { window.__dv2Chart.destroy(); } catch (e) { /* déjà détruit */ } }
     const muted = cssVar('--m') || '#526178', grid = (document.documentElement.dataset.theme === 'dark') ? 'rgba(255,255,255,.08)' : 'rgba(15,23,42,.07)';
     const compact = v => new Intl.NumberFormat(LOC(), { notation: 'compact', maximumFractionDigits: 1 }).format(v);

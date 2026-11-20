@@ -3,7 +3,7 @@
  * - /api/** → network-only (jamais de cache : auth JWT, données métier)
  * - Navigation HTML → network-first, fallback cache index si offline total
  */
-const CACHE = 'smp-static-b6b054c1461';
+const CACHE = 'smp-static-b8d7830e0c2';
 
 /* PRECACHE:BEGIN (généré par scripts/build-sw.js — ne pas modifier à la main) */
 const PRECACHE = [
@@ -134,8 +134,7 @@ const PRECACHE = [
   '/responsive-phone.css?v=2',
   '/responsive-v3.css',
   '/responsive-v3.js',
-  '/table-fit.js?v=1',
-  '/vendor/chart.umd.min.js'
+  '/table-fit.js?v=1'
 ];
 /* PRECACHE:END */
 

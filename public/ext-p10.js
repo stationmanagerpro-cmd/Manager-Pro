@@ -67,8 +67,7 @@
     const chartId = 'dashChart' + Date.now();
     const pieId = 'dashPie' + Date.now();
     if (chartsOn.daily_revenue !== false) {
-      setTimeout(() => {
-        if (typeof Chart === 'undefined') return;
+      chartTask(() => {
         const ctx = document.getElementById(chartId);
         if (!ctx) return;
         new Chart(ctx, {
@@ -96,8 +95,7 @@
       }, 50);
     }
     if (chartsOn.payments_by_method !== false && (d.payments_by_method || []).length) {
-      setTimeout(() => {
-        if (typeof Chart === 'undefined') return;
+      chartTask(() => {
         const ctx = document.getElementById(pieId);
         if (!ctx) return;
         const methods = d.payments_by_method || [];

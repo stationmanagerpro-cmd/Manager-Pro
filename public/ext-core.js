@@ -618,8 +618,7 @@ const ETABS = {
     const chartId = `empPerfChart${e.id}_${Date.now()}`;
     const products = Array.isArray(p.by_product) ? p.by_product : [];
     const chart = `<div class="card" style="margin:12px 0"><h3 style="margin-top:0">Diagramme des ventes par produit</h3>${products.length ? `<div style="height:260px;position:relative"><canvas id="${chartId}" role="img" aria-label="Chiffre d'affaires attribué par produit"></canvas></div>` : '<p style="color:var(--m)">Aucune donnée produit pour cette période.</p>'}</div>`;
-    if (products.length) setTimeout(() => {
-      if (typeof Chart === 'undefined') return;
+    if (products.length) chartTask(() => {
       const canvas = document.getElementById(chartId);
       if (!canvas) return;
       new Chart(canvas, {
