@@ -88,3 +88,14 @@ Vérification : contrôle statique (5/5), aucun nouvel échec parmi les tests ex
 - Portée : les autres interpolations sont surtout des fragments constants (plages de dates, helpers `P.and`, `day()`). Je n'ai pas relu chacune une à une ; je les considère sûres sur la base du contrôle ci-dessus, sans preuve exhaustive.
 
 **M-01 — migration 070 (toujours ouvert)** : nécessite une lecture seule en production. Non réalisable depuis cette session.
+
+## 9. Exécution réelle : bloquée par l'environnement (2026-11-21)
+
+- Tentative de démarrer le serveur sur une base PostgreSQL 16 neuve (`smp_exec`) : la base a bien été créée et le cluster démarré.
+- Les dépendances du serveur ne sont pas installées : `node_modules` est vide ou incomplet, et seul `zod` est disponible localement (dans un outil système, hors du projet).
+- Le registre npm n'est pas joignable depuis cette session (résolution DNS impossible). La politique réseau de ce compte désactive l'installation de paquets.
+- Plusieurs tentatives d'installation ont été faites avant ce constat. Elles n'ont rien modifié dans le dépôt (le dossier `node_modules`, non versionné, a été vidé puis laissé incomplet).
+
+Conséquence : les règles d'accès des décisions A-01 à A-04 et la garde des onglets n'ont pas été exécutées avec des profils réels. Elles restent vérifiées uniquement par contrôle statique.
+
+Pour lever ce blocage : autoriser l'installation de paquets npm pour cette session (ou installer les dépendances localement), puis lancer `npm run migrate`, `npm run setup` sur une base de test, et tester les profils vendeur, RH et gestionnaire.
