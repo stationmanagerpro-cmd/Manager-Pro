@@ -7,7 +7,17 @@
   var d = document.documentElement, MIN = 4.5, DARK = [11, 27, 58];
   // Tant que le bandeau n'est pas décidé, l'ancien en-tête reste masqué (sinon il s'affiche un instant avant le bandeau).
   d.dataset.heroPending = '1';
-  function decided() { if (d.dataset.heroPending) delete d.dataset.heroPending; }
+  // Emplacement réservé dans index.html (#hero-slot), à la hauteur mémorisée lors du dernier affichage : la bannière le remplace
+  // sur place, ce qui évite que l'en-tête ne descende ou ne remonte au chargement.
+  function decided() {
+    if (d.dataset.heroPending) delete d.dataset.heroPending;
+    var sl = document.getElementById('hero-slot'); if (sl) sl.remove();
+  }
+  function mountHero(host, hd, h) {
+    var sl = document.getElementById('hero-slot');
+    if (sl && sl.parentNode === host) host.replaceChild(h, sl); else host.insertBefore(h, hd);
+    try { var cs = getComputedStyle(h), px = Math.round(h.offsetHeight + (parseFloat(cs.marginTop) || 0) + (parseFloat(cs.marginBottom) || 0)); if (px > 0) localStorage.setItem('smp-hero-h', String(px)); } catch (_) {}
+  }
   function E(s) { return typeof esc === 'function' ? esc(s) : String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   /* Le bandeau ne se modifie que dans Administration → Paramètres → Apparence (droit appearance.manage). */
   function canEdit() { try { return can('appearance.manage'); } catch (_) { return false; } }
@@ -142,7 +152,7 @@
     var h = build({ name: s.banner_title || s.name || '', slogan: s.tagline, style: sy, img: url, logo: logo, compact: !home, warn: canEdit() && url && s.banner_legibility === 'warn',
       cta: home && (function () { try { return can('sale.create'); } catch (_) { return false; } })() });
     h.id = 'hero'; h.__sig = sig; h.setAttribute('role', 'banner');
-    purgeHeroes(null); host.insertBefore(h, hd); d.dataset.hero = '1'; decided();   // tout en haut de la page, au-dessus de la barre d'en-tête
+    purgeHeroes(null); mountHero(host, hd, h); d.dataset.hero = '1'; decided();   // tout en haut de la page, au-dessus de la barre d'en-tête
   }
   var busy = false, paintSeq = 0;
   /* Un seul bandeau dans la page : on supprime tout autre élément #hero / .hero-top (course entre deux rendus asynchrones). */
@@ -153,15 +163,16 @@
     var sa = typeof ME !== 'undefined' && ME && ME.is_global;   // Superadmin : bandeau aux couleurs de la plateforme (nom, logo, slogan du site)
     var on = typeof cur !== 'undefined' && cur && typeof ME !== 'undefined' && ME && (sa || (typeof SID !== 'undefined' && SID));
     var ex = document.getElementById('hero');
+    // Attendre la vue de démarrage avant toute décision : sinon l'en-tête s'affiche seul (contexte station pas encore chargé), puis le bandeau arrive et tout se décale.
+    if (!window.__viewSettled) return;
     if (!on) { purgeHeroes(null); if (d.dataset.hero) delete d.dataset.hero; decided(); return; }
-    if (!window.__viewSettled) return;   // attendre la vue de démarrage (sinon le bandeau est posé en version compacte, puis remplacé)
     if (sa) {
       var B = (typeof BRAND !== 'undefined' && BRAND) || {}, bn = (typeof brandName === 'function' && brandName()) || 'Station Manager PRO', lg = B.has_logo ? '/api/branding/logo?v=' + (B.v || 0) : '/icons/icon-192.png', hm = cur === 'admin';
       var bi = B.has_banner ? '/api/branding/banner?v=' + (B.v || 0) : null, sg = JSON.stringify(['sa', hm, bn, B.tagline || '', lg, bi]);
       if (ex && ex.__sig === sg && ex.nextElementSibling === hd) { d.dataset.hero = '1'; decided(); return; }
       var hs = build({ name: bn, slogan: B.tagline || '', style: styleOf({ banner_style: { overlay: 45 } }), img: bi, logo: lg, compact: !hm });
       hs.id = 'hero'; hs.__sig = sg; hs.setAttribute('role', 'banner');
-      purgeHeroes(null); host.insertBefore(hs, hd); d.dataset.hero = '1'; decided(); return;
+      purgeHeroes(null); mountHero(host, hd, hs); d.dataset.hero = '1'; decided(); return;
     }
     var key = String(SID || '') + '|' + String(cur || '');
     var known = imgCache.key === key;   // photo déjà connue pour cette station : pas d'attente

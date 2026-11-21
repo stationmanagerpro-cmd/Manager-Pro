@@ -42,6 +42,8 @@
   <div id="app">
     <nav id="nav"></nav>
     <main>
+      <div id="hero-slot" aria-hidden="true"></div>
+      <script>(function(){try{var h=parseInt(localStorage.getItem('smp-hero-h'),10);var s=document.getElementById('hero-slot');if(s&&h>0&&document.documentElement.dataset.heroPending)s.style.height=h+'px';}catch(e){}})();</script>
       <header id="app-header">
       <div class="tenant-brand" id="tenant-brand" aria-label="Identité du compte">
         <span class="tenant-brand-mark">S</span><span class="tenant-brand-copy"><b>Station Manager PRO</b><small></small></span>
@@ -150,7 +152,7 @@
   <script src="/ext-market.js?v=1"></script>
   <script src="/ext-gaps.js?v=1"></script>
   <script src="/ext-skin-pro.js?v=4"></script>
-  <script src="/ext-banner.js?v=3"></script>
+  <script src="/ext-banner.js?v=4"></script>
   <script src="/ext-license-ticker.js?v=1"></script>
   <script src="/ext-accounting.js?v=3"></script>
   <script src="/ext-import.js?v=3"></script>

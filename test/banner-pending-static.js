@@ -9,16 +9,17 @@ check('le marqueur data-hero-pending est posé dès le chargement', () => {
 });
 check('chaque décision (bandeau affiché ou non) retire le marqueur : 6 points', () => {
   assert.strictEqual(b.split('decided();').length - 1, 6);
-  assert(b.includes("function decided() { if (d.dataset.heroPending) delete d.dataset.heroPending; }"));
+  assert(b.includes("function decided() {") && b.includes("delete d.dataset.heroPending"));
+  assert(b.includes("getElementById('hero-slot')") && b.includes("mountHero(host, hd, h)"));
 });
 check("l'ancien en-tête est masqué tant que le marqueur est présent", () => {
-  assert(css.includes('html[data-skin=pro][data-hero-pending] #app-header #tenant-brand { visibility: hidden;'));
+  assert(css.includes('html[data-hero-pending] #app-header { display: none;'));
 });
 check("pas de repli temporisé : l'en-tête reste masqué tant que le bandeau n'est pas posé", () => {
   assert(!css.includes('heroPendingReveal'));
 });
 check('versions de chargement incrémentées (cache navigateur)', () => {
   const html = read('index.html');
-  assert(html.includes('/ext-skin-pro.css?v=5') && html.includes('/ext-banner.js?v=3'));
+  assert(html.includes('/ext-skin-pro.css?v=5') && html.includes('/ext-banner.js?v=4'));
 });
 console.log(`\n${n}/5 contrôles réussis.`);

@@ -9,7 +9,7 @@ ok('suppression de la photo réinitialise la lisibilité', () => assert(/banner_
 ok('appearance expose titre/style/lisibilité', () => assert(/s\.banner_title, s\.banner_style, s\.banner_legibility/.test(r('src/admin.js'))));
 ok('interface', () => { const j = r('public/ext-banner.js'); for (const k of ['openBannerDialog', 'ratioFor', 'optimize', 'Corrigez la lisibilité pour enregistrer', 'risque d’être illisible', "legibility: legib"]) assert(j.includes(k), k); assert(/MIN = 4\.5/.test(j)); assert(!/innerHTML\s*=\s*[^;]*\bo\.name(?!\s*\))/.test(j.replace(/E\(o\.name\)/g, '')), 'nom échappé'); });
 ok('nom et slogan échappés', () => assert(/E\(o\.name\)/.test(r('public/ext-banner.js')) && /E\(o\.slogan/.test(r('public/ext-banner.js'))));
-ok('chargement + cache hors ligne', () => { const h = r('public/index.html'), w = r('public/sw.js'); for (const f of ['ext-banner.css?v=1', 'ext-banner.js?v=3']) { assert(h.includes(f), f); assert(w.includes(f), f); } });
+ok('chargement + cache hors ligne', () => { const h = r('public/index.html'), w = r('public/sw.js'); for (const f of ['ext-banner.css?v=1', 'ext-banner.js?v=4']) { assert(h.includes(f), f); assert(w.includes(f), f); } });
 ok('paramètres : bouton Personnaliser le bandeau', () => assert(/openBannerDialog\(\)/.test(r('public/ext-fin.js'))));
 ok('bandeau : modifiable seulement dans Paramètres → Apparence', () => {
   const j = r('public/ext-banner.js'), f = r('public/ext-fin.js'), a = r('src/admin.js');
