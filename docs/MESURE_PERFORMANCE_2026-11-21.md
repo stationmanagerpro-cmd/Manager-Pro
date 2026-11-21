@@ -23,10 +23,12 @@
 - **La compression gzip** est le gain le plus rentable : −69 % d'octets transférés.
 - Le nombre de requêtes (101 scripts) ajoute de la latence : chaque fichier coûte un aller-retour réseau. Regrouper les scripts réduit ce coût, mais l'ordre de chargement doit être revérifié (chantier P-01 arrêté).
 
-## 4. Actions proposées (non appliquées)
-1. Activer la compression gzip ou brotli sur les fichiers statiques du serveur Express (dépendance `compression`, à ajouter après installation). Gain mesuré : 5,8 s → 3,9 s en 4G simulée.
-2. Mettre des en-têtes de cache longs sur les fichiers versionnés (`?v=…`).
-3. Revoir le regroupement des scripts (P-01) avant toute modification.
+## 4. Décision du propriétaire (2026-11-21)
+- **Pas de compression** (gzip ou brotli) : refusée par précaution, à cause de possibles effets sur certains téléphones. Le gain mesuré (5,8 s → 3,9 s en 4G simulée) n'est donc pas retenu. Si un modèle précis pose problème, il faudrait le signaler avec son modèle et sa version Android.
 
-## 5. Reproduction
+## 5. Actions restantes (non appliquées)
+1. Mettre des en-têtes de cache longs sur les fichiers versionnés (`?v=…`).
+2. Revoir le regroupement des scripts (P-01) avant toute modification.
+
+## 6. Reproduction
 Scripts de mesure : `/tmp/claude-0/-home-claude/15957a5d-9bb0-5e96-ada2-c21a1e338d05/scratchpad/perf/` (`throttle.js`, `gz.js`, `load.js`). Ils ne sont pas versionnés.
