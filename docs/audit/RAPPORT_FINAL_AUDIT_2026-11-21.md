@@ -72,3 +72,19 @@ Décisions déléguées par le propriétaire, appliquées (voir `Dossier CHANGEL
 | A-04 | Notifications sensibles (écarts, paie, RH, contrat) : gestionnaires seulement | Appliqué, non exécuté |
 
 Vérification : contrôle statique (5/5), aucun nouvel échec parmi les tests existants. **Aucun test d'exécution avec des profils réels.** Les constats M-01 et F-04 restent ouverts, et T-01 (test `step55`, préexistant) n'est pas traité.
+
+## 8. Clôture des points ouverts (2026-11-21, suite)
+
+**T-01 — test `step55` (corrigé)**. Le test vérifiait une garde ancienne (`if (typeof Chart === 'undefined') return;`), remplacée par le chargement différé de Chart.js (P-02). Le code actuel reste correct : `chartTask` ne dessine que si Chart.js est chargé, et la page reste affichée sinon. Le test vérifie désormais ce comportement (5/5). Le code n'a pas été modifié.
+
+**F-04 — requêtes SQL interpolées (examiné, pas de faille trouvée)**.
+- 222 requêtes contiennent une interpolation (207 expressions distinctes).
+- Recherche automatique : aucune interpolation n'insère directement une donnée de requête (`req.query/body/params`) dans le SQL. Un seul résultat, dans un message de notification, est un faux positif.
+- Identifiants dynamiques examinés un par un :
+  - `catalog.js` (clients, fournisseurs), `hr.js`, `finance.js`, `admin.js`, `fiscal.js` : les noms de colonnes viennent de `Object.keys(req.body)`, mais `body(z.object(...))` remplace `req.body` par la version validée, qui ne garde que les clés du schéma (`.strict()` ou suppression par défaut). Protégé.
+  - `admin.js` (images) : table lue dans une liste fixe `ENT`. Protégé.
+  - `fiscal.js` : `PUT /fiscal/profile` validé par zod avant. Protégé.
+  - `tenant-backups.js` (restauration) : routes réservées au Super Admin (`needGlobal`) ; noms de tables contrôlés contre le catalogue réel (`live.has`) et quotés. Protégé.
+- Portée : les autres interpolations sont surtout des fragments constants (plages de dates, helpers `P.and`, `day()`). Je n'ai pas relu chacune une à une ; je les considère sûres sur la base du contrôle ci-dessus, sans preuve exhaustive.
+
+**M-01 — migration 070 (toujours ouvert)** : nécessite une lecture seule en production. Non réalisable depuis cette session.

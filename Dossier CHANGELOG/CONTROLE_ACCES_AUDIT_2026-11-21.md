@@ -29,3 +29,7 @@ Décisions prises par le propriétaire (« prends les meilleures décisions »),
 - Syntaxe de `core.js`, `operations.js`, `ops_plus.js`, `reports.js` : OK.
 - Tests statiques : aucun nouvel échec. 27 échecs préexistants, identiques avant et après (la plupart exigent un serveur ou une base).
 - **Non vérifié à l'exécution** : aucun appel réel avec les profils vendeur, RH et gestionnaire.
+
+## Suite : T-01 et F-04 (2026-11-21)
+- `test/step55-employee-performance-chart-static.js` : assertion mise à jour pour le chargement différé de Chart.js (P-02). Le code n'a pas changé. Le test passe désormais (5/5).
+- F-04 : aucune faille. Recherche automatique sans interpolation directe de requête ; identifiants dynamiques protégés par validation zod, liste fixe ou réservation Super Admin. Détail dans le rapport final, section 8.
