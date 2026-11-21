@@ -21,6 +21,10 @@
 - `test/contract-onglets-static.js` : 5 contrôles (dont la garde de `go()`).
 - `public/sw.js` régénéré à nouveau (`smp-static-bac4111600d`).
 
+- `public/app.js` (suite 2) : boutons dont l'action est exactement `go('onglet')` masqués quand l'onglet est coupé (observateur DOM, regroupé par frame). Les boutons à action conditionnelle (ex. import qui ouvre un autre écran) restent visibles. Helper `contractBlockedView` partagé avec la garde de `go()`.
+- `test/contract-onglets-static.js` : 6 contrôles.
+- `public/sw.js` régénéré (`smp-static-bba9f36734c`).
+
 **Non vérifié** :
 - Rendu réel du formulaire contrat et du menu client en navigateur (site non joignable depuis le bac à sable).
 - Audit des 30 onglets : 110 appels `go()` repérés. La majorité rafraîchissent la vue déjà ouverte (permise). Les points d'entrée depuis une autre vue (ex. Journal finance `finevents`, Rapprochement `reconcile`, Imports `imports`, Config. alertes `alertcfg`, Règles notification `notifrules`, Mobile Money `mmcomm`, Direction `direction`) sont couverts par la garde de `go()`, mais un bouton peut rester affiché : à masquer si souhaité.
