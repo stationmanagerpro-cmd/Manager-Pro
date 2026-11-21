@@ -10,6 +10,7 @@ fs.writeFileSync(path.join(root, 'index.html'), '<!doctype html><title>t</title>
 fs.writeFileSync(path.join(root, 'sw.js'), 'self.x=1;' + 'c'.repeat(3000));
 fs.writeFileSync(path.join(root, 'logo.png'), Buffer.from([137, 80, 78, 71, 1, 2, 3, 4]));
 fs.writeFileSync(path.join(root, 'secret.txt'), 'ok');
+fs.writeFileSync(path.join(root, '.env.js'), 'SECRET=1;' + 'd'.repeat(3000));
 
 // Serveur de test : même ordre que src/server.js (Vary, gzip, puis fichiers « simples » en repli).
 const srv = http.createServer((req, res) => {
@@ -20,7 +21,8 @@ const srv = http.createServer((req, res) => {
     if (f) return f(req, res, next);
     // repli : express.static simulé (sert le fichier brut)
     const p = path.join(root, decodeURIComponent(req.url.split('?')[0]).replace(/^\/+/, '') || 'index.html');
-    if (!fs.existsSync(p) || fs.statSync(p).isDirectory()) { res.statusCode = 404; return res.end('nf'); }
+    const cache = decodeURIComponent(req.url.split('?')[0]).split('/').some(seg => seg.startsWith('.'));   // comme express.static : dotfiles ignorés
+    if (cache || !fs.existsSync(p) || fs.statSync(p).isDirectory()) { res.statusCode = 404; return res.end('nf'); }
     res.setHeader('Content-Type', 'application/octet-stream');
     res.end(fs.readFileSync(p));
   };
@@ -63,6 +65,11 @@ srv.listen(0, '127.0.0.1', async () => {
   await ok('sw.js exclu : jamais compressé ni modifié par ce module', async () => {
     const r = await get('/sw.js', { 'Accept-Encoding': 'gzip' });
     assert.strictEqual(r.headers['content-encoding'], undefined);
+  });
+  await ok('fichier caché (.env.js) : jamais servi en gzip', async () => {
+    const r = await get('/.env.js', { 'Accept-Encoding': 'gzip' });
+    assert.notStrictEqual(r.headers['content-encoding'], 'gzip');
+    assert.ok(!r.body.toString().includes('SECRET=1'), 'le contenu caché ne doit pas sortir par ce module');
   });
   await ok('image : jamais compressée', async () => {
     const r = await get('/logo.png', { 'Accept-Encoding': 'gzip' });

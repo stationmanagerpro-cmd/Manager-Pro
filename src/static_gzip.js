@@ -25,6 +25,8 @@ function resolveStatic(root, urlPath) {
   try { decoded = decodeURIComponent(urlPath); } catch (_) { return null; }
   const full = path.resolve(root, '.' + (decoded.startsWith('/') ? decoded : '/' + decoded));
   if (full !== root && !full.startsWith(root + path.sep)) return null;   // pas de sortie du dossier public
+  // Fichiers et dossiers cachés (.env, .htaccess…) : jamais servis, comme express.static (dotfiles ignorés).
+  if (decoded.split('/').some(seg => seg.startsWith('.') && seg !== '')) return null;
   return full;
 }
 
