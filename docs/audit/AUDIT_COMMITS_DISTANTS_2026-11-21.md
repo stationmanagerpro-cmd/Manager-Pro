@@ -27,7 +27,11 @@ Limite : aucun test d'exécution (serveur non démarrable ici). Les constats ci-
 ### C-04 — Commits de présentation (en-tête, formulaire contrat) (gravité : nulle)
 - Front uniquement, sans impact sur les données ni les permissions.
 
-## Actions proposées (aucune appliquée)
+## Suite donnée (mise à jour)
+- C-01 : garde serveur ajoutée pour 20 routes propres à un onglet (voir `Dossier CHANGELOG/GARDE_SERVEUR_ONGLETS_2026-11-21.md`). Les routes partagées avec la caisse et les autres écrans restent non gardées (risque résiduel, décision à prendre).
+- Les 30 clés sont bien celles des commits distants (contrôlé par `git diff`).
+
+## Actions proposées (historique)
 1. Décider si un onglet coupé doit aussi bloquer l'API (recommandé : garde serveur par route, sur le modèle des modules).
 2. Test de confirmation avec un compte client dont `view_treso = false` : appel direct de l'API trésorerie.
 3. Vérifier la correspondance clé ↔ nom d'onglet pour les 30 clés (C-03).

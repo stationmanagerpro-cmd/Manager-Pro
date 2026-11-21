@@ -208,6 +208,43 @@ app.use('/api', async (req, res, next) => {
       if (isPath('/fiscal') && !isPath('/admin/clients') && !featureOn(contract, 'can_access_fiscal') && !featureOn(contract, 'module:fiscal')) {
         return res.status(403).json({ error: 'Module Fiscalité non inclus dans votre contrat.', code: 'FEATURE_DISABLED', feature: 'fiscal' });
       }
+      // Onglets du compte client (option view_<onglet>, vrai par défaut) : contrôle serveur, endpoint par endpoint.
+      // Seules les routes propres à un onglet sont listées. Les routes partagées avec la caisse ou
+      // d'autres écrans (/money, /finance, /messaging, /treasury, /prices, /invoices, /stations…) ne sont
+      // pas gardées ici : voir docs/audit/AUDIT_COMMITS_DISTANTS_2026-11-21.md.
+      // Une clé absente est considérée comme autorisée, comme dans le front (app.js, contractAllowsView).
+      const viewOff = (key) => {
+        const v = (contract.features || {})[key];
+        return v === false || v === 'false' || v === 0 || v === '0';
+      };
+      const VIEW_GUARDS = [
+        [/^\/risk\/shifts$/, 'view_risque', 'Contrôle risque'],
+        [/^\/period-locks(\/|$)/, 'view_periodlock', 'Verrouillage de période'],
+        [/^\/notification-rules(\/|$)/, 'view_notifrules', 'Règles de notification'],
+        [/^\/portal\/links(\/|$)/, 'view_espaceclient', 'Espace client'],
+        [/^\/fleet\/cards(\/|$)/, 'view_flotte', 'Flotte'],
+        [/^\/money\/commission-rates$/, 'view_mmcomm', 'Commissions Mobile Money'],
+        [/^\/money\/commission-report$/, 'view_mmcomm', 'Commissions Mobile Money'],
+        [/^\/money\/commission-rates\/history$/, 'view_ctrlfin', 'Contrôles financiers'],
+        [/^\/finance\/events$/, 'view_finevents', 'Événements financiers'],
+        [/^\/finance\/events\/summary$/, 'view_ctrlfin', 'Contrôles financiers'],
+        [/^\/finance\/integrity\/cash$/, 'view_ctrlfin', 'Contrôles financiers'],
+        [/^\/reports\/client-profit$/, 'view_profit', 'Résultat et marge'],
+        [/^\/reports\/reconciliation$/, 'view_reconcile', 'Rapprochement'],
+        [/^\/exports\/archive(\/|$)/, 'view_archive', 'Archivage mensuel'],
+        [/^\/imports(\/|$)/, 'view_imports', 'Imports par lot'],
+        [/^\/pumps\/counter-history$/, 'view_histcompteurs', 'Historique des compteurs'],
+        [/^\/stock\/forecast$/, 'view_previsions', 'Prévisions de rupture'],
+        [/^\/stock\/transfers(\/|$)/, 'view_transferts', 'Transferts de stock'],
+        [/^\/purchase-orders(\/|$)/, 'view_bcommande', 'Bons de commande'],
+        [/^\/messaging\/broadcast-roles$/, 'view_msgroles', 'Rôles de diffusion'],
+        [/^\/stations\/map$/, 'view_carte', 'Carte des stations'],
+      ];
+      for (const [re, key, label] of VIEW_GUARDS) {
+        if (re.test(path) && viewOff(key)) {
+          return res.status(403).json({ error: label + ' non inclus dans votre contrat.', code: 'FEATURE_DISABLED', feature: key });
+        }
+      }
     }
     next();
   } catch (e) { next(e); }

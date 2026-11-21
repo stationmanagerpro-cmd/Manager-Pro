@@ -44,4 +44,18 @@ ok('boutons : masqués quand ils ouvrent un onglet coupé (go exact seulement)',
   assert.ok(app.includes("/^go\\('([a-z_]+)'\\)$/"), 'motif exact absent');
 });
 
+// Garde serveur (src/server.js, VIEW_GUARDS) : chaque clé gardée existe, et les routes partagées ne sont pas listées.
+const server = read('src/server.js');
+ok('serveur : garde view_<onglet> par endpoint propre à un onglet', () => {
+  assert.ok(server.includes('const VIEW_GUARDS = ['), 'table de garde absente');
+  const keys = ['view_risque', 'view_periodlock', 'view_notifrules', 'view_espaceclient', 'view_flotte', 'view_mmcomm',
+    'view_ctrlfin', 'view_finevents', 'view_profit', 'view_reconcile', 'view_archive', 'view_imports',
+    'view_histcompteurs', 'view_previsions', 'view_transferts', 'view_bcommande', 'view_msgroles', 'view_carte'];
+  for (const k of keys) assert.ok(server.includes("'" + k + "'"), 'garde absente : ' + k);
+  // Une route partagée avec la caisse ou d'autres écrans ne doit pas être gardée par un onglet.
+  for (const shared of ["'/money/accounts'", "'/products'", "'/treasury'", "'/prices'"]) {
+    assert.ok(!/VIEW_GUARDS = \[[\s\S]*?\];/.exec(server)[0].includes(shared), 'route partagée gardée à tort : ' + shared);
+  }
+});
+
 console.log('\n' + n + '/' + n + ' contrôles réussis.');
