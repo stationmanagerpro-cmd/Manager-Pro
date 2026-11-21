@@ -998,6 +998,10 @@ window.goBack = async function () {
   try { await go(prev.k, prev.a); } finally { __navSilent = false; }
 };
 async function go(k, a) {
+  // Onglet coupé par le contrat du compte client (option view_<onglet>) : aucune navigation,
+  // quel que soit le point d'entrée (menu, tuile, bouton, lien). Le menu le masque déjà.
+  const cf = ME && !ME.is_global && ME.contract && !ME.contract.unrestricted ? (ME.contract.features || {}) : null;
+  if (cf && ('view_' + k) in cf && featOff(cf['view_' + k])) { toast('Cet onglet n’est pas inclus dans votre contrat.', 'error'); return; }
   const navEpoch = ++NAV_EPOCH;
   // Empiler la vue courante avant changement (sauf retour arrière)
   if (!__navSilent && cur && (cur !== k || arg !== a)) {

@@ -34,4 +34,8 @@ ok("l'interrupteur global « Activation globale des modules » ignore les onglet
   assert.ok(ui.includes("f[0].indexOf('view_') !== 0"), 'filtre absent');
 });
 
+ok('navigation : go() refuse un onglet coupé, quel que soit le point d\'entrée', () => {
+  assert.ok(/async function go\(k, a\) \{\n  \/\/ Onglet coupé[\s\S]*?\('view_' \+ k\) in cf && featOff\(cf\['view_' \+ k\]\)\) \{ toast/.test(app), 'garde absente dans go()');
+});
+
 console.log('\n' + n + '/' + n + ' contrôles réussis.');
