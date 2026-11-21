@@ -330,8 +330,34 @@ r.get('/current', wrap(async (req, res) => {
     if (!Array.isArray(pids)) pids = r.pump_id != null ? [r.pump_id] : [];
     return { id: r.id, name: r.name, role: r.role, pump_id: r.pump_id, pump_ids: pids };
   });
+  // Par pompe : recette, volume et nombre de ventes carburant du quart, et employés affectés (affichage « Pompe »).
+  const { rows: pumpRows } = await pool.query(
+    `SELECT pu.id AS pump_id, pu.number, pu.name,
+            COALESCE(SUM(CASE WHEN sa.id IS NOT NULL THEN d.amount END), 0) AS recette,
+            COALESCE(SUM(CASE WHEN sa.id IS NOT NULL THEN d.quantity END), 0) AS volume,
+            COUNT(DISTINCT sa.id)::int AS n
+       FROM pumps pu
+       LEFT JOIN sales sa ON sa.pump_id = pu.id AND sa.shift_id = $1 AND sa.kind = 'carburant' AND sa.status = 'valide'
+       LEFT JOIN sale_details d ON d.sale_id = sa.id
+      WHERE pu.station_id = $2 AND pu.deleted_at IS NULL AND pu.status = 'active'
+      GROUP BY pu.id, pu.number, pu.name
+      ORDER BY pu.number`, [s.id, req.sid]).catch(swallow('shifts:pumps', { rows: [] }));
+  // Par pompe et par produit (Gasoil, Super…) : recette et volume du quart.
+  const { rows: prodRows } = await pool.query(
+    `SELECT sa.pump_id, d.product_id, p.name AS product, COALESCE(SUM(d.amount),0) AS recette, COALESCE(SUM(d.quantity),0) AS volume
+       FROM sales sa JOIN sale_details d ON d.sale_id = sa.id JOIN products p ON p.id = d.product_id
+      WHERE sa.shift_id = $1 AND sa.kind = 'carburant' AND sa.status = 'valide' AND sa.pump_id IS NOT NULL
+      GROUP BY sa.pump_id, d.product_id, p.name ORDER BY p.name`, [s.id]).catch(swallow('shifts:products', { rows: [] }));
+  const pumps = pumpRows.map(p => ({
+    pump_id: p.pump_id, number: p.number, name: p.name,
+    recette: Number(p.recette), volume: Number(p.volume), n: p.n,
+    products: prodRows.filter(x => Number(x.pump_id) === Number(p.pump_id))
+      .map(x => ({ product_id: x.product_id, name: x.product, recette: Number(x.recette), volume: Number(x.volume) })),
+    employees: teamRows.filter(t => (t.pump_ids || []).map(Number).includes(Number(p.pump_id)))
+      .map(t => ({ id: t.id, name: t.name, role: t.role })),
+  }));
   res.json({ ...s, counters: rd.rows, sales: sales.rows[0], fuel_declared: fd.rows[0], anomalies: an.rows,
-    expenses: ex.rows[0], credit: cr.rows[0], chief: ch.rows[0]?.name || null, team: teamRows });
+    expenses: ex.rows[0], credit: cr.rows[0], chief: ch.rows[0]?.name || null, team: teamRows, pumps });
 }));
 
 // Rapports en lecture seule des quarts auxquels l'employé connecté a été affecté.
