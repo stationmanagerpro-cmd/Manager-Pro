@@ -40,7 +40,7 @@ const unknown = Object.keys(count).filter(k => !allKeys.includes(k));
 check(unknown.length === 0, 'clés de famille inconnues de featureFormFields : ' + unknown.join(', '));
 
 check(yesNo.length > 30, 'trop peu de modules Oui / Non détectés (' + yesNo.length + ')');
-check(families.length === 9, 'nombre de familles inattendu : ' + families.length);
+check(families.length === 10, 'nombre de familles inattendu : ' + families.length);
 check(/function featureFormFieldsSw\(\)/.test(ui), 'featureFormFieldsSw absente');
 check(/\[f\[0\], f\[1\], 'sw'\]/.test(ui), 'conversion Oui / Non vers interrupteur absente');
 check((ui.match(/\.\.\.moduleSections\(\)/g) || []).length === 2, 'sections modules absentes dans les deux formulaires');

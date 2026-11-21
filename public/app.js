@@ -248,6 +248,8 @@ const contractAllowsView = k => {
   if (!c || c.unrestricted) return true;
   if (c.suspended) return false;
   const f = c.features || {};
+  // Onglet désactivé par le contrat (option view_<onglet>, vrai par défaut)
+  if (('view_' + k) in f && featOff(f['view_' + k])) return false;
   const mods = f.modules || {};
   const modOn = (key, defaultOn = true) => {
     if (!(key in mods) && !(('can_' + key) in f)) return defaultOn;
