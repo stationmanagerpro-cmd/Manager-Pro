@@ -24,9 +24,10 @@
 - Le nombre de requêtes (101 scripts) ajoute de la latence : chaque fichier coûte un aller-retour réseau. Regrouper les scripts réduit ce coût, mais l'ordre de chargement doit être revérifié (chantier P-01 arrêté).
 
 ## 4. Décision du propriétaire (2026-11-21)
-- **Pas de compression** (gzip ou brotli) : refusée par précaution, à cause de possibles effets sur certains téléphones. Le gain mesuré (5,8 s → 3,9 s en 4G simulée) n'est donc pas retenu. Si un modèle précis pose problème, il faudrait le signaler avec son modèle et sa version Android.
+- Compression gzip **retenue** après réflexion : implémentée dans `src/static_gzip.js` (voir `Dossier CHANGELOG/COMPRESSION_STATIQUE_2026-11-21.md`). Gain mesuré : 5,8 s → 3,9 s en 4G simulée.
 
 ## 5. Actions restantes (non appliquées)
+- Vérification sur le serveur réel après déploiement (en-tête `Content-Encoding`).
 1. Mettre des en-têtes de cache longs sur les fichiers versionnés (`?v=…`).
 2. Revoir le regroupement des scripts (P-01) avant toute modification.
 

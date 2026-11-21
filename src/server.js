@@ -54,6 +54,10 @@ const jsonBig = express.json({ limit: '16mb' });   // JSON/base64 : imports et p
 app.use((req, res, next) => (BIG_BODY.test(req.path) ? jsonBig : jsonSmall)(req, res, next));
 app.use(require('./phone').phoneMiddleware);   // téléphones : format international (+223 par défaut)
 
+// Compression gzip des fichiers texte statiques (décision 2026-11-21) : module Node natif, sans dépendance.
+const staticGzip = require('./static_gzip');
+app.use(staticGzip.varyHeader());
+app.use(staticGzip.staticGzip(path.join(__dirname, '..', 'public')));
 app.use(express.static(path.join(__dirname, '..', 'public'), {
   setHeaders(res, filePath) {
     if (filePath.endsWith('.apk')) {   // application Android téléchargeable (page « A propos »)
