@@ -1,6 +1,6 @@
 // Tableau de bord, audit, notifications.
 const express = require('express');
-const { pool, wrap, need, HttpError, audit } = require('./core');
+const { pool, wrap, need, HttpError, audit, isSensitiveNotif, canSeeSensitiveNotif } = require('./core');
 const { swallow } = require('./safe');
 const r = express.Router();
 
@@ -598,10 +598,15 @@ r.get('/notifications', wrap(async (req, res) => {
     [req.sid]
   );
 
-  res.json(rows);
+  // A-04 : notifications sensibles (écarts de caisse, paie, RH, contrat) réservées aux gestionnaires.
+  res.json(canSeeSensitiveNotif(req) ? rows : rows.filter(n => !isSensitiveNotif(n.kind)));
 }));
 
 r.post('/notifications/:id/read', wrap(async (req, res) => {
+  if (!canSeeSensitiveNotif(req)) {
+    const { rows: [n] } = await pool.query('SELECT kind FROM notifications WHERE id = $1 AND station_id = $2', [req.params.id, req.sid]);
+    if (n && isSensitiveNotif(n.kind)) throw new HttpError(403, 'Permission refusée : notification réservée aux gestionnaires');
+  }
   await pool.query(
     'UPDATE notifications SET read_at = now() WHERE id = $1 AND station_id = $2',
     [req.params.id, req.sid]

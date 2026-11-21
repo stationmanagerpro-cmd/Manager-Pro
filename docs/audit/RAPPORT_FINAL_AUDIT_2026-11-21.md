@@ -59,3 +59,16 @@ Ordre proposé, du plus important au plus simple :
 - Vérification production de M-01 (lecture seule).
 - Traitement de F-04 (185 requêtes interpolées).
 - Validation des décisions métier A-01, A-02, A-03, A-04.
+
+## 7. Mise à jour : décisions appliquées (2026-11-21)
+
+Décisions déléguées par le propriétaire, appliquées (voir `Dossier CHANGELOG/CONTROLE_ACCES_AUDIT_2026-11-21.md`) :
+
+| ID | Décision | Statut |
+|---|---|---|
+| A-01 | Gestionnaires : toutes les ventes. Vendeurs : leurs ventes seulement. Autres : 403 | Appliqué, non exécuté |
+| A-02 | Alertes filtrées par source (RH, paie, dettes) selon les permissions correspondantes | Appliqué, non exécuté |
+| A-03 | Acquittement d'une alerte RH : `hr.manage` | Appliqué, non exécuté |
+| A-04 | Notifications sensibles (écarts, paie, RH, contrat) : gestionnaires seulement | Appliqué, non exécuté |
+
+Vérification : contrôle statique (5/5), aucun nouvel échec parmi les tests existants. **Aucun test d'exécution avec des profils réels.** Les constats M-01 et F-04 restent ouverts, et T-01 (test `step55`, préexistant) n'est pas traité.

@@ -2,7 +2,7 @@
 const express = require('express');
 const { swallow } = require('./safe');
 const { z } = require('zod');
-const { pool, tx, fl, HttpError, wrap, body, need, audit, cashMove, stockMove, defaultReg, payMethod, assertLinkedMethod, accountMove, settle, ledger, recordFinancialEvent, canCost, maskCost } = require('./core');
+const { pool, tx, fl, HttpError, wrap, body, need, audit, cashMove, stockMove, defaultReg, payMethod, assertLinkedMethod, accountMove, settle, ledger, recordFinancialEvent, canCost, maskCost, hasManagerView } = require('./core');
 const { assertNotLocked } = require('./premium');
 const r = express.Router();
 
@@ -221,18 +221,38 @@ r.post('/sales/:id/cancel', need('sale.delete'), body(z.object({ reason: z.strin
 }));
 
 r.get('/sales', wrap(async (req, res) => {
+  // Droits (décision 2026-11-21, A-01) : un gestionnaire voit toutes les ventes de la station ;
+  // un vendeur (sale.create) ne voit que les siennes.
+  const manager = hasManagerView(req);
+  if (!manager && !req.user.perms.has('sale.create')) throw new HttpError(403, 'Permission refusée : report.view ou sale.create');
   // Filtre optionnel par période (jours de début et de fin inclus) — utilisé par l'écran Ventes et son export PDF.
   const from = String(req.query.from || ''), to = String(req.query.to || ''), hasRange = !!(from || to);
   if (hasRange) {
     if (!/^\d{4}-\d{2}-\d{2}$/.test(from) || !/^\d{4}-\d{2}-\d{2}$/.test(to)) throw new HttpError(400, 'Période invalide : renseignez la date de début et la date de fin.');
     if (from > to) throw new HttpError(400, 'La date de début ne peut pas être postérieure à la date de fin.');
   }
-  const { rows } = hasRange
-    ? await pool.query(
-      `SELECT id, invoice_no, shift_id, employee_id, customer_id, sold_at, total, status, kind, input_mode FROM sales WHERE station_id = $1 AND sold_at::date BETWEEN $2::date AND $3::date ORDER BY id DESC LIMIT $4`,
-      [req.sid, from, to, Math.min(+req.query.limit || 1000, 2000)])
-    : await pool.query(
-      `SELECT id, invoice_no, shift_id, employee_id, customer_id, sold_at, total, status, kind, input_mode FROM sales WHERE station_id = $1 ORDER BY id DESC LIMIT $2`, [req.sid, Math.min(+req.query.limit || 50, 200)]);
+  // Vendeur : uniquement ses ventes (employé rattaché à son compte). Paramètres littéraux, ordre fixe.
+  let empId = null;
+  if (!manager) {
+    const { rows: [me] } = await pool.query('SELECT id FROM employees WHERE user_id = $1 AND station_id = $2 AND deleted_at IS NULL LIMIT 1', [req.user.id, req.sid]);
+    if (!me) return res.json([]);
+    empId = me.id;
+  }
+  const cols = 'id, invoice_no, shift_id, employee_id, customer_id, sold_at, total, status, kind, input_mode';
+  let rows;
+  if (hasRange) {
+    const limit = Math.min(+req.query.limit || 1000, 2000);
+    const params = [req.sid, from, to, limit];
+    if (empId !== null) params.push(empId);
+    ({ rows } = await pool.query(
+      `SELECT ${cols} FROM sales WHERE station_id = $1 AND sold_at::date BETWEEN $2::date AND $3::date${empId !== null ? ' AND employee_id = $5' : ''} ORDER BY id DESC LIMIT $4`, params));
+  } else {
+    const limit = Math.min(+req.query.limit || 50, 200);
+    const params = [req.sid, limit];
+    if (empId !== null) params.push(empId);
+    ({ rows } = await pool.query(
+      `SELECT ${cols} FROM sales WHERE station_id = $1${empId !== null ? ' AND employee_id = $3' : ''} ORDER BY id DESC LIMIT $2`, params));
+  }
   res.json(rows);
 }));
 

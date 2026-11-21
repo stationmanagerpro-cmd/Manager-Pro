@@ -232,4 +232,13 @@ async function recordFinancialEvent(c, {
   return row.id;
 }
 
-module.exports = { canCost, maskCost, assertLinkedMethod, payMethod, accountMove, settle, ledger, recordFinancialEvent, pool, tx, fl, f3, HttpError, Preview, wrap, body, auth, need, station, audit, cashMove, stockMove, setting, defaultReg, errorHandler };
+// Décisions d'accès 2026-11-21 (audit A-01 à A-04).
+// Gestionnaire = voit les ventes de toute la station, les dettes, les alertes financières et les notifications sensibles.
+const MANAGER_PERMS = ['report.view', 'finance.view', 'cash.manage'];
+const hasManagerView = req => !!(req.user && req.user.perms && MANAGER_PERMS.some(p => req.user.perms.has(p)));
+// Notifications sensibles : écarts de caisse, paie, RH, contrat (licences). Réservées aux gestionnaires.
+const SENSITIVE_NOTIF_KINDS = ['ecart_caisse', 'paie', 'rh', 'contrat'];
+const isSensitiveNotif = kind => SENSITIVE_NOTIF_KINDS.includes(kind);
+const canSeeSensitiveNotif = req => hasManagerView(req);
+
+module.exports = { hasManagerView, isSensitiveNotif, canSeeSensitiveNotif, canCost, maskCost, assertLinkedMethod, payMethod, accountMove, settle, ledger, recordFinancialEvent, pool, tx, fl, f3, HttpError, Preview, wrap, body, auth, need, station, audit, cashMove, stockMove, setting, defaultReg, errorHandler };

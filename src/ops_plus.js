@@ -1,7 +1,7 @@
 // Améliorations ops : dashboard jour J, déclarations, notifications e-mail, audit enrichi
 const express = require('express');
 const { z } = require('zod');
-const { pool, wrap, need, body, audit, HttpError } = require('./core');
+const { pool, wrap, need, body, audit, HttpError, isSensitiveNotif, canSeeSensitiveNotif } = require('./core');
 const { swallow, ignored } = require('./safe');
 const { getSetting } = require('./admin');
 const { sendMail } = require('./mailer');
@@ -515,6 +515,18 @@ r.get('/alerts/center', wrap(async (req, res) => {
     );
   }
 
+  // Droits par source (décision 2026-11-21, A-02) : RH, paie et dettes réservées aux profils concernés.
+  const SRC_PERM = {
+    hr_alerts: ['hr.view', 'hr.manage'], employee_gaps: ['hr.view', 'hr.gaps', 'hr.manage'],
+    payroll: ['hr.payroll', 'hr.manage'], customers: ['finance.view', 'cash.manage', 'money.manage'],
+    suppliers: ['finance.view', 'money.manage']
+  };
+  filtered = filtered.filter(i => {
+    if (i.source === 'notifications') return !isSensitiveNotif(i.module) || canSeeSensitiveNotif(req);
+    const perms = SRC_PERM[i.source];
+    return !perms || perms.some(p => req.user.perms.has(p));
+  });
+
   const byLevel = { critical: 0, warning: 0, info: 0, error: 0 };
   for (const i of filtered) {
     const lv = i.level === 'critical' ? 'critical' : i.level === 'warning' ? 'warning' : i.level === 'error' ? 'error' : 'info';
@@ -535,7 +547,12 @@ r.get('/alerts/center', wrap(async (req, res) => {
 
 r.post('/alerts/center/:source/:id/ack', wrap(async (req, res) => {
   const { source, id } = req.params;
+  // A-03 : acquitter une alerte RH exige la gestion RH.
+  if (source === 'hr_alerts' && !req.user.perms.has('hr.manage')) throw new HttpError(403, 'Permission refusée : hr.manage');
   if (source === 'notifications') {
+    // A-04 : une notification sensible ne s'acquitte qu'avec un droit gestionnaire.
+    const { rows: [n] } = await pool.query('SELECT kind FROM notifications WHERE id = $1 AND station_id = $2', [id, req.sid]);
+    if (n && isSensitiveNotif(n.kind) && !canSeeSensitiveNotif(req)) throw new HttpError(403, 'Permission refusée : notification réservée aux gestionnaires');
     await pool.query('UPDATE notifications SET read_at = now() WHERE id = $1 AND station_id = $2', [id, req.sid]);
   } else if (source === 'hr_alerts') {
     await pool.query(`UPDATE hr_alerts SET status = 'done' WHERE id = $1 AND station_id = $2`, [id, req.sid]).catch(() => {});
