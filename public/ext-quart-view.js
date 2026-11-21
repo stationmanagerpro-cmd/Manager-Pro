@@ -77,6 +77,7 @@
         '</div>' +
       '</div>' +
       '<div class="qv-pumps' + (pumps.length > 2 ? ' qv-many' : '') + '">' + (pumps.length ? pumps.map(pumpCard).join('') : '<p class="qv-empty">Aucune pompe active sur cette station.</p>') + '</div>' +
+      ((typeof can === 'function' && can('sale.create')) ? '<div class="qv-actions"><button type="button" class="qv-scan" onclick="openScanSale()">📷 Vente par scan</button></div>' : '') +
       '<div class="qv-total">' +
         '<div class="qv-tlabel"><span class="qv-tico big">' + ICON.gap + '</span><b>Total Général du Quart</b></div>' +
         '<div class="qv-tamount">' + money(general) + '</div>' +

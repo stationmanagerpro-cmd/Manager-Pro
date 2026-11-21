@@ -144,6 +144,15 @@
       return baseSale.call(this, body, deps);
     };
   }
+  /* Point d'entrée « Vente par scan » (Ventes, Quart, raccourci bas droite) : ouvre le formulaire carburant si besoin,
+   * puis la caméra directement ; une fois la pompe lue, le formulaire est prérempli (pompe, compteur, employé). */
+  window.openScanSale = async function () {
+    if (typeof can === 'function' && !can('sale.create')) return say('Permission « Enregistrer une vente » requise.', 'error');
+    try { if (!document.getElementById('fs_pump') && typeof window.addFuel === 'function') await window.addFuel(); }
+    catch (e) { return say(errText(e), 'error'); }
+    if (!document.getElementById('fs_pump')) return say('Ouvrez un quart pour enregistrer une vente.', 'error');
+    openScanner(onScanned);
+  };
   window.addEventListener('pagehide', stopCamera);
 
   /* ---------------------------------------------------------------- Vue d'administration « Gestion des QR Codes » */

@@ -157,6 +157,7 @@
     const glob = !!(typeof ME !== 'undefined' && ME && ME.is_global);
     if (!glob && canDo('expense.create') && typeof addX === 'function') items.push(['dep', '💸', 'Dépense']);
     if (!glob && canDo('shift.open') && typeof openQ === 'function') items.push(['quart', '🕘', 'Ouverture Quart']);
+    if (!glob && canDo('sale.create') && typeof openScanSale === 'function') items.push(['scan', '📷', 'Vente par scan']);
     // « + Vente » : seulement lorsqu'un quart est ouvert
     if (!glob && canDo('sale.create') && typeof addS === 'function') {
       let open = false;
@@ -188,6 +189,7 @@
       else if (a === 'dep') addX();
       else if (a === 'quart') openQ();
       else if (a === 'vente') addS();
+      else if (a === 'scan') openScanSale();
       else if (a === 'moi') go('moi');
       else if (a === 'pompiste') pompiste();
       else if (a === 'myday') smpMyDay();

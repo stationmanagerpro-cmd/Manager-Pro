@@ -63,3 +63,6 @@
 .qv-many .qv-pump>footer{padding:9px 12px;font-size:13px}
 .qv-many .qv-pump>footer b{font-size:14px;padding:4px 8px}
 .qv-pump .qv-pname small{overflow-wrap:anywhere}
+.qv-actions{display:flex;justify-content:flex-end;margin:0 0 12px}
+.qv-scan{background:var(--qv-blue2);color:#fff;border:0;border-radius:12px;padding:10px 16px;font-weight:800;cursor:pointer}
+.qv-scan:hover{filter:brightness(1.08)}
