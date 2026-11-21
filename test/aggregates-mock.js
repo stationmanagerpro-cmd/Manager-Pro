@@ -13,7 +13,8 @@ const rows = sql => {
     fuel: [{ station_id: '1', fuel_total: 60000, liters: 90 }],
     pay: [{ station_id: '1', pay_especes: 70000, pay_carte: 0, pay_mobile_money: 10000, pay_credit: 20000, pay_autre: 0 }],
     margin: [{ station_id: '1', margin_ht: 8000, margin_base_ht: 40000, cost_lines: 5, lines: 10 }],
-    ops: [{ station_id: '1', shifts_closed: 3, shifts_open: 1, cash_gap_net: -500, cash_gap_abs: 700, shift_hours: 24, shift_hours_n: 3 }],
+    ops: [{ station_id: '1', shifts_closed: 3, cash_gap_net: -500, cash_gap_abs: 700, shift_hours: 24, shift_hours_n: 3 }],
+    open_shifts: [{ station_id: '1', shifts_open: 1 }],
     anomalies: [{ station_id: '1', anomalies_n: 2 }],
     expenses: [{ station_id: '1', expenses_total: 15000, expenses_n: 4 }],
     supplier_paid: [{ station_id: '1', supplier_paid: 9000 }], customer_collected: [{ station_id: '1', customer_collected: 3000 }],
@@ -72,6 +73,13 @@ let n = 0; const ok = async (name, fn) => { await fn(); n++; console.log('✔', 
     const agg = queries.filter(q => q.sql.includes('/*agg:')); assert.ok(agg.length >= 14);
     assert.ok(agg.every(q => q.sql.includes('ANY($1::bigint[])')), 'toute requête bornée par les stations');
     assert.ok(agg.every(q => !/\$\d[^:]*'\s*\+/.test(q.sql)) && agg.every(q => Array.isArray(q.p) && Array.isArray(q.p[0])));
+  });
+  await ok('quarts ouverts : état à ce jour, sans filtre de date (un quart ouvert la veille reste compté)', async () => {
+    await call({ query: {} });
+    const q = queries.find(x => x.sql.includes('/*agg:open_shifts*/') || x.sql.includes('open_shifts'));
+    assert.ok(q, 'requête open_shifts absente'); assert.ok(!/shift_date/.test(q.sql), 'filtre de date présent');
+    assert.ok(/status = 'ouvert'/.test(q.sql));
+    const cat = A.CATALOG.find(e => e.key === 'shifts_open'); assert.strictEqual(cat.flow, false);
   });
   console.log(`\n${n}/${n} tests réussis.`);
 })().catch(e => { console.error('✖', e); process.exit(1); });

@@ -47,7 +47,7 @@ const CATALOG = [
   { key: 'cost_coverage_pct', domain: 'sales', group: 'Marge', label: 'Lignes de vente avec coût renseigné', unit: 'pct', flow: true, good: 'up', formula: 'Lignes avec unit_cost > 0 ÷ lignes de vente × 100 (fiabilité de la marge)', sources: ['sale_details.unit_cost'], get: D => (D.lines > 0 ? (D.cost_lines / D.lines) * 100 : null) },
   // ---- Exploitation (ops)
   { key: 'shifts_closed', domain: 'ops', group: 'Exploitation', label: 'Quarts clos', unit: 'count', flow: true, good: null, formula: 'Quarts au statut « fermé » par date de quart', sources: ['shifts.id (status = ferme, shift_date)'], get: D => D.shifts_closed },
-  { key: 'shifts_open', domain: 'ops', group: 'Exploitation', label: 'Quarts ouverts', unit: 'count', flow: true, good: null, formula: 'Quarts au statut « ouvert » par date de quart', sources: ['shifts.id (status = ouvert, shift_date)'], get: D => D.shifts_open },
+  { key: 'shifts_open', domain: 'ops', group: 'Exploitation', label: 'Quarts ouverts', unit: 'count', flow: false, good: null, formula: 'Quarts actuellement au statut « ouvert » (état à ce jour, toutes dates)', sources: ['shifts.id (status = ouvert, sans filtre de date)'], get: D => D.shifts_open },
   { key: 'shift_avg_h', domain: 'ops', group: 'Exploitation', label: 'Durée moyenne des quarts', unit: 'hours', flow: true, good: null, formula: 'Moyenne de (clôture − ouverture) des quarts clos', sources: ['shifts.opened_at, shifts.closed_at'], get: D => div(D.shift_hours, D.shift_hours_n) },
   { key: 'cash_gap_net', domain: 'ops', group: 'Exploitation', label: 'Écart de caisse net', unit: 'money', flow: true, good: null, formula: 'Σ des écarts de caisse des quarts clos (signé)', sources: ['shifts.cash_gap (status = ferme)'], get: D => D.cash_gap_net },
   { key: 'cash_gap_abs', domain: 'ops', group: 'Exploitation', label: 'Écarts de caisse cumulés (valeur absolue)', unit: 'money', flow: true, good: 'down', formula: 'Σ |écart de caisse| des quarts clos', sources: ['shifts.cash_gap (status = ferme)'], get: D => D.cash_gap_abs },
@@ -132,7 +132,6 @@ async function loadFlows(ids, a, b) {
       GROUP BY sa.station_id`, p),
     Q('ops', `SELECT sh.station_id,
         COUNT(*) FILTER (WHERE sh.status = 'ferme')::int AS shifts_closed,
-        COUNT(*) FILTER (WHERE sh.status = 'ouvert')::int AS shifts_open,
         COALESCE(SUM(sh.cash_gap) FILTER (WHERE sh.status = 'ferme'), 0)::float AS cash_gap_net,
         COALESCE(SUM(ABS(sh.cash_gap)) FILTER (WHERE sh.status = 'ferme'), 0)::float AS cash_gap_abs,
         COALESCE(SUM(EXTRACT(EPOCH FROM (sh.closed_at - sh.opened_at)) / 3600.0) FILTER (WHERE sh.status = 'ferme' AND sh.opened_at IS NOT NULL AND sh.closed_at IS NOT NULL), 0)::float AS shift_hours,
@@ -182,7 +181,7 @@ async function loadFlows(ids, a, b) {
 /** Situation « à ce jour » (indépendante de la période). */
 async function loadPoints(ids) {
   const p = [ids];
-  const [pay, over, cust, low, invd] = await Promise.all([
+  const [pay, over, cust, low, invd, openSh] = await Promise.all([
     Q('payables', `SELECT station_id, COALESCE(SUM(balance_due) FILTER (WHERE balance_due > 0), 0)::float AS payables
        FROM suppliers WHERE station_id = ANY($1::bigint[]) AND deleted_at IS NULL GROUP BY station_id`, p),
     Q('overdue', `SELECT station_id,
@@ -205,14 +204,18 @@ async function loadPoints(ids) {
         COUNT(*) FILTER (WHERE status IN ('emise', 'partielle') AND due_date < CURRENT_DATE)::int AS inv_overdue_n,
         COALESCE(SUM(total_ttc - amount_paid) FILTER (WHERE status IN ('emise', 'partielle') AND due_date < CURRENT_DATE), 0)::float AS inv_overdue_total,
         COUNT(*) FILTER (WHERE status = 'brouillon')::int AS inv_draft_n
-       FROM invoices WHERE station_id = ANY($1::bigint[]) GROUP BY station_id`, p).catch(() => [])
+       FROM invoices WHERE station_id = ANY($1::bigint[]) GROUP BY station_id`, p).catch(() => []),
+    // Quarts ouverts : état à ce jour, toutes dates confondues (un quart ouvert la veille reste en cours)
+    Q('open_shifts', `SELECT sh.station_id, COUNT(*)::int AS shifts_open
+       FROM shifts sh WHERE sh.station_id = ANY($1::bigint[]) AND sh.status = 'ouvert'
+      GROUP BY sh.station_id`, p)
   ]);
-  return { payables: by(pay), overdue: by(over), customers: by(cust), stock: by(low), invdue: by(invd) };
+  return { payables: by(pay), overdue: by(over), customers: by(cust), stock: by(low), invdue: by(invd), openshifts: by(openSh) };
 }
 
 const DOMAIN_FIELDS = {
   sales: [['sales', ['tx_n', 'sales_total', 'shop_total', 'cancel_n', 'cancel_total']], ['fuel', ['fuel_total', 'liters']], ['pay', ['pay_especes', 'pay_carte', 'pay_mobile_money', 'pay_credit', 'pay_autre']], ['margin', ['margin_ht', 'margin_base_ht', 'cost_lines', 'lines']], ['invrev', ['inv_revenue']]],
-  ops: [['ops', ['shifts_closed', 'shifts_open', 'cash_gap_net', 'cash_gap_abs', 'shift_hours', 'shift_hours_n']], ['anomalies', ['anomalies_n']]],
+  ops: [['ops', ['shifts_closed', 'cash_gap_net', 'cash_gap_abs', 'shift_hours', 'shift_hours_n']], ['anomalies', ['anomalies_n']], ['__q', ['shifts_open']]],
   finance: [['expenses', ['expenses_total', 'expenses_n']], ['sp', ['supplier_paid']], ['cp', ['customer_collected']]],
   suppliers: [['purchases', ['purchases_total', 'purchases_n', 'purchases_received_n', 'purchases_pending_n']], ['__p', ['payables']], ['__o', ['overdue_amount', 'overdue_n']]],
   customers: [['__c', ['receivables', 'receivables_n', 'over_limit_n']], ['inv', ['inv_issued_n', 'inv_issued_total']], ['invpay', ['inv_collected']], ['__i', ['inv_open_n', 'inv_due', 'inv_overdue_n', 'inv_overdue_total', 'inv_draft_n']]],
@@ -221,7 +224,7 @@ const DOMAIN_FIELDS = {
 
 /** Valeurs brutes d'une station pour un domaine : { champ: nombre }. */
 function rawFor(domain, sid, F, P) {
-  const src = { ...F, __p: P.payables, __o: P.overdue, __c: P.customers, __s: P.stock, __i: P.invdue };
+  const src = { ...F, __p: P.payables, __o: P.overdue, __c: P.customers, __s: P.stock, __i: P.invdue, __q: P.openshifts };
   const out = {};
   for (const [name, fields] of DOMAIN_FIELDS[domain]) { const row = src[name].get(String(sid)) || {}; for (const f of fields) out[f] = num(row[f]); }
   return out;
