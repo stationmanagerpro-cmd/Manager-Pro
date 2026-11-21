@@ -37,3 +37,11 @@ Le prototype du scan QR (ZIP `Station-Manager-PRO_scan-qr_2026-11-20_1.zip`, tes
 * Le workflow GitHub n'a rien déclenché (secret `RENDER_DEPLOY_HOOK` absent) : déploiement lancé via Render, deploy `dep-dc0utbd9fdbs7397du20`, commit `7ce4713`, statut **live** (19:20 UTC).
 * Journaux Render : sauvegarde avant migration `smp-2026-11-21T19-19-42-102Z.sql.gz` (429 188 octets vérifiés) ; `✔ 124_qr_codes_scan_pompes.sql` ; « Base à jour » ; serveur démarré.
 * **Non vérifié :** accès HTTP au site et fonctionnement réel du scan (Web, Android, impression, vente de bout en bout) — test réel à faire par le propriétaire.
+
+## Correctif Android « JSON invalide » (21/11/2026, branche `fix/qr-android-payload`)
+* **Symptôme (test réel, application Android, compte employé) :** après le scan, message « JSON invalide ».
+* **Cause :** dans `public/ext-qr-scan.js`, le lecteur natif Android appelait `onText(String(code))` (texte brut) alors que le Web appelle `onText({ code })`. `api()` envoyait donc un JSON de type chaîne, refusé par Express (`entity.parse.failed`). Chemin Android non testé dans le prototype.
+* **Correction :** le chemin natif envoie `{ code: String(c || '') }`. L'APK charge le site distant : aucun nouvel APK nécessaire.
+* **Test ajouté :** `test/qr-static.js` (19/19 ; vérifie la forme du code, pas le scan réel). `sw.js` régénéré (`smp-static-b55fb7ebe03`).
+* **Constat lié :** avec un compte non rattaché à un employé de la station, le refus `EMPLOYEE_NOT_FOUND` est le comportement voulu (cahier des charges).
+* **Non vérifié :** scan réel sur Android après correctif (à confirmer par le propriétaire).

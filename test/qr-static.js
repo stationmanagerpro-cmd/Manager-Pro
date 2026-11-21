@@ -64,4 +64,9 @@ t('Vue « Gestion des QR Codes » : droit qr.manage, menu « Quarts & pompes »,
   assert.ok(/V\.qrcodes = \['Gestion des QR Codes', 'qr\.manage'\]/.test(ui)); assert.ok(/'histcompteurs', 'qrcodes'/.test(R('public/ext-shell.js'))); assert.ok(/k === 'qrcodes'/.test(R('public/app.js')));
 });
 t('Android : permission CAMERA déclarée et lecteur ML Kit (tous formats)', () => { assert.ok(R('android/ManagePro-Android/app/src/main/AndroidManifest.xml').includes('android.permission.CAMERA')); assert.ok(R('android/ManagePro-Android/app/src/main/java/com/managepro/app/MainActivity.kt').includes('FORMAT_ALL_FORMATS')); });
+t('Android : le lecteur natif remet un OBJET { code } à onScanned (un texte brut est refusé par le serveur : « JSON invalide »)', () => {
+  assert.ok(/__mpScanHandler = c => \{[^}]*onText\(\{ code: String\(c \|\| ''\) \}\)/.test(ui), 'le chemin natif doit appeler onText({ code })');
+  assert.ok(!/onText\(String\(/.test(ui), 'aucun appel onText avec un texte brut');
+  assert.ok(/finish\(\{ code: text \}\)/.test(ui) && /finish\(\{ short_ref: v \}\)/.test(ui), 'chemin Web : objets { code } / { short_ref }');
+});
 console.log(`\n${ok}/${ok + ko} contrôles réussis.`); process.exit(ko ? 1 : 0);
