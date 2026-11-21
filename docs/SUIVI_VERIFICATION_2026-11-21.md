@@ -45,3 +45,7 @@ Lancés ici sans serveur ni base :
 2. **Diagnostiquer `about-page-ui.test.js`** (console navigateur) : décide si c'est un test périmé ou une régression de l'application.
 3. **Installer les dépendances** (ou autoriser npm) : débloque `report-ui-harness`, `npm test`, et toutes les vérifications d'exécution ci-dessus.
 4. **Production** : lecture seule pour M-01 ; contrôle visuel Render (bandeau, PDF).
+
+## 7. Décisions du propriétaire (2026-11-21)
+- **Solution Ika Sô** : conservée dans la page « À propos » (9 → 10 solutions, tests et suivi AP-004 remis en place).
+- **APK** `public/downloads/Manager_Pro-debug-2026-11-17.apk` : aucun changement. Vérifié : son manifeste et ses ressources portent Manager PRO (`com.managepro`), aucune chaîne Ika Sô. Il reste téléchargeable tel quel ; signature et installation non vérifiées.
