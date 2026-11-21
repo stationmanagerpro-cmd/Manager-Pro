@@ -25,11 +25,11 @@
     session = null;
   }
 
-  /** Ouvre le scanner et appelle onText(texte) une seule fois, puis libère la caméra. */
+  /** Ouvre le scanner et appelle onText({ code } ou { short_ref }) une seule fois, puis libère la caméra. */
   async function openScanner(onText) {
     if (hasNative()) {   // Application Android : lecteur ML Kit natif (formats QR inclus), pas de WebView getUserMedia
       let done = false;
-      window.__mpScanHandler = c => { if (done || !window.__qrScanWanted) return false; done = true; window.__qrScanWanted = false; onText(String(c || '')); return true; };
+      window.__mpScanHandler = c => { if (done || !window.__qrScanWanted) return false; done = true; window.__qrScanWanted = false; onText({ code: String(c || '') }); return true; };   // même forme d'objet que sur le Web : un texte brut serait refusé (JSON invalide)
       window.__qrScanWanted = true; try { window.AndroidBridge.scan(); } catch (e) { window.__qrScanWanted = false; say(E.CAMERA_UNAVAILABLE, 'error'); }
       return;
     }
