@@ -14,7 +14,10 @@
   const errText = e => (e && e.details && e.details.code && e.message) ? e.message : (isNet(e) ? E.NETWORK_ERROR : (typeof errMsg === 'function' ? errMsg(e) : (e && e.message) || 'Erreur'));
 
   /* ---------------------------------------------------------------- Scanner caméra (Web) / scanner natif (Android) */
-  const hasNative = () => !!(window.AndroidBridge && window.AndroidBridge.scan);
+  // Scanner natif Google (ML Kit) désactivé par défaut : il fait quitter l'application sur certains Samsung.
+  // Le scan passe alors par la caméra web, qui fonctionne dans l'application comme dans le navigateur (caméra autorisée par MainActivity).
+  // Réactivable seulement avec window.SMP_NATIVE_SCAN = true, après validation sur appareil.
+  const hasNative = () => !!(window.SMP_NATIVE_SCAN === true && window.AndroidBridge && window.AndroidBridge.scan);
   let session = null;   // { stream, timer, closed }
 
   function stopCamera() {
