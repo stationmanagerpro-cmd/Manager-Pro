@@ -15,7 +15,6 @@ const ERRORS = {
   PUMP_DISABLED: { status: 409, message: 'Cette pompe est désactivée.' },
   EMPLOYEE_NOT_FOUND: { status: 403, message: 'Votre compte n’est pas rattaché à un employé de cette station.' },
   DELEGATE_OWNER_UNCLEAR: { status: 409, message: 'Cette pompe a plusieurs responsables sur ce quart : la vente par scan au nom d’un employé n’est pas possible.' },
-  DELEGATE_NO_ACCOUNT: { status: 409, message: 'L’employé responsable de cette pompe n’a pas de compte utilisateur : il ne peut pas être alerté, vente refusée.' },
   DELEGATE_NOT_ALLOWED: { status: 403, message: 'Vous n’avez pas la permission d’enregistrer une vente au nom d’un employé.' },
   EMPLOYEE_NOT_ON_SHIFT: { status: 403, message: 'Vous ne faites pas partie de l’équipe du quart ouvert.' },
   EMPLOYEE_NOT_ASSIGNED: { status: 403, message: 'Vous n’êtes pas affecté à cette pompe.' },

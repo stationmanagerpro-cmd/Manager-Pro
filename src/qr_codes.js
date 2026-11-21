@@ -179,7 +179,7 @@ r.post('/sales/scan-pump', need('sale.create'), body(z.object({ code: z.string()
   if (target && !target.ok) verdict = target;
   else {
     if (target) { ctx.employee = await D.loadEmployee(pool, { stationId: req.sid, employeeId: target.employee_id }); ctx.delegatedBy = req.user.id; }
-    verdict = target && ctx.employee && !ctx.employee.user_id ? L.refuse('DELEGATE_NO_ACCOUNT') : L.evaluateCheckpoint(ctx);
+    verdict = L.evaluateCheckpoint(ctx);   // employé sans compte lié : vente autorisée, alerte e-mail seulement
   }
   const own = qr && Number(qr.station_id) === Number(req.sid);   // aucune donnée d'une autre station n'est journalisée sous cette station
   if (!verdict.ok) {

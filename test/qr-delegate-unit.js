@@ -28,6 +28,7 @@ t('Scan délégué accepté quand la permission est présente et le responsable 
 t('Scan délégué refusé si la permission a été retirée (DELEGATE_NOT_ALLOWED)', () => assert.strictEqual(L.evaluateScanUse(saleCtx(false), scan(), {}, 30).code, 'DELEGATE_NOT_ALLOWED'));
 t('Scan délégué : le responsable doit correspondre au scan (sinon SCAN_MISMATCH)', () => assert.strictEqual(L.evaluateScanUse(saleCtx(true), scan(), { employee_id: 21 }, 30).code, 'SCAN_MISMATCH'));
 t('Scan non délégué : comportement inchangé (canDelegate sans effet)', () => { const c = { ...base(), team: [{ employee_id: 30, pump_id: 3 }], canDelegate: true }; assert.strictEqual(L.evaluateScanUse(c, scan({ employee_id: 30, delegated_by_user_id: null }), {}, 30).ok, true); });
+t('Employé sans compte lié : la cible est tout de même désignée (vente autorisée)', () => { const c = base(); c.team = [{ employee_id: 22, pump_id: 3 }]; assert.deepStrictEqual(L.delegateTarget(c, true), { ok: true, employee_id: 22 }); });
 t('Scan délégué déjà consommé → SCAN_USED', () => assert.strictEqual(L.evaluateScanUse(saleCtx(true), scan({ consumed_sale_id: 1 }), {}, 30).code, 'SCAN_USED'));
 
 // Contrôles statiques de câblage (migration, permission, routes, audit, alerte).
@@ -40,7 +41,7 @@ t('Migration 125 : permission sale.record_for_employee, rôle ADMIN seul, colonn
 t('Scan : la route passe par delegateTarget et journalise la délégation', () => {
   const q = read('src/qr_codes.js');
   assert.ok(q.includes("L.delegateTarget(ctx, req.user.perms.has('sale.record_for_employee'))"));
-  assert.ok(q.includes("L.refuse('DELEGATE_NO_ACCOUNT')")); assert.ok(q.includes('delegated_by_user_id: ctx.delegatedBy'));
+  assert.ok(!q.includes('DELEGATE_NO_ACCOUNT')); assert.ok(q.includes('delegated_by_user_id: ctx.delegatedBy'));
 });
 t('Vente : permission transmise à la vérification du scan, audit et alerte après validation', () => {
   const f = read('src/fuelsales.js');

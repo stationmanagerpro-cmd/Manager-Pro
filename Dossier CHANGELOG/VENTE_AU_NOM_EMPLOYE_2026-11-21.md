@@ -8,7 +8,7 @@ Le scan QR doit pouvoir être utilisé par l'administrateur local d'un compte cl
 - **Permission** : `sale.record_for_employee` (« Enregistrer une vente au nom d'un employé (scan QR) »), groupe `sale`. Accordée par défaut au seul rôle ADMIN (administrateur local). Elle apparaît dans la gestion des rôles du super administrateur (groupe « sale ») et dans la gestion des rôles de l'administrateur local, qui peut la donner ou la retirer à ses rôles d'employés.
 - **Utilisateur qui n'est pas responsable de la pompe** : seul cas de délégation. Un responsable de la pompe scanne comme avant (vente à son nom).
 - **Pompe partagée** par plusieurs responsables : refus `DELEGATE_OWNER_UNCLEAR` (choix explicite non implémenté).
-- **Employé sans compte utilisateur lié** : refus `DELEGATE_NO_ACCOUNT` (il ne peut pas être alerté).
+- **Employé sans compte utilisateur lié** : vente autorisée (décision du 2026-11-21). Pas de message interne ; l'e-mail part si l'adresse est sur la fiche et que SMTP est configuré. La vente reste tracée dans l'audit.
 - **Super administrateur de la plateforme** : aucun accès aux données de station (inchangé). La mention « superadmin » de la demande désigne l'administrateur local des comptes clients.
 
 ## Traçabilité
@@ -19,7 +19,7 @@ Le scan QR doit pouvoir être utilisé par l'administrateur local d'un compte cl
 
 ## Fichiers
 - `migrations/125_vente_au_nom_employe.sql` (permission, rôle ADMIN, colonne `qr_scans.delegated_by_user_id`) — additive et idempotente.
-- `src/qr_logic.js` : `delegateTarget`, contrôle au moment de la vente (`DELEGATE_NOT_ALLOWED`), 3 codes d'erreur.
+- `src/qr_logic.js` : `delegateTarget`, contrôle au moment de la vente (`DELEGATE_NOT_ALLOWED`), 2 codes d'erreur.
 - `src/qr_db.js` : `loadEmployee`, `openScan(delegated)`, `checkScanForSale` (employé du scan, permission).
 - `src/qr_codes.js` : route `POST /sales/scan-pump` (désignation, refus, réponse `delegated`).
 - `src/fuelsales.js` : permission transmise, audit, événement `sale_ok`, alerte après validation.

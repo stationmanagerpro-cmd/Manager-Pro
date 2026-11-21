@@ -14,11 +14,12 @@ async function notifyDelegatedSale(d) {
          JOIN stations s ON s.id = e.station_id
          JOIN users u ON u.id = $2
         WHERE e.id = $1`, [d.employee_id, d.by]);
-    if (!info || !info.user_id) return { sent: false, reason: 'no_account' };   // refusé en amont ; garde-fou
+    if (!info) return { sent: false, reason: 'employee_not_found' };
     const title = 'Vente enregistrée à votre nom';
     const text = `Vente carburant N° ${d.sale_id} : ${d.liters} L pour ${d.amount}, enregistrée à votre nom par ${info.by_name}.`;
-    const internal = await deliverSystemMessage({ clientId: info.client_id, userIds: [info.user_id], title, body: text,
-      kind: 'vente_au_nom', refTable: 'sales', refId: d.sale_id });
+    // Sans compte lié : pas de message interne (l'employé ne peut pas le recevoir), seul l'e-mail part si disponible.
+    const internal = info.user_id ? await deliverSystemMessage({ clientId: info.client_id, userIds: [info.user_id], title, body: text,
+      kind: 'vente_au_nom', refTable: 'sales', refId: d.sale_id }) : { sent: false };
     let mail = { sent: false, reason: 'e-mail absent sur la fiche' };
     if (info.email && channelState().email.available) {
       const r = await dispatchExternal({ channels: ['email'], recipients: [{ name: info.name, email: info.email }], subject: title, text });
