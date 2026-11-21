@@ -1,0 +1,9 @@
+# 09-regression-migration-numbering-static
+# date: 2026-11-20T03:46:40+00:00  node: v22.23.5  PostgreSQL: 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)  OS: Linux 6.18.44-fc-v726
+
+✓ tous les fichiers suivent le format NNN_nom.sql
+✓ aucun nouveau doublon de numéro (seuls 027, 040, 059 sont tolérés)
+✓ les migrations ajoutées après la règle ont des numéros uniques et croissants
+3/3 contrôles réussis
+
+# code de sortie: 0

@@ -1,0 +1,25 @@
+# 03-cablage-statique
+# date: 2026-11-20T03:46:34+00:00  node: v22.23.5  PostgreSQL: 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)  OS: Linux 6.18.44-fc-v726
+
+✓ Toutes les routes du cahier existent, une seule fois
+✓ Chaque route d’administration exige qr.manage ; le scan exige sale.create
+✓ Les routes /qr-codes/sheet.pdf et /history sont déclarées avant /qr-codes/:id/label.pdf (pas de capture par :id)
+✓ Le routeur est monté dans server.js
+✓ Toutes les requêtes d’administration sont filtrées par la station de la session (req.sid), jamais par un paramètre client
+✓ Vente : le scan est contrôlé dans la transaction AVANT l’insertion de la vente, consommé APRÈS ; employé imposé par le scan
+✓ Vente classique inchangée : le chemin sans qr_scan_id n’exécute aucun contrôle de scan
+✓ Aucune route ne crée de vente au scan (scan-pump n’écrit ni dans sales ni dans les paiements)
+✓ Réponse du scan minimale : aucun jeton, aucun mot de passe
+✓ Journal : aucune colonne ni appel ne porte le jeton complet
+✓ Migration : additive, rejouable, journal en ajout seul, permission accordée
+✓ Interface : le scan n’envoie jamais de vente et ne dépend pas uniquement de BarcodeDetector
+✓ Interface : caméra libérée (getTracks().stop) et Android via AndroidBridge.scan / __mpScanHandler
+✓ Interface : messages CAMERA_DENIED et NETWORK_ERROR conformes au cahier
+✓ Hors ligne : une vente par scan n’est jamais mise en file (fail closed)
+✓ Scripts enregistrés : décodeur avant l’interface, tous deux dans index.html et dans le service worker
+✓ Vue « Gestion des QR Codes » : droit qr.manage, menu « Quarts & pompes », module pompes
+✓ Android : permission CAMERA déclarée et lecteur ML Kit (tous formats)
+
+18/18 contrôles réussis.
+
+# code de sortie: 0

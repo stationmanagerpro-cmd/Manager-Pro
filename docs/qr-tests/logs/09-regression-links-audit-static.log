@@ -1,0 +1,6 @@
+# 09-regression-links-audit-static
+# date: 2026-11-20T03:46:40+00:00  node: v22.23.5  PostgreSQL: 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)  OS: Linux 6.18.44-fc-v726
+
+✓ links-audit : 984 appels front reliés à 837 routes ; 7 routes sans écran documentées (API seule)
+
+# code de sortie: 0

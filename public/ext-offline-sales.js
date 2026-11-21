@@ -86,7 +86,7 @@
     var send = deps.send || function (m, p, b) { return api(m, p, b); }, store = deps.store || idbStore();
     var online = deps.online !== undefined ? deps.online : navigator.onLine;
     body.client_ref = body.client_ref || uuid();
-    var canQueue = !body.fleet_card;
+    var canQueue = !body.fleet_card && !body.qr_scan_id;   // vente par scan QR : contrôles serveur en temps réel obligatoires (fail closed)
     function queue() {
       var label = 'Vente carburant ' + (body.liters ? body.liters + ' L' : body.amount ? body.amount + ' F' : 'par index');
       return store.add({ type: 'fuel_sale', method: 'POST', path: '/sales/fuel', label: label, station: (typeof SID !== 'undefined' ? SID : null), user: (typeof ME !== 'undefined' && ME ? ME.id : null),
@@ -94,7 +94,7 @@
         .then(function () { try { if (typeof refreshOfflineBadge === 'function') refreshOfflineBadge(); } catch (e) {} return { queued: true, client_ref: body.client_ref }; });
     }
     if (!online) {
-      if (!canQueue) throw Object.assign(new Error('Carte flotte : le réseau est obligatoire (PIN et plafonds contrôlés par le serveur).'), { status: 0, offlineBlocked: true });
+      if (!canQueue) throw Object.assign(new Error(body.qr_scan_id ? 'Vérification impossible auprès du serveur. Réessayez lorsque la connexion est rétablie.' : 'Carte flotte : le réseau est obligatoire (PIN et plafonds contrôlés par le serveur).'), { status: 0, offlineBlocked: true });
       return queue();
     }
     try { return await send('POST', '/sales/fuel', body); }

@@ -1,0 +1,33 @@
+# 10-regression-suite-complete
+# date: 2026-11-20T03:46:41+00:00  node: v22.23.5  PostgreSQL: 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)  OS: Linux 6.18.44-fc-v726
+
+Suite existante (ls test/*.js, 240 fichiers hors qr-db-scenarios), exécutée en parallèle, 90 s max chacun.
+code de sortie 2: 11 fichiers
+code de sortie 1: 13 fichiers
+code de sortie 0: 216 fichiers
+
+Fichiers en échec (tous pour une cause d'environnement : module zod/express absent sans réseau, serveur ou identifiants requis) :
+  about-page-http                          Cannot find module 'zod'
+  about-page-ui.test                       waitForSelector
+  access-keys                              Usage : node test/access-keys
+  all                                      Cannot find module 'dotenv'
+  branding-permissions                     Usage: node test/branding-permissions
+  calculator-dom                           Cannot find module 'jsdom'
+  client-account                           Usage: node test/client-account
+  contracts                                Usage: node test/contracts
+  employee-access-unit                     Cannot find module 'zod'
+  employee-actions-unit                    Cannot find module 'zod'
+  hr-finance                               Cannot find module 'exceljs'
+  hr-payroll-security                      Usage: node test/hr-payroll-security
+  hr-v2                                    Usage: node test/hr-v2
+  licenses                                 Usage: node test/licenses
+  report-ui-harness                        Cannot find module 'zod'
+  security                                 Usage: node test/security
+  shift-attribution-share-unit             Cannot find module 'zod'
+  shift-close-attribution-unit             Cannot find module 'zod'
+  shift-report-share-unit                  Cannot find module 'zod'
+  smoke                                    fetch failed
+  stock-movement-validation-unit           zod absent
+  superadmin                               Usage: node test/superadmin
+  tenant-isolation-integration             Variables requises
+  ui                                       Cannot find module 'jsdom'

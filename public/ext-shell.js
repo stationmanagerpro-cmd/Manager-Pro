@@ -23,7 +23,7 @@
     {
       label: 'Exploitation', icon: '⛽', keys: [], children: [
         { label: 'Ventes & caisse', icon: '🛒', keys: ['ventes', 'factures', 'prixjour', 'caisse'] },
-        { label: 'Quarts & pompes', icon: '⏱️', keys: ['jour', 'quart', 'pompes', 'cuves', 'histcompteurs'] },
+        { label: 'Quarts & pompes', icon: '⏱️', keys: ['jour', 'quart', 'pompes', 'cuves', 'histcompteurs', 'qrcodes'] },
         { label: 'Stock & approvisionnement', icon: '📦', keys: ['prod', 'stock', 'previsions', 'transferts', 'bcommande'] },
         { label: 'Contrôles', icon: '🛡️', keys: ['risque', 'periodlock', 'alert', 'reconcile'] }
       ]

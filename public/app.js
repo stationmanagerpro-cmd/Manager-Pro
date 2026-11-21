@@ -299,7 +299,7 @@ const contractAllowsView = k => {
     return portalOn && typeof can === 'function' && can('commission.own');
   }
   if (k === 'quart' || k === 'clot' || k === 'rapq') return modOn('shifts', true);
-  if (k === 'pompes' || k === 'histcompteurs') return modOn('pumps', true);
+  if (k === 'pompes' || k === 'histcompteurs' || k === 'qrcodes') return modOn('pumps', true);
   if (k === 'transferts') return modOn('stock', true);
   if (k === 'emp') return modOn('employees', true);
   // Modules commercialisables (actifs par défaut)

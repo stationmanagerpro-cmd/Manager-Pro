@@ -1,0 +1,19 @@
+# 08-scanner-navigateur-camera-simulee
+# date: 2026-11-20T03:46:36+00:00  node: v22.23.5  PostgreSQL: 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)  OS: Linux 6.18.44-fc-v726
+
+✓ Le bouton « Scanner une pompe » est ajouté au formulaire de vente
+  (BarcodeDetector : undefined )
+✓ Le QR de l’étiquette est lu par la caméra et envoyé au serveur tel quel
+✓ Aucune vente envoyée par le scan
+✓ Formulaire prérempli : pompe 2, compteur 21, employé du compte, champs verrouillés
+✓ Scanner fermé après lecture
+✓ La vente transporte qr_scan_id (le serveur impose pompe/employé)
+✓ Après « Annuler le scan » : plus de qr_scan_id, formulaire déverrouillé
+✓ Caméra libérée après lecture (toutes les pistes vidéo terminées)
+✓ QR refusé par le serveur : message affiché, formulaire non verrouillé
+✓ Autorisation caméra refusée : message CAMERA_DENIED et solution de reprise
+✓ Saisie manuelle : référence envoyée au serveur (mêmes contrôles)
+✓ Aucune erreur JavaScript
+12/12 contrôles réussis.
+
+# code de sortie: 0

@@ -1,0 +1,14 @@
+# 09-regression-sw-coherence-static
+# date: 2026-11-20T03:46:40+00:00  node: v22.23.5  PostgreSQL: 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)  OS: Linux 6.18.44-fc-v726
+
+✓ public/sw.js est à jour (sinon : npm run build:sw)
+✓ le nom du cache est dérivé d'une empreinte de build
+✓ sw.js est du JavaScript valide, sans marqueur de conflit Git (un fichier invalide ne s'installe jamais)
+✓ tous les scripts et feuilles de style locaux de index.html sont pré-chargés
+✓ aucun fichier référencé n'est absent de public/
+✓ l'API n'est jamais pré-chargée
+✓ un JS modifié change le nom du cache ; un contenu identique le conserve
+✓ les anciens caches sont supprimés à l'activation et l'API reste hors cache
+8/8 contrôles réussis
+
+# code de sortie: 0

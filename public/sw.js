@@ -3,7 +3,7 @@
  * - /api/** → network-only (jamais de cache : auth JWT, données métier)
  * - Navigation HTML → network-first, fallback cache index si offline total
  */
-const CACHE = 'smp-static-b5160d6f265';
+const CACHE = 'smp-static-bec67c3034b';
 
 /* PRECACHE:BEGIN (généré par scripts/build-sw.js — ne pas modifier à la main) */
 const PRECACHE = [
@@ -97,6 +97,7 @@ const PRECACHE = [
   '/ext-purchase-order.js',
   '/ext-purchase-orders.js?v=2',
   '/ext-push.js',
+  '/ext-qr-scan.js?v=1',
   '/ext-report-tools.js?v=1',
   '/ext-roles.js',
   '/ext-sa-dash.css',
@@ -131,6 +132,7 @@ const PRECACHE = [
   '/native-bridge.js?v=2',
   '/performance-motion.css',
   '/pwa.js',
+  '/qr-decoder.js?v=1',
   '/responsive-phone.css?v=2',
   '/responsive-v3.css',
   '/responsive-v3.js',

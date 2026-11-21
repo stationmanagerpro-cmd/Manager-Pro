@@ -1,0 +1,17 @@
+# 09-regression-fleet-routes-static
+# date: 2026-11-20T03:46:40+00:00  node: v22.23.5  PostgreSQL: 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)  OS: Linux 6.18.44-fc-v726
+
+✓ migration 095 : colonnes écrites par fleet.js présentes
+✓ types d'événements écrits par fleet.js autorisés par la contrainte
+✓ les champs modifiables par PATCH existent tous dans la table (liste blanche)
+✓ toutes les routes cartes sont protégées par need()
+✓ requêtes filtrées par station_id (cartes, clients, produits, événements, relevé)
+✓ le hachage du PIN n'est jamais renvoyé : toute réponse carte passe par publicCard
+✓ vente carburant : contrôle de carte AVANT la demande de confirmation, dans la transaction protégée par fleetGuard
+✓ vente par carte : paiement crédit imposé, client = titulaire, droit « vendre à crédit » non requis (la carte autorise)
+✓ usage enregistré dans la même transaction que la vente, avant le numéro de facture
+✓ cumuls hors ventes annulées ; module branché ; fuseau paramétrable
+
+10/10 contrôles réussis.
+
+# code de sortie: 0

@@ -1,0 +1,28 @@
+# 02-decodeur-unitaire
+# date: 2026-11-20T03:46:34+00:00  node: v22.23.5  PostgreSQL: 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)  OS: Linux 6.18.44-fc-v726
+
+✓ aller-retour sans déformation (échelle 6)
+✓ petite image (échelle 3 px/module)
+✓ grande image (échelle 12 px/module)
+✓ rotation de 90°
+✓ rotation de 180°
+✓ rotation de 270°
+✓ rotation oblique de 7°
+✓ rotation oblique de -12°
+✓ rotation oblique de 25°
+✓ rotation oblique de 40°
+✓ bruit gaussien (σ = 25)
+✓ flou 3×3
+✓ éclairage inégal (dégradé 55 % → 100 %)
+✓ QR décentré dans une image de 640×480
+✓ image sans QR → null (pas de faux positif)
+✓ image blanche → null
+✓ réparation Reed-Solomon : 6 modules de données inversés
+✓ trop de modules inversés (60) → refus, jamais un texte faux
+✓ versions 1 à 9, niveaux L/M/Q/H : aller-retour
+✓ accents UTF-8
+✓ tables du décodeur identiques à celles de l’encodeur (versions 1 à 10)
+
+21/21 contrôles réussis.
+
+# code de sortie: 0

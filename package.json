@@ -195,7 +195,13 @@
     "test:links-audit": "node test/links-audit-static.js",
     "test:client-usage": "node test/client-usage-unit.js",
     "test:contract-module-switches": "node test/contract-module-switches-static.js",
-    "test:pump-fuel": "node test/pump-fuel-rule-static.js"
+    "test:pump-fuel": "node test/pump-fuel-rule-static.js",
+    "test:qr-logic": "node test/qr-logic-unit.js",
+    "test:qr-decoder": "node test/qr-decoder-unit.js",
+    "test:qr-static": "node test/qr-static.js",
+    "test:qr-db": "node test/qr-db-scenarios.js",
+    "test:qr-scanner-browser": "python3 -I scripts/dev/verify-qr-scanner-browser.py docs/qr-tests/exemples/etiquette-test-photo.png public",
+    "test:qr-pdf": "python3 -I scripts/dev/verify-qr-pdf.py"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

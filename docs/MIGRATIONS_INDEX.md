@@ -38,3 +38,4 @@ Elles ne sont **jamais réécrites** une fois livrées. La plupart des fichiers 
 Ne pas renommer les fichiers déjà appliqués en production. Pour clarifier un futur lot, utiliser des numéros strictement croissants et uniques (ex. 078, 079…).
 
 - `079_comptabilite.sql` — Comptabilité OHADA : plan comptable, exercices, écritures manuelles, immobilisations, permissions `accounting.*` (non destructif, idempotent).
+- `124_qr_codes_scan_pompes.sql` — Scan QR des pompes : tables `qr_codes` (un QR actif par compteur, jeton opaque), `qr_scans` (session de scan, 15 min, usage unique), `qr_events` (journal en ajout seul), permission `qr.manage` (ADMIN, GERANT). Additive et rejouable ; retour arrière : voir `docs/SCAN_QR_POMPES_TECHNIQUE.md`.
