@@ -26,3 +26,6 @@ Décision à prendre : contrôle de module dédié ou risque accepté.
 - Test statique `test/contract-onglets-static.js` : 7/7.
 - Non vérifié : exécution avec un compte client réel (serveur non démarrable dans cette session).
 - Aucune modification du front : service worker non régénéré.
+
+## Décision métier (2026-11-21)
+Les routes partagées (caisse, portail client, facturation, tableaux de bord, magasins, trésorerie de direction, messagerie) restent **non gardées**. Risque résiduel accepté : un compte client dont un onglet est coupé peut encore appeler ces routes s'il possède la permission métier.
