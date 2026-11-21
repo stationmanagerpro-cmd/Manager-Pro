@@ -135,7 +135,7 @@
     modal(`<div class="sf"><header class="sf-head"><span class="sf-ico" aria-hidden="true">${sv(opts.icon || '🤝')}</span><div><h3>${sv(title)}</h3>${opts.hint ? `<div style="font-size:12.5px;opacity:.85;margin-top:2px">${sv(opts.hint)}</div>` : ''}</div></header>${opts.band || ''}${packBar}<div class="sf-body">${body}</div><footer class="sf-foot"><button class="b2" id="sf-reset" type="button">↺ Initialiser</button><button class="b2" type="button" onclick="closeM()">Annuler</button><button id="ok" type="button">✓ Enregistrer</button></footer></div>`);
     // Le conteneur de la modale est élargi : le formulaire sectionné porte sa propre mise en forme.
     const box = document.querySelector('#m > div');
-    if (box) { box.style.maxWidth = '96vw'; box.style.width = 'auto'; box.style.background = 'transparent'; box.style.boxShadow = 'none'; box.style.padding = '0'; box.style.overflow = 'visible'; }
+    if (box) { box.style.maxWidth = '96vw'; box.style.width = 'auto'; box.style.background = 'transparent'; box.style.boxShadow = 'none'; box.style.padding = '0'; box.style.overflow = 'auto'; }
     try { if (typeof updateAuthSummary === 'function') setTimeout(updateAuthSummary, 50); } catch (_) {}
     sfSync();
     setTimeout(sfSync, 0);
