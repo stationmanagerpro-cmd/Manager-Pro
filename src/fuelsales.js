@@ -6,6 +6,9 @@ const { pool, tx, fl, f3, HttpError, wrap, body, need, audit, cashMove, defaultR
 const { resolveFuelSaleEmployee, SaleAttributionError } = require('./shift_sales_check');
 const { fleetCheck, fleetRecordUse, fleetGuard } = require('./fleet');
 const { resolveOfflineSale } = require('./offline_sale_logic');
+const qrc = require('./qr_codes');   // scan QR des pompes : contrôles et journal
+const QL = require('./qr_logic');
+const QD = require('./qr_db');
 const r = express.Router();
 
 const sameId = (a, b) => (a == null ? null : Number(a)) === (b == null ? null : Number(b));
@@ -44,11 +47,17 @@ const schema = z.object({
   offline_at: z.string().datetime({ offset: true }).optional(),
   // Carte flotte (CORR-040) : plafonds et restrictions contrôlés dans la transaction ; vente facturée au titulaire de la carte (crédit).
   fleet_card: z.object({ number: z.string().trim().min(1).max(40), pin: z.string().max(12).optional(), odometer_km: z.number().min(0).optional() }).optional(),
+  // Scan QR d'une pompe (POST /sales/scan-pump) : le scan prépare la vente ; tout est re-contrôlé ici, rien n'est repris du navigateur.
+  qr_scan_id: z.number().int().positive().optional(),
 });
 
 r.post('/sales/fuel', need('sale.create'), body(schema), wrap(async (req, res) => {
   const b = req.body;
   const clientRef = b.client_ref || null;
+  if (b.qr_scan_id) {   // vente par scan : idempotence obligatoire et jamais hors ligne (fail closed)
+    if (!clientRef) throw qrc.refusal(QL.refuse('CLIENT_REF_REQUIRED'));
+    if (b.offline_at) throw new HttpError(409, QL.ERRORS.NETWORK_ERROR.message, { code: 'NETWORK_ERROR' });
+  }
   const out = await fleetGuard(tx(async c => {
     // Même clé de reprise pour la vente carburant : une répétition ne doit jamais doubler les paiements.
     if (clientRef) {
@@ -85,6 +94,15 @@ r.post('/sales/fuel', need('sale.create'), body(schema), wrap(async (req, res) =
       `SELECT m.product_id, m.pump_id, pu.name AS pump_name, p.sell_price, p.buy_price, p.name FROM meter_readings m JOIN products p ON p.id = m.product_id
         JOIN pumps pu ON pu.id = m.pump_id WHERE m.shift_id = $1 AND m.counter_id = $2 AND pu.station_id = $3`, [sh.id, b.counter_id, req.sid]);
     if (!k) throw new HttpError(400, "Compteur inconnu ou non relevé à l'ouverture du quart");
+    // Vente par scan : le scan (verrouillé) est re-vérifié dans la transaction : QR toujours actif, pompe, produit, quart ouvert,
+    // affectation, employé = compte connecté. L'employé est celui du scan, jamais celui envoyé par le navigateur.
+    let scanRow = null;
+    if (b.qr_scan_id) {
+      const { verdict, scan } = await QD.checkScanForSale(c, { stationId: req.sid, userId: req.user.id, scanId: b.qr_scan_id, body: { counter_id: b.counter_id, employee_id: b.employee_id } });
+      if (!verdict.ok) throw qrc.refusal(verdict);
+      scanRow = scan;
+      b.employee_id = scan.employee_id;
+    }
     // Employé : la POMPE affectée à l'ouverture du quart fait foi (un employé ne peut pas vendre au nom d'un autre sur sa pompe).
     // Pompe sans responsable : repli historique sur l'employé demandé, puis sur l'employé lié à l'utilisateur connecté.
     const { rows: ownerRows } = await c.query(
@@ -168,6 +186,11 @@ r.post('/sales/fuel', need('sale.create'), body(schema), wrap(async (req, res) =
       `INSERT INTO sales(station_id, shift_id, employee_id, pump_id, customer_id, total, kind, input_mode, client_ref, sold_at)
        VALUES ($1,$2,$3,$4,$5,$6,'carburant',$7,$8,COALESCE($9::timestamptz, now())) RETURNING id, sold_at`,
       [req.sid, sh.id, emp, k.pump_id, b.customer_id || null, amount, b.mode, clientRef, soldAt]);
+    if (scanRow) {   // un scan = une seule vente ; le journal fait partie de la transaction (échec = vente annulée)
+      if (!(await QD.consumeScan(c, scanRow.id, sale.id))) throw qrc.refusal(QL.refuse('SCAN_USED'));
+      await qrc.logEvent(c, req, { event: 'sale_ok', qr_code_id: scanRow.qr_code_id, short_ref: (await c.query('SELECT short_ref FROM qr_codes WHERE id = $1', [scanRow.qr_code_id])).rows[0]?.short_ref,
+        pump_id: scanRow.pump_id, counter_id: scanRow.counter_id, product_id: scanRow.product_id, shift_id: scanRow.shift_id, employee_id: scanRow.employee_id, scan_id: scanRow.id, sale_id: sale.id });
+    }
     await c.query('INSERT INTO sale_details(sale_id, product_id, quantity, unit_price, unit_cost, amount, counter_id, index_old, index_new) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)', [sale.id, k.product_id, liters, price, k.buy_price, amount, b.counter_id, io, inw]);
     for (const p of pays) {
       const pm = await payMethod(c, req.sid, p.method);
@@ -213,5 +236,8 @@ r.post('/sales/fuel', need('sale.create'), body(schema), wrap(async (req, res) =
   if (!replay && req.body.loyalty) out.loyalty = await require('./market').afterSale(req, out.id, req.body.loyalty);   // points de fidélité (jamais bloquant)
   res.status(replay ? 200 : 201).json(out);
 }));
+
+// Refus d'une vente par scan : tracé hors transaction (la transaction annulée n'écrit rien), puis l'erreur continue son chemin normal.
+r.use('/sales/fuel', qrc.saleRefusalLogger);
 
 module.exports = r;

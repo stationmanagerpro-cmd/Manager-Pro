@@ -1,0 +1,13 @@
+# 07-pdf-etiquettes
+# date: 2026-11-20T03:46:35+00:00  node: v22.23.5  PostgreSQL: 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)  OS: Linux 6.18.44-fc-v726
+
+PDF de test écrits dans /tmp/tmpm9wv8mv8
+✓ qr-test-planche-A4.pdf : structure PDF valide (qpdf --check)
+✓ qr-test-etiquette-A5.pdf : structure PDF valide (qpdf --check)
+✓ Planche A4 : 2 page(s) pour 8 étiquettes (6 par page)
+✓ Planche A4 : les 8 QR sont lus par OpenCV et correspondent exactement aux jetons
+✓ Étiquette A5 : le QR est lu et correspond au premier jeton
+✓ Textes imprimés : station, pompe, produit, référence courte
+6/6 contrôles réussis.
+
+# code de sortie: 0

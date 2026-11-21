@@ -1,0 +1,15 @@
+# 09-regression-tanks-ui-alerts-static
+# date: 2026-11-20T03:46:40+00:00  node: v22.23.5  PostgreSQL: 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)  OS: Linux 6.18.44-fc-v726
+
+✓ écran cuves : script chargé, vue déclarée, présent dans le menu Exploitation
+✓ écran cuves : appelle uniquement des routes qui existent côté serveur
+✓ écran cuves : alerte sans blocage (la saisie réussit même si l'alerte échoue)
+✓ alerte tank_variance : type connu du serveur et de l'écran, sans seuil numérique obligatoire
+✓ canaux : migration 094, enregistrement, envoi externe après l'alerte interne, échec isolé
+✓ écran de configuration : cases canaux, SMS/WhatsApp affichés « désactivé » tant que .env ne les active pas
+✓ disponibilité des canaux : source unique (notify_channels) pour les règles de rapports
+✓ .env.example documente l'activation SMS et WhatsApp (désactivés par défaut)
+
+8/8 contrôles réussis.
+
+# code de sortie: 0

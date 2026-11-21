@@ -267,6 +267,7 @@ app.use('/api', require('./notification_rules').r); // Règles notification rapp
 app.use('/api', require('./purchases'));
 app.use('/api', require('./purchase_orders')); // Exploitation › Bon de commande
 app.use('/api', require('./fuelsales'));
+app.use('/api', require('./qr_codes')); // Scan QR des pompes : QR Codes, étiquettes PDF, journal, vérification d'un scan
 app.use('/api', require('./hr'));
 app.use('/api', require('./employee_access'));   // rôle individuel par employé
 app.use('/api', require('./employee_actions'));  // historique des actions au nom d'un employé

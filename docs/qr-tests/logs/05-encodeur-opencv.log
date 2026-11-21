@@ -1,0 +1,36 @@
+# 05-encodeur-opencv
+# date: 2026-11-20T03:46:34+00:00  node: v22.23.5  PostgreSQL: 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)  OS: Linux 6.18.44-fc-v726
+
+OK   v1  L   1 octets
+OK   v1  L   5 octets
+OK   v1  L  12 octets
+OK   v2  L  20 octets
+OK   v3  L  37 octets
+OK   v4  L  60 octets
+OK   v5  L  90 octets
+OK   v1  M   1 octets
+OK   v1  M   5 octets
+OK   v1  M  12 octets
+OK   v2  M  20 octets
+OK   v3  M  37 octets
+OK   v4  M  60 octets
+OK   v6  M  90 octets
+OK   v1  Q   1 octets
+OK   v1  Q   5 octets
+OK   v2  Q  12 octets
+OK   v2  Q  20 octets
+OK   v4  Q  37 octets
+OK   v5  Q  60 octets
+OK   v8  Q  90 octets
+OK   v1  H   1 octets
+OK   v1  H   5 octets
+OK   v2  H  12 octets
+OK   v3  H  20 octets
+OK   v5  H  37 octets
+OK   v7  H  60 octets
+OK   v9  H  90 octets
+OK   v3  M  40 octets
+OK   v9  M 155 octets
+30/30 décodés par OpenCV 5.0.0
+
+# code de sortie: 0

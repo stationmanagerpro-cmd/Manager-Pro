@@ -1,0 +1,32 @@
+# 01-logique-pure
+# date: 2026-11-20T03:46:33+00:00  node: v22.23.5  PostgreSQL: 16.15 (Ubuntu 16.15-0ubuntu0.24.04.1)  OS: Linux 6.18.44-fc-v726
+
+✓ Cas nominal accepté
+✓ QR inconnu → QR_INVALID
+✓ Autre station → STATION_MISMATCH (avant tout autre contrôle)
+✓ QR révoqué / remplacé → QR_REVOKED
+✓ Pompe inactive ou supprimée → PUMP_DISABLED
+✓ Produit absent, inactif, supprimé ou incohérent → PRODUCT_NOT_FOUND
+✓ Aucun quart ouvert → SHIFT_NOT_OPEN ; quart non ouvert → SHIFT_CLOSED
+✓ Compte sans employé → EMPLOYEE_NOT_FOUND ; hors équipe → EMPLOYEE_NOT_ON_SHIFT
+✓ Compteur sans relevé → COUNTER_NOT_READ
+✓ Pompe affectée à un autre employé → EMPLOYEE_NOT_ASSIGNED
+✓ Employé affecté à une autre pompe → EMPLOYEE_NOT_ASSIGNED
+✓ Affectation via shift_employee_pumps acceptée
+✓ Aucune affectation de pompe sur le quart : règle existante conservée (autorisé)
+✓ Messages et statuts stables pour les 10 codes du cahier
+✓ Jeton : 32 car. base64url, unique sur 5000 tirages, préfixe SMP1:
+✓ parsePayload : accepte le format, refuse le reste (URL, jeton court, préfixe absent, injection)
+✓ Référence courte : déterministe, XXXX-XXXX, normalisation de la saisie manuelle
+✓ Validation : scan frais accepté
+✓ Validation : scan absent, d’un autre compte ou d’une autre station → SCAN_INVALID
+✓ Validation : scan consommé → SCAN_USED ; expiré → SCAN_EXPIRED
+✓ Validation : valeurs envoyées différentes du scan → SCAN_MISMATCH
+✓ Validation : quart clôturé ou autre quart ouvert depuis le scan
+✓ Validation : QR révoqué / pompe désactivée / affectation modifiée après le scan
+✓ Validation : employé du compte différent de celui du scan → EMPLOYEE_NOT_FOUND
+✓ Validation : QR du scan remplacé (id différent) → SCAN_INVALID
+
+25/25 contrôles réussis.
+
+# code de sortie: 0
