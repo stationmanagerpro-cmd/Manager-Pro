@@ -36,22 +36,35 @@ async function insertEvent(db, ev) {
 }
 
 /** Ouvre la session de scan (après verdict ok). */
-async function openScan(db, { qr, ctx, userId }) {
+async function openScan(db, { qr, ctx, userId, delegated = false }) {
   const { rows: [s] } = await db.query(
-    `INSERT INTO qr_scans(qr_code_id, station_id, user_id, employee_id, shift_id, pump_id, counter_id, product_id, expires_at)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8, now() + ($9 || ' milliseconds')::interval) RETURNING id, scanned_at, expires_at`,
-    [qr.id, ctx.stationId, userId, ctx.employee.id, ctx.shift.id, ctx.pump.id, ctx.counter.id, ctx.product.id, String(L.SCAN_TTL_MS)]);
+    `INSERT INTO qr_scans(qr_code_id, station_id, user_id, employee_id, shift_id, pump_id, counter_id, product_id, expires_at, delegated_by_user_id)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8, now() + ($9 || ' milliseconds')::interval, $10) RETURNING id, scanned_at, expires_at`,
+    [qr.id, ctx.stationId, userId, ctx.employee.id, ctx.shift.id, ctx.pump.id, ctx.counter.id, ctx.product.id, String(L.SCAN_TTL_MS), delegated ? userId : null]);
   return s;
+}
+
+/** Employé actif de la station (responsable désigné par la pompe, pour une vente au nom d'un employé). */
+async function loadEmployee(db, { stationId, employeeId }) {
+  const { rows: [e] } = await db.query(
+    "SELECT id, first_name, last_name, user_id, email FROM employees WHERE id = $1 AND station_id = $2 AND deleted_at IS NULL AND status = 'actif'",
+    [employeeId, stationId]);
+  return e || null;
 }
 
 /**
  * Validation d'une vente par scan, DANS la transaction de vente : verrouille le scan (FOR UPDATE) et le QR (FOR SHARE : une
  * révocation concurrente attend la fin de la vente), recharge tout depuis la base et re-contrôle. Retourne { verdict, scan }.
  */
-async function checkScanForSale(db, { stationId, userId, scanId, body }) {
+async function checkScanForSale(db, { stationId, userId, scanId, body, canDelegate = false }) {
   const { rows: [scan] } = await db.query('SELECT * FROM qr_scans WHERE id = $1 AND station_id = $2 FOR UPDATE', [scanId, stationId]);
   const qr = scan ? (await db.query('SELECT * FROM qr_codes WHERE id = $1 FOR SHARE', [scan.qr_code_id])).rows[0] || null : null;
   const ctx = await loadContext(db, { stationId, userId, qr, lock: true });
+  ctx.canDelegate = !!canDelegate;
+  if (scan && scan.delegated_by_user_id != null) {   // vente au nom d'un employé : le responsable du scan remplace le compte connecté, puis tout est re-contrôlé
+    ctx.employee = await loadEmployee(db, { stationId, employeeId: scan.employee_id });
+    ctx.delegatedBy = userId;
+  }
   return { verdict: L.evaluateScanUse(ctx, scan || null, body, userId), scan: scan || null, ctx };
 }
 
@@ -61,4 +74,4 @@ async function consumeScan(db, scanId, saleId) {
   return u.rowCount === 1;
 }
 
-module.exports = { loadContext, findQr, insertEvent, openScan, checkScanForSale, consumeScan };
+module.exports = { loadContext, loadEmployee, findQr, insertEvent, openScan, checkScanForSale, consumeScan };

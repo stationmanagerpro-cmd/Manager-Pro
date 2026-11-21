@@ -97,7 +97,7 @@
       fc.value = String(d.counter.id); if (typeof fc.onchange === 'function') fc.onchange();
       sel.disabled = true; fc.disabled = true;
       const lab = $('#fs_emp_label'), es = $('#fs_emp_sel'), fe = $('#fe');
-      if (es) es.style.display = 'none'; if (lab) { lab.style.display = ''; lab.value = d.employee.name + ' (compte connecté)'; } if (fe) fe.value = String(d.employee.id);
+      if (es) es.style.display = 'none'; if (lab) { lab.style.display = ''; lab.value = d.employee.name + (d.delegated ? ' (vente au nom de cet employé)' : ' (compte connecté)'); } if (fe) fe.value = String(d.employee.id);
       return true;
     };
     setTimeout(() => { if (!apply()) say('Compteur introuvable dans le formulaire : scan ignoré.', 'error'); }, 0);

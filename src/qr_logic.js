@@ -14,6 +14,9 @@ const ERRORS = {
   QR_REVOKED: { status: 409, message: 'Ce QR Code a été désactivé.' },
   PUMP_DISABLED: { status: 409, message: 'Cette pompe est désactivée.' },
   EMPLOYEE_NOT_FOUND: { status: 403, message: 'Votre compte n’est pas rattaché à un employé de cette station.' },
+  DELEGATE_OWNER_UNCLEAR: { status: 409, message: 'Cette pompe a plusieurs responsables sur ce quart : la vente par scan au nom d’un employé n’est pas possible.' },
+  DELEGATE_NO_ACCOUNT: { status: 409, message: 'L’employé responsable de cette pompe n’a pas de compte utilisateur : il ne peut pas être alerté, vente refusée.' },
+  DELEGATE_NOT_ALLOWED: { status: 403, message: 'Vous n’avez pas la permission d’enregistrer une vente au nom d’un employé.' },
   EMPLOYEE_NOT_ON_SHIFT: { status: 403, message: 'Vous ne faites pas partie de l’équipe du quart ouvert.' },
   EMPLOYEE_NOT_ASSIGNED: { status: 403, message: 'Vous n’êtes pas affecté à cette pompe.' },
   SHIFT_NOT_OPEN: { status: 409, message: 'Aucun quart ouvert ne permet cette opération.' },
@@ -81,6 +84,21 @@ function evaluateCheckpoint(ctx) {
 }
 
 /**
+ * Vente au nom d'un employé (permission sale.record_for_employee). Ne s'applique que si l'utilisateur n'est pas lui-même
+ * responsable de la pompe sur ce quart. Retourne null (pas de délégation), { ok: true, employee_id } ou un refus.
+ */
+function delegateTarget(ctx, canDelegate) {
+  if (!canDelegate || !ctx.pump || !ctx.shift) return null;
+  const pid = Number(ctx.pump.id);
+  const owners = [...new Set([...(ctx.team || []).filter(t => t.pump_id != null && Number(t.pump_id) === pid).map(t => Number(t.employee_id)),
+                              ...(ctx.pumpAssign || []).filter(a => Number(a.pump_id) === pid).map(a => Number(a.employee_id))])];
+  if (ctx.employee && owners.includes(Number(ctx.employee.id))) return null;   // le connecté est le responsable : vente normale
+  if (owners.length === 0) return null;                                       // pompe sans responsable : comportement historique
+  if (owners.length > 1) return refuse('DELEGATE_OWNER_UNCLEAR');
+  return { ok: true, employee_id: owners[0] };
+}
+
+/**
  * Contrôles à la validation de la vente avec un scan. `scan` = ligne qr_scans (verrouillée par l'appelant) ou null ;
  * `body` = corps de requête reçu ; userId = compte authentifié. Le scan doit appartenir au compte, être récent, non consommé,
  * et correspondre exactement au compteur / quart / employé enregistrés au moment du scan : rien n'est repris du navigateur.
@@ -94,9 +112,10 @@ function evaluateScanUse(ctx, scan, body, userId, now = new Date()) {
             || (body.pump_id != null && Number(body.pump_id) !== Number(scan.pump_id))
             || (body.product_id != null && Number(body.product_id) !== Number(scan.product_id))
             || (body.employee_id != null && Number(body.employee_id) !== Number(scan.employee_id)))) return refuse('SCAN_MISMATCH');
+  if (scan.delegated_by_user_id != null && !ctx.canDelegate) return refuse('DELEGATE_NOT_ALLOWED');
   if (!ctx.employee || Number(ctx.employee.id) !== Number(scan.employee_id)) return refuse('EMPLOYEE_NOT_FOUND');
   if (!ctx.qr || Number(ctx.qr.id) !== Number(scan.qr_code_id)) return refuse('SCAN_INVALID');
   return evaluateCheckpoint(ctx);   // QR toujours actif, pompe, produit, affectation, quart : tout est re-contrôlé
 }
 
-module.exports = { PREFIX, SCAN_TTL_MS, ERRORS, refuse, generateToken, payloadOf, parsePayload, shortRef, normalizeShortRef, evaluateCheckpoint, evaluateScanUse };
+module.exports = { PREFIX, SCAN_TTL_MS, ERRORS, refuse, generateToken, payloadOf, parsePayload, shortRef, normalizeShortRef, evaluateCheckpoint, evaluateScanUse, delegateTarget };

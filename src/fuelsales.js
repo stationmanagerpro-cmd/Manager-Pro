@@ -98,7 +98,7 @@ r.post('/sales/fuel', need('sale.create'), body(schema), wrap(async (req, res) =
     // affectation, employé = compte connecté. L'employé est celui du scan, jamais celui envoyé par le navigateur.
     let scanRow = null;
     if (b.qr_scan_id) {
-      const { verdict, scan } = await QD.checkScanForSale(c, { stationId: req.sid, userId: req.user.id, scanId: b.qr_scan_id, body: { counter_id: b.counter_id, employee_id: b.employee_id } });
+      const { verdict, scan } = await QD.checkScanForSale(c, { stationId: req.sid, userId: req.user.id, scanId: b.qr_scan_id, body: { counter_id: b.counter_id, employee_id: b.employee_id }, canDelegate: req.user.perms.has('sale.record_for_employee') });
       if (!verdict.ok) throw qrc.refusal(verdict);
       scanRow = scan;
       b.employee_id = scan.employee_id;
@@ -189,7 +189,8 @@ r.post('/sales/fuel', need('sale.create'), body(schema), wrap(async (req, res) =
     if (scanRow) {   // un scan = une seule vente ; le journal fait partie de la transaction (échec = vente annulée)
       if (!(await QD.consumeScan(c, scanRow.id, sale.id))) throw qrc.refusal(QL.refuse('SCAN_USED'));
       await qrc.logEvent(c, req, { event: 'sale_ok', qr_code_id: scanRow.qr_code_id, short_ref: (await c.query('SELECT short_ref FROM qr_codes WHERE id = $1', [scanRow.qr_code_id])).rows[0]?.short_ref,
-        pump_id: scanRow.pump_id, counter_id: scanRow.counter_id, product_id: scanRow.product_id, shift_id: scanRow.shift_id, employee_id: scanRow.employee_id, scan_id: scanRow.id, sale_id: sale.id });
+        pump_id: scanRow.pump_id, counter_id: scanRow.counter_id, product_id: scanRow.product_id, shift_id: scanRow.shift_id, employee_id: scanRow.employee_id, scan_id: scanRow.id, sale_id: sale.id,
+        detail: scanRow.delegated_by_user_id ? { vente_au_nom_de_employe_id: scanRow.employee_id, enregistree_par_user_id: scanRow.delegated_by_user_id } : null });
     }
     await c.query('INSERT INTO sale_details(sale_id, product_id, quantity, unit_price, unit_cost, amount, counter_id, index_old, index_new) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)', [sale.id, k.product_id, liters, price, k.buy_price, amount, b.counter_id, io, inw]);
     for (const p of pays) {
@@ -227,12 +228,15 @@ r.post('/sales/fuel', need('sale.create'), body(schema), wrap(async (req, res) =
     }
     if (fleet) await fleetRecordUse(c, fleet, { saleId: sale.id, productId: k.product_id, liters, amount, odometer: b.fleet_card.odometer_km, userId: req.user.id });
     const { rows: [done] } = await c.query('UPDATE sales SET invoice_no = $2 WHERE id = $1 AND station_id = $3 RETURNING *', [sale.id, `${req.sid}-${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${sale.id}`, req.sid]);
-    await audit(c, req, 'ventes', `Vente carburant N° ${sale.id} (${b.mode}) : ${liters} L`, 'sales', sale.id, null, { mode: b.mode, litres: liters, montant: amount, avertissements: warnings });
-    return { ...done, liters, amount, warnings, ...(fleet ? { fleet_card: { id: fleet.card.id, label: fleet.card.label, remaining: fleet.evaluation.remaining } } : {}) };
+    await audit(c, req, 'ventes', `Vente carburant N° ${sale.id} (${b.mode}) : ${liters} L`, 'sales', sale.id, null, { mode: b.mode, litres: liters, montant: amount, avertissements: warnings, ...(scanRow?.delegated_by_user_id ? { vendue_au_nom_de_employe_id: scanRow.employee_id, enregistree_par_user_id: req.user.id } : {}) });
+    return { ...done, liters, amount, warnings, ...(fleet ? { fleet_card: { id: fleet.card.id, label: fleet.card.label, remaining: fleet.evaluation.remaining } } : {}),
+      ...(scanRow?.delegated_by_user_id ? { _delegated: { employee_id: scanRow.employee_id, sale_id: sale.id, by: req.user.id, liters, amount } } : {}) };
   }));
+  const delegated = out?._delegated; if (out) delete out._delegated;
   const replay = Boolean(out?._idempotent_replay);
   if (replay) delete out._idempotent_replay;
   if (!replay) await require('./employee_actions').afterSale(req, out.id);
+  if (!replay && delegated) await require('./qr_delegate').notifyDelegatedSale(delegated);   // alerte de l'employé au nom duquel la vente est faite
   if (!replay && req.body.loyalty) out.loyalty = await require('./market').afterSale(req, out.id, req.body.loyalty);   // points de fidélité (jamais bloquant)
   res.status(replay ? 200 : 201).json(out);
 }));

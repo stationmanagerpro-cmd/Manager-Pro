@@ -172,7 +172,15 @@ r.post('/sales/scan-pump', need('sale.create'), body(z.object({ code: z.string()
   const ref = !token && req.body.short_ref ? L.normalizeShortRef(req.body.short_ref) : null;
   const qr = await D.findQr(pool, { token, shortRef: ref, stationId: req.sid });
   const ctx = await D.loadContext(pool, { stationId: req.sid, userId: req.user.id, qr });
-  const verdict = L.evaluateCheckpoint(ctx);
+  // Vente au nom d'un employé : seulement si l'utilisateur a la permission ET n'est pas lui-même responsable de la pompe.
+  // L'employé visé est alors le responsable unique affecté à la pompe sur le quart (jamais un choix du navigateur).
+  const target = L.delegateTarget(ctx, req.user.perms.has('sale.record_for_employee'));
+  let verdict;
+  if (target && !target.ok) verdict = target;
+  else {
+    if (target) { ctx.employee = await D.loadEmployee(pool, { stationId: req.sid, employeeId: target.employee_id }); ctx.delegatedBy = req.user.id; }
+    verdict = target && ctx.employee && !ctx.employee.user_id ? L.refuse('DELEGATE_NO_ACCOUNT') : L.evaluateCheckpoint(ctx);
+  }
   const own = qr && Number(qr.station_id) === Number(req.sid);   // aucune donnée d'une autre station n'est journalisée sous cette station
   if (!verdict.ok) {
     await logEvent(pool, req, { event: 'scan_refused', result: 'refused', reason_code: verdict.code, qr_code_id: own ? qr.id : null, short_ref: own ? qr.short_ref : null,
@@ -180,8 +188,8 @@ r.post('/sales/scan-pump', need('sale.create'), body(z.object({ code: z.string()
     throw refusal(verdict);
   }
   const scan = await tx(async c => {
-    const s = await D.openScan(c, { qr, ctx, userId: req.user.id });
-    await logEvent(c, req, { event: 'scan_ok', qr_code_id: qr.id, short_ref: qr.short_ref, pump_id: ctx.pump.id, counter_id: ctx.counter.id, product_id: ctx.product.id, shift_id: ctx.shift.id, employee_id: ctx.employee.id, scan_id: s.id });
+    const s = await D.openScan(c, { qr, ctx, userId: req.user.id, delegated: !!ctx.delegatedBy });
+    await logEvent(c, req, { event: 'scan_ok', qr_code_id: qr.id, short_ref: qr.short_ref, pump_id: ctx.pump.id, counter_id: ctx.counter.id, product_id: ctx.product.id, shift_id: ctx.shift.id, employee_id: ctx.employee.id, scan_id: s.id, detail: ctx.delegatedBy ? { delegated_by_user_id: ctx.delegatedBy } : null });
     return s;
   });
   // Réponse minimale : uniquement ce dont l'interface a besoin pour préremplir le formulaire.
@@ -190,6 +198,7 @@ r.post('/sales/scan-pump', need('sale.create'), body(z.object({ code: z.string()
     counter: { id: ctx.counter.id, counter_number: ctx.counter.counter_number },
     product: { id: ctx.product.id, name: ctx.product.name },
     employee: { id: ctx.employee.id, name: fullName(ctx.employee) },
+    delegated: !!ctx.delegatedBy,
     shift: { id: ctx.shift.id, number: ctx.shift.number, status: 'open' },
     can_record_sale: true });
 }));
