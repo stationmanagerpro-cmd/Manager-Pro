@@ -47,6 +47,36 @@
         module_auto_alerts: 'true',
         can_personalize: 'true', can_customize_signature: 'false', can_customize_report_exports: 'false',
         can_manage_services: 'false', can_view_coming_soon: 'true', can_use_billing: 'true',
+        view_direction: 'true',
+        view_moidash: 'true',
+        view_consolidee: 'true',
+        view_parstation: 'true',
+        view_factures: 'true',
+        view_prixjour: 'true',
+        view_cuves: 'true',
+        view_histcompteurs: 'true',
+        view_previsions: 'true',
+        view_transferts: 'true',
+        view_bcommande: 'true',
+        view_risque: 'true',
+        view_periodlock: 'true',
+        view_reconcile: 'true',
+        view_flotte: 'true',
+        view_fidelite: 'true',
+        view_espaceclient: 'true',
+        view_vendeurs: 'true',
+        view_treso: 'true',
+        view_mmcomm: 'true',
+        view_finevents: 'true',
+        view_profit: 'true',
+        view_ctrlfin: 'true',
+        view_archive: 'true',
+        view_imports: 'true',
+        view_teamroles: 'true',
+        view_msgroles: 'true',
+        view_carte: 'true',
+        view_alertcfg: 'true',
+        view_notifrules: 'true',
         can_access_fiscal: 'false', can_fiscal_estimates: 'false', can_fiscal_exports: 'false',
         can_fiscal_prepare: 'false', can_fiscal_deadlines: 'false',
         fiscal_tva: 'false', fiscal_synthetique: 'false', fiscal_ibic: 'false', fiscal_is: 'false',
@@ -156,6 +186,7 @@
     rh_paie: { title: 'RH et paie', keys: ['can_access_hr', 'can_manage_hr', 'module_seller_commissions', 'payroll_amo', 'payroll_inps', 'payroll_its', 'payroll_charges', 'employee_portal_payslips', 'employee_portal_commissions'] },
     finance: { title: 'Finance et rapports', keys: ['can_access_finance', 'can_view_reports', 'can_export_reports', 'can_view_advanced_reports', 'can_use_billing'] },
     messagerie: { title: 'Messagerie', keys: ['can_use_messaging', 'messaging_attachments', 'messaging_groups', 'messaging_broadcast', 'messaging_support'] },
+    onglets_client: { title: 'Onglets accessibles au compte client', keys: ['view_direction', 'view_moidash', 'view_consolidee', 'view_parstation', 'view_factures', 'view_prixjour', 'view_cuves', 'view_histcompteurs', 'view_previsions', 'view_transferts', 'view_bcommande', 'view_risque', 'view_periodlock', 'view_reconcile', 'view_flotte', 'view_fidelite', 'view_espaceclient', 'view_vendeurs', 'view_treso', 'view_mmcomm', 'view_finevents', 'view_profit', 'view_ctrlfin', 'view_archive', 'view_imports', 'view_teamroles', 'view_msgroles', 'view_carte', 'view_alertcfg', 'view_notifrules'] },
     alertes_personnalisation: { title: 'Alertes et personnalisation', keys: ['module_auto_alerts', 'can_personalize', 'can_customize_signature', 'signature_mode', 'can_customize_report_exports'] },
     comptabilite: { title: 'Comptabilité OHADA', keys: ['can_access_accounting', 'accounting_entries', 'accounting_assets', 'accounting_vat', 'accounting_closing', 'accounting_export'] },
     fiscalite: { title: 'Fiscalité', keys: ['can_access_fiscal', 'can_fiscal_estimates', 'can_fiscal_exports', 'can_fiscal_prepare', 'can_fiscal_deadlines', 'fiscal_storage_mb', 'fiscal_tva', 'fiscal_synthetique', 'fiscal_ibic', 'fiscal_is', 'fiscal_its', 'fiscal_cfe', 'fiscal_tfp', 'fiscal_logement', 'fiscal_retenues', 'fiscal_autres'] }
@@ -169,7 +200,7 @@
   }
   /* Barre « Activation globale » en haut du formulaire : un interrupteur pour tous les modules Oui / Non. */
   function moduleGroupsHtml() {
-    const keys = featureFormFields().filter(f => f[2] === 's' && f[3] === YN).map(f => f[0]);
+    const keys = featureFormFields().filter(f => f[2] === 's' && f[3] === YN && f[0].indexOf('view_') !== 0).map(f => f[0]);
     return '<div class="sf-gbar"><div><b>Activation globale des modules</b>' +
       '<div style="font-size:12px;color:var(--m,#64748b);margin-top:2px">Un clic sur Actif ou Inactif s’applique à tous les modules. Chaque famille et chaque module reste réglable séparément.</div></div>' +
       (typeof sfSwitchHtml === 'function' ? sfSwitchHtml(keys) : '') + '</div>';
@@ -196,6 +227,37 @@
     // Liste EXHAUSTIVE des droits contrat — Super Admin coche/décoche à la création/édition.
     // Aucun module métier ne doit manquer ici.
     return [
+      // ═══ ONGLETS CLIENT (vrai par défaut) ═══
+      ['view_direction', 'Pilotage et direction', 's', YN],
+      ['view_moidash', 'Mon tableau de bord', 's', YN],
+      ['view_consolidee', 'Vue consolidée', 's', YN],
+      ['view_parstation', 'Vue par station', 's', YN],
+      ['view_factures', 'Facturation', 's', YN],
+      ['view_prixjour', 'Prix du jour', 's', YN],
+      ['view_cuves', 'Cuves et jaugeage', 's', YN],
+      ['view_histcompteurs', 'Historique des compteurs', 's', YN],
+      ['view_previsions', 'Prévision de rupture', 's', YN],
+      ['view_transferts', 'Transferts de stock', 's', YN],
+      ['view_bcommande', 'Bon de commande', 's', YN],
+      ['view_risque', 'Risque des quarts', 's', YN],
+      ['view_periodlock', 'Clôture période', 's', YN],
+      ['view_reconcile', 'Rapprochement', 's', YN],
+      ['view_flotte', 'Carte flotte', 's', YN],
+      ['view_fidelite', 'Fidélité', 's', YN],
+      ['view_espaceclient', 'Espace client', 's', YN],
+      ['view_vendeurs', 'Vendeurs et commissions', 's', YN],
+      ['view_treso', 'Trésorerie', 's', YN],
+      ['view_mmcomm', 'Commissions Mobile Money', 's', YN],
+      ['view_finevents', 'Journal finance', 's', YN],
+      ['view_profit', 'Rapport client et marge', 's', YN],
+      ['view_ctrlfin', 'Contrôles financiers', 's', YN],
+      ['view_archive', 'Archivage mensuel', 's', YN],
+      ['view_imports', 'Import Excel', 's', YN],
+      ['view_teamroles', 'Rôles de mon équipe', 's', YN],
+      ['view_msgroles', 'Diffusion de messages', 's', YN],
+      ['view_carte', 'Carte des stations', 's', YN],
+      ['view_alertcfg', 'Configuration des alertes', 's', YN],
+      ['view_notifrules', 'Règles de notification', 's', YN],
       // ═══ PARAMÈTRES ═══
       ['can_access_settings', '① Paramètres station', 's', YN],
       ['can_access_advanced_settings', '① Paramètres avancés (règles paie, compta complète)', 's', YN],

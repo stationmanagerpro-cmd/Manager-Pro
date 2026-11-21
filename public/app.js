@@ -248,6 +248,8 @@ const contractAllowsView = k => {
   if (!c || c.unrestricted) return true;
   if (c.suspended) return false;
   const f = c.features || {};
+  // Onglet désactivé par le contrat (option view_<onglet>, vrai par défaut)
+  if (('view_' + k) in f && featOff(f['view_' + k])) return false;
   const mods = f.modules || {};
   const modOn = (key, defaultOn = true) => {
     if (!(key in mods) && !(('can_' + key) in f)) return defaultOn;
@@ -995,7 +997,33 @@ window.goBack = async function () {
   __navSilent = true;
   try { await go(prev.k, prev.a); } finally { __navSilent = false; }
 };
+/* Onglet coupé par le contrat du compte client (option view_<onglet>). */
+function contractBlockedView(k) {
+  const cf = ME && !ME.is_global && ME.contract && !ME.contract.unrestricted ? (ME.contract.features || {}) : null;
+  return !!(cf && ('view_' + k) in cf && featOff(cf['view_' + k]));
+}
+/* Masque les boutons dont l'action est exactement go('onglet') quand cet onglet est coupé.
+   Les boutons dont l'action est conditionnelle (ex. import qui ouvre un autre écran) restent visibles. */
+function hideContractBlockedButtons(root) {
+  (root || document).querySelectorAll('[onclick]').forEach(el => {
+    const m = /^go\('([a-z_]+)'\)$/.exec(el.getAttribute('onclick') || '');
+    if (m && contractBlockedView(m[1])) el.style.display = 'none';
+  });
+}
+/* Les vues sont rendues après go() : on repasse à chaque changement du DOM (regroupé par frame). */
+if (typeof MutationObserver === 'function' && document.body) {
+  let pendingSweep = false;
+  new MutationObserver(() => {
+    if (pendingSweep) return;
+    pendingSweep = true;
+    requestAnimationFrame(() => { pendingSweep = false; hideContractBlockedButtons(); });
+  }).observe(document.body, { childList: true, subtree: true });
+}
+
 async function go(k, a) {
+  // Onglet coupé par le contrat du compte client (option view_<onglet>) : aucune navigation,
+  // quel que soit le point d'entrée (menu, tuile, bouton, lien). Le menu le masque déjà.
+  if (contractBlockedView(k)) { toast('Cet onglet n’est pas inclus dans votre contrat.', 'error'); return; }
   const navEpoch = ++NAV_EPOCH;
   // Empiler la vue courante avant changement (sauf retour arrière)
   if (!__navSilent && cur && (cur !== k || arg !== a)) {
