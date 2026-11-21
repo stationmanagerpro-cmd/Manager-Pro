@@ -51,6 +51,22 @@
       '</article>';
   }
 
+  // Actions du quart (mêmes droits qu'avant : vente, dépense, anomalie, clôture).
+  function actions(cu) {
+    const ok = k => typeof can === 'function' && can(k);
+    return [
+      ok('sale.create') ? '<button type="button" class="qv-scan" onclick="openScanSale()">📷 Vente par scan</button>' : '',
+      ok('sale.create') ? '<button type="button" class="b2" onclick="addS()">＋ Vente</button>' : '',
+      ok('expense.create') ? '<button type="button" class="b2" onclick="addX()">Dépense</button>' : '',
+      ok('sale.create') ? '<button type="button" class="b2" onclick="anom(' + Number(cu.id) + ')">Déclarer une anomalie</button>' : '',
+      ok('shift.close') ? '<button type="button" onclick="go(\'clot\')">Clôturer le quart</button>' : ''
+    ].join('');
+  }
+  function anomaliesHtml(cu) {
+    const list = Array.isArray(cu.anomalies) ? cu.anomalies : [];
+    return list.length ? '<div class="qv-anoms">' + list.map(a => '<span class="qv-anom">⚠ ' + esc(a.description) + '</span>').join('') + '</div>' : '';
+  }
+
   window.quartPanelHtml = function (cu, opts) {
     const pumps = Array.isArray(cu.pumps) ? cu.pumps : [];
     const prodTotal = Number((cu.sales || {}).total || 0), prodN = Number((cu.sales || {}).n || 0);
@@ -77,7 +93,8 @@
         '</div>' +
       '</div>' +
       '<div class="qv-pumps' + (pumps.length > 2 ? ' qv-many' : '') + '">' + (pumps.length ? pumps.map(pumpCard).join('') : '<p class="qv-empty">Aucune pompe active sur cette station.</p>') + '</div>' +
-      ((typeof can === 'function' && can('sale.create')) ? '<div class="qv-actions"><button type="button" class="qv-scan" onclick="openScanSale()">📷 Vente par scan</button></div>' : '') +
+      '<div class="qv-actions">' + actions(cu) + '</div>' +
+      anomaliesHtml(cu) +
       '<div class="qv-total">' +
         '<div class="qv-tlabel"><span class="qv-tico big">' + ICON.gap + '</span><b>Total Général du Quart</b></div>' +
         '<div class="qv-tamount">' + money(general) + '</div>' +

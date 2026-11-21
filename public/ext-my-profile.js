@@ -37,10 +37,20 @@
   const daysAgo = n => new Date(Date.now() - n * 864e5).toISOString().slice(0, 10);
   let JF = { from: daysAgo(30), to: today(), source: '', module: '', q: '' }, JOFF = 0, JLIM = 50, JTOT = 0, JMODS = null;
 
+  // Chart.js est chargé à la demande ; ce module le charge lui-même (sans dépendre d'un autre script).
+  let chartLoad = null;
+  function ensureChart() {
+    if (typeof Chart !== 'undefined') return Promise.resolve();
+    if (!chartLoad) chartLoad = new Promise((ok, ko) => {
+      const s = document.createElement('script'); s.src = '/vendor/chart.umd.min.js';
+      s.onload = () => ok(); s.onerror = () => { chartLoad = null; s.remove(); ko(); };
+      document.head.appendChild(s);
+    });
+    return chartLoad;
+  }
   function charts(spec) {
     CH.forEach(c => { try { c.destroy(); } catch (_) { /* déjà détruit */ } }); CH = [];
-    if (typeof Chart === 'undefined') return whenChart(() => charts(spec));
-    setTimeout(() => spec.forEach(([id, cfg]) => { const el = document.getElementById(id); if (el) CH.push(new Chart(el, cfg)); }), 30);
+    ensureChart().then(() => setTimeout(() => spec.forEach(([id, cfg]) => { const el = document.getElementById(id); if (el) CH.push(new Chart(el, cfg)); }), 30), () => { /* graphiques indisponibles : le reste de la page s'affiche */ });
   }
   const base = { responsive: true, maintainAspectRatio: false };
   const grid = { color: 'rgba(148,163,184,.25)' };

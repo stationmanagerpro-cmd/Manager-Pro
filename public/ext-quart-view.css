@@ -63,6 +63,11 @@
 .qv-many .qv-pump>footer{padding:9px 12px;font-size:13px}
 .qv-many .qv-pump>footer b{font-size:14px;padding:4px 8px}
 .qv-pump .qv-pname small{overflow-wrap:anywhere}
-.qv-actions{display:flex;justify-content:flex-end;margin:0 0 12px}
+.qv-actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:8px;margin:0 0 12px}
+.qv-actions button{border:1px solid #c9d4ee;background:#fff;color:var(--qv-blue);border-radius:12px;padding:9px 14px;font-weight:700;cursor:pointer}
+.qv-actions button.b2{background:#eaf0ff}
+.qv-actions button:not(.b2):not(.qv-scan){background:#fff1e6;color:#9a3412;border-color:#fdba74}
+.qv-anoms{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px}
+.qv-anom{background:#fff4d6;color:#8a5a00;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700}
 .qv-scan{background:var(--p,#1d4fd7);color:var(--on-p,#fff);border:0;border-radius:12px;padding:10px 16px;font-weight:800;cursor:pointer}
 .qv-scan:hover{filter:brightness(1.08)}
