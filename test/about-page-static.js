@@ -14,10 +14,10 @@ check('serveur : lecture ouverte à tout compte connecté (/me/about), écriture
   assert.match(page, /req\.user && req\.user\.is_global/);
   assert(srv.indexOf("require('./about_page')") > srv.indexOf("app.use('/api', auth)"), 'monté après l’authentification');
 });
-check('modèle par défaut valide et stable après validation (9 solutions, 3 rubriques chacune)', () => {
+check('modèle par défaut valide et stable après validation (10 solutions, 3 rubriques chacune)', () => {
   const d = About.defaultDoc(); assert.deepStrictEqual(About.sanitize(d), d);
-  assert.strictEqual(d.solutions.length, 9);
-  assert.deepStrictEqual(d.solutions.map(s => s.name), ['STATION MANAGER PRO', 'SCHOOL MANAGER PRO', 'PHARMA MANAGER PRO', 'FACTURE MANAGER PRO', 'PRESSING MANAGER PRO', 'GESTOCK MANAGER PRO', 'COMMERCE MANAGER PRO', 'COUTURE MANAGER PRO', 'E-COMMERCE MANAGER PRO']);
+  assert.strictEqual(d.solutions.length, 10);
+  assert.deepStrictEqual(d.solutions.map(s => s.name), ['STATION MANAGER PRO', 'SCHOOL MANAGER PRO', 'IKA SÔ MANAGER PRO', 'PHARMA MANAGER PRO', 'FACTURE MANAGER PRO', 'PRESSING MANAGER PRO', 'GESTOCK MANAGER PRO', 'COMMERCE MANAGER PRO', 'COUTURE MANAGER PRO', 'E-COMMERCE MANAGER PRO']);
   d.solutions.forEach(s => { assert(s.objective && s.features.length >= 7 && s.benefits.length >= 5, s.name + ' : Objectif, Solutions et Avantages renseignés'); });
   assert.strictEqual(d.approach.commitments.length, 4); assert.strictEqual(d.why.items.length, 7);
 });
@@ -35,7 +35,7 @@ check('téléchargement : Android = APK hébergé (fichier réel), iOS vide, auc
 });
 check('compatibilité : contenu enregistré en v1 (ancienne page) reste valide, nouveaux blocs repris du modèle', () => {
   const m = About.sanitize({ v: 1, header: { title: 'T', tagline: '', intro: '' }, sections: [{ id: 'abcd', title: 'X', body: 'y' }], contact: {} });
-  assert.strictEqual(m.v, 2); assert.strictEqual(m.solutions.length, 9); assert.strictEqual(m.sections.length, 1); assert.strictEqual(m.downloads.android_url, '/downloads/Manager_Pro-debug-2026-11-17.apk');
+  assert.strictEqual(m.v, 2); assert.strictEqual(m.solutions.length, 10); assert.strictEqual(m.sections.length, 1); assert.strictEqual(m.downloads.android_url, '/downloads/Manager_Pro-debug-2026-11-17.apk');
 });
 check('solutions : statut contrôlé, listes et limites vérifiées', () => {
   assert.throws(() => About.sanitize({ header: { title: 'x' }, solutions: [{ name: 'a', status: 'zzz' }] }), /Statut/);

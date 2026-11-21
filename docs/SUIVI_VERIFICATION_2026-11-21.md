@@ -23,8 +23,8 @@ Lancés ici sans serveur ni base :
 | `SUIVI_EXPORT_PDF_QUARTS_VENTES` | Visuel PDF, SQL avec période non exécuté sur PostgreSQL | NON VÉRIFIABLE | Pas de serveur ni de base en marche. |
 | `ACTIVATION_PROGRESSIVE` | Parcours de paie : endpoints, feature flags, audit | VÉRIFIÉ (code) | `POST /hr/payroll/impact`, confirmation juridique et flags présents, actions tracées. |
 | `ACTIVATION_PROGRESSIVE` | Sources officielles, barèmes saisis, validation juridique, dry-run, audit RH | NON VÉRIFIABLE | Actions humaines ou données de production, hors du dépôt. |
-| Suivi Excel « À propos » AP-001 à AP-003, AP-005 à AP-011 | Solutions affichées, badges | VÉRIFIÉ (suivi) | Tests de la page à jour (voir §3 : test navigateur en échec). |
-| AP-012 | APK Android (ancien fichier, signé v2, 15 611 791 octets) | **PÉRIMÉ** | Le fichier ancien a été retiré (commit `eba9a92`, 17 nov.). Le fichier actuel est `public/downloads/Manager_Pro-debug-2026-11-17.apk` (15 614 535 octets). Son manifeste porte le paquet `com.managepro` (Manager PRO). Build de débogage, signature non confirmée (pas d'outil `apksigner` ici). Installation sur téléphone non testée. |
+| Suivi Excel « À propos » AP-001 à AP-011 | Solutions affichées, badges | VÉRIFIÉ (suivi) | Tests de la page à jour (voir §3 : test navigateur en échec). |
+| AP-012 | APK Android « Ika-So.apk », signé v2, 15 611 791 octets | **PÉRIMÉ** | Le commit `eba9a92` (17 nov.) a supprimé `Ika-So.apk` (autre projet). Le fichier actuel est `public/downloads/Manager_Pro-debug-2026-11-17.apk` (15 614 535 octets). Le nom indique une build de débogage. Signature non confirmée (pas d'outil `apksigner` ici). Installation sur téléphone non testée. |
 | AP-013 | iOS : lien App Store | Bloqué (inchangé) | Lien officiel toujours absent. |
 | AP-014 | Responsive sur appareils réels | NON VÉRIFIABLE | Aucun appareil ; le suivi le dit déjà. |
 | AP-015 | `npm test` complet, API contre vraie base | NON VÉRIFIABLE | Base PostgreSQL de test absente de la session. |
@@ -41,14 +41,7 @@ Lancés ici sans serveur ni base :
 - **M-01** (migration 070, `client_devices`) : **NON VÉRIFIABLE** (lecture seule en production requise).
 
 ## 5. Ce qui reste, et qui doit agir
-1. **Suivi AP** : le propriétaire doit confirmer la signature de l'APK actuel (build de débogage) avant diffusion.
+1. **Mettre à jour le suivi AP** (Excel) : AP-012 pointe vers un APK supprimé. Le propriétaire doit confirmer le bon APK et sa signature.
 2. **Diagnostiquer `about-page-ui.test.js`** (console navigateur) : décide si c'est un test périmé ou une régression de l'application.
 3. **Installer les dépendances** (ou autoriser npm) : débloque `report-ui-harness`, `npm test`, et toutes les vérifications d'exécution ci-dessus.
 4. **Production** : lecture seule pour M-01 ; contrôle visuel Render (bandeau, PDF).
-
-## 6. Mise à jour : retrait d'Ika Sô (2026-11-21)
-- Retiré de `src/about_logic.js` (solution « IKA SÔ MANAGER PRO ») : la page affiche 9 solutions au lieu de 10.
-- Tests mis à jour en conséquence : `test/about-page-static.js` (passe), `test/about-page-ui.test.js` (non exécuté).
-- Retiré du classeur de suivi : ligne AP-004 ; les formules de synthèse pointent sur les lignes restantes.
-- APK conservé : son manifeste est celui de Manager PRO.
-- Conservés volontairement : les deux changelogs historiques qui décrivent l'ajout puis le retrait d'Ika Sô (à supprimer si vous le souhaitez).

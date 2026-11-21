@@ -45,7 +45,7 @@ async function mock(page) {
 }
 
 /* ===== « A propos de Manager PRO » : test réel dans Chromium (mobile, tablette, ordinateur) =====
-   Vérifie : onglet en bas du menu, 9 solutions × (Objectif, Solutions, Avantages), carte « à venir », approche, « pourquoi choisir »,
+   Vérifie : onglet en bas du menu, 10 solutions × (Objectif, Solutions, Avantages), carte « à venir », approche, « pourquoi choisir »,
    section de téléchargement TOUT EN BAS, « Bientôt disponible » sans lien, absence de débordement horizontal, absence d'erreur JavaScript,
    édition réservée au Super Admin (enregistrement d'un lien https, refus d'un lien http). Captures : SHOTS (défaut : dossier temporaire). */
 const About = require('../src/about_logic.js');
@@ -81,12 +81,12 @@ const VIEWPORTS = [['mobile', 390, 844], ['tablette', 820, 1180], ['ordinateur',
     } else { await page.evaluate(() => go('apropos')); }
     await page.waitForSelector('#ab-root .ab-hero');
     ok((await page.textContent('#ttl')).includes('A propos'), 'l’onglet s’ouvre');
-    ok(await page.locator('.ab-sol').count() === 9, '9 solutions affichées');
-    ok(await page.locator('.ab-sol .ab-blk h4', { hasText: /^Objectif$/ }).count() === 9, 'rubrique « Objectif » sur chaque solution (9/9)');
+    ok(await page.locator('.ab-sol').count() === 10, '10 solutions affichées');
+    ok(await page.locator('.ab-sol .ab-blk h4', { hasText: /^Objectif$/ }).count() === 10, 'rubrique « Objectif » sur chaque solution (10/10)');
     ok(await page.locator('.ab-sol .ab-blk h4', { hasText: /^Solutions$/ }).count() === 10, 'rubrique « Solutions » sur chaque solution (10/10)');
     ok(await page.locator('.ab-sol .ab-blk h4', { hasText: /^Avantages$/ }).count() === 10, 'rubrique « Avantages » sur chaque solution (10/10)');
     const names = await page.locator('.ab-sol-t h3').allTextContents();
-    ok(['STATION MANAGER PRO', 'SCHOOL MANAGER PRO', 'PHARMA MANAGER PRO', 'FACTURE MANAGER PRO', 'PRESSING MANAGER PRO', 'GESTOCK MANAGER PRO', 'COMMERCE MANAGER PRO', 'COUTURE MANAGER PRO', 'E-COMMERCE MANAGER PRO'].every((n, i) => names[i] === n), 'noms et ordre des 10 solutions');
+    ok(['STATION MANAGER PRO', 'SCHOOL MANAGER PRO', 'IKA SÔ MANAGER PRO', 'PHARMA MANAGER PRO', 'FACTURE MANAGER PRO', 'PRESSING MANAGER PRO', 'GESTOCK MANAGER PRO', 'COMMERCE MANAGER PRO', 'COUTURE MANAGER PRO', 'E-COMMERCE MANAGER PRO'].every((n, i) => names[i] === n), 'noms et ordre des 10 solutions');
     ok(await page.locator('.ab-sol-ic').count() === 10 && (await page.locator('.ab-sol-ic').allTextContents()).every(t => t.trim()), 'une icône par solution');
     ok(await page.isVisible('.ab-upcoming') && (await page.textContent('.ab-upcoming')).includes('À VENIR'), 'carte « et bien d’autres solutions à venir »');
     ok(!(await page.textContent('.ab-upcoming')).toLowerCase().includes('disponible'), 'solutions futures non présentées comme disponibles');
