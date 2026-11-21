@@ -31,3 +31,9 @@ Le prototype du scan QR (ZIP `Station-Manager-PRO_scan-qr_2026-11-20_1.zip`, tes
 ## Procédure de retour arrière (si le test réel échoue)
 1. **Code :** `git revert -m 1 <commit de fusion>` sur `main` puis redéploiement (aucune réécriture d'historique).
 2. **Base :** la migration 124 est additive ; elle peut rester sans effet (aucune vente existante n'en dépend). Retrait complet : `docs/qr-tests/rollback_124_qr_codes.sql` (testé).
+
+## Fusion et déploiement (21/11/2026)
+* Fusion `--no-ff` dans `main` : commit **`7ce4713`** (parents `0695263` et `061f34c`). Retour arrière code : `git revert -m 1 7ce4713`.
+* Le workflow GitHub n'a rien déclenché (secret `RENDER_DEPLOY_HOOK` absent) : déploiement lancé via Render, deploy `dep-dc0utbd9fdbs7397du20`, commit `7ce4713`, statut **live** (19:20 UTC).
+* Journaux Render : sauvegarde avant migration `smp-2026-11-21T19-19-42-102Z.sql.gz` (429 188 octets vérifiés) ; `✔ 124_qr_codes_scan_pompes.sql` ; « Base à jour » ; serveur démarré.
+* **Non vérifié :** accès HTTP au site et fonctionnement réel du scan (Web, Android, impression, vente de bout en bout) — test réel à faire par le propriétaire.
