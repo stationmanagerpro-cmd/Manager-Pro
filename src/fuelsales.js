@@ -232,8 +232,8 @@ r.post('/sales/fuel', need('sale.create'), body(schema), wrap(async (req, res) =
     return { ...done, liters, amount, warnings, ...(fleet ? { fleet_card: { id: fleet.card.id, label: fleet.card.label, remaining: fleet.evaluation.remaining } } : {}),
       ...(scanRow?.delegated_by_user_id ? { _delegated: { employee_id: scanRow.employee_id, sale_id: sale.id, by: req.user.id, liters, amount } } : {}) };
   }));
-  const delegated = out?._delegated; if (out) delete out._delegated;
   const replay = Boolean(out?._idempotent_replay);
+  const delegated = out?._delegated; if (out) delete out._delegated;
   if (replay) delete out._idempotent_replay;
   if (!replay) await require('./employee_actions').afterSale(req, out.id);
   if (!replay && delegated) await require('./qr_delegate').notifyDelegatedSale(delegated);   // alerte de l'employé au nom duquel la vente est faite
