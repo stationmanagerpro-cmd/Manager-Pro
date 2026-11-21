@@ -239,6 +239,13 @@ app.use('/api', async (req, res, next) => {
         [/^\/purchase-orders(\/|$)/, 'view_bcommande', 'Bons de commande'],
         [/^\/messaging\/broadcast-roles$/, 'view_msgroles', 'Rôles de diffusion'],
         [/^\/stations\/map$/, 'view_carte', 'Carte des stations'],
+        [/^\/stations\/consolidated$/, 'view_consolidee', 'Vue consolidée'],
+        [/^\/stations\/by-station$/, 'view_parstation', 'Vue par station'],
+        [/^\/prices\/board$/, 'view_prixjour', 'Prix du jour'],
+        [/^\/seller-commissions(\/|$)/, 'view_vendeurs', 'Vendeurs et commissions'],
+        [/^\/loyalty\/accounts(\/|$)/, 'view_fidelite', 'Fidélité clients'],
+        [/^\/loyalty\/lookup$/, 'view_fidelite', 'Fidélité clients'],
+        [/^\/loyalty\/earn$/, 'view_fidelite', 'Fidélité clients'],
       ];
       for (const [re, key, label] of VIEW_GUARDS) {
         if (re.test(path) && viewOff(key)) {

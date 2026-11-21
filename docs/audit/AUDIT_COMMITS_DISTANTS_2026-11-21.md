@@ -28,7 +28,7 @@ Limite : aucun test d'exécution (serveur non démarrable ici). Les constats ci-
 - Front uniquement, sans impact sur les données ni les permissions.
 
 ## Suite donnée (mise à jour)
-- C-01 : garde serveur ajoutée pour 20 routes propres à un onglet (voir `Dossier CHANGELOG/GARDE_SERVEUR_ONGLETS_2026-11-21.md`). Les routes partagées avec la caisse et les autres écrans restent non gardées (risque résiduel, décision à prendre).
+- C-01 : garde serveur ajoutée pour 28 motifs (23 onglets) (voir `Dossier CHANGELOG/GARDE_SERVEUR_ONGLETS_2026-11-21.md`). Les routes partagées avec la caisse et les autres écrans restent non gardées (risque résiduel, décision à prendre) : caisse (`/money/accounts`), portail client et facturation (`/invoices`), tableaux de bord (`/dashboard/*`, `/aggregates`), magasins (`/stations/overview`), trésorerie de direction (`/treasury`), messagerie (`/messaging/alert-config`), fidélité en caisse (`/loyalty/settings`).
 - Les 30 clés sont bien celles des commits distants (contrôlé par `git diff`).
 
 ## Actions proposées (historique)

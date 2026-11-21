@@ -50,10 +50,11 @@ ok('serveur : garde view_<onglet> par endpoint propre à un onglet', () => {
   assert.ok(server.includes('const VIEW_GUARDS = ['), 'table de garde absente');
   const keys = ['view_risque', 'view_periodlock', 'view_notifrules', 'view_espaceclient', 'view_flotte', 'view_mmcomm',
     'view_ctrlfin', 'view_finevents', 'view_profit', 'view_reconcile', 'view_archive', 'view_imports',
-    'view_histcompteurs', 'view_previsions', 'view_transferts', 'view_bcommande', 'view_msgroles', 'view_carte'];
+    'view_histcompteurs', 'view_previsions', 'view_transferts', 'view_bcommande', 'view_msgroles', 'view_carte',
+    'view_consolidee', 'view_parstation', 'view_prixjour', 'view_vendeurs', 'view_fidelite'];
   for (const k of keys) assert.ok(server.includes("'" + k + "'"), 'garde absente : ' + k);
   // Une route partagée avec la caisse ou d'autres écrans ne doit pas être gardée par un onglet.
-  for (const shared of ["'/money/accounts'", "'/products'", "'/treasury'", "'/prices'"]) {
+  for (const shared of ["'/money/accounts'", "'/products'", "'/treasury'", "'/loyalty/settings'", "'/dashboard/jour'"]) {
     assert.ok(!/VIEW_GUARDS = \[[\s\S]*?\];/.exec(server)[0].includes(shared), 'route partagée gardée à tort : ' + shared);
   }
 });
