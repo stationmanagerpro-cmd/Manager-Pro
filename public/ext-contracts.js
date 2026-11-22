@@ -181,7 +181,7 @@
      Chaque section a son interrupteur Actif / Inactif d’en-tête, chaque module garde le sien. */
   const MODULE_GROUPS = {
     parametres: { title: 'Paramètres et administration', keys: ['can_access_settings', 'can_access_advanced_settings', 'can_manage_services', 'can_view_coming_soon', 'demo_mode'] },
-    exploitation: { title: 'Exploitation station', keys: ['module_sales', 'module_stock', 'module_purchases', 'module_suppliers', 'module_shifts', 'module_employees', 'module_pumps', 'module_receipts', 'module_reconcile', 'module_period_lock', 'module_price_history', 'module_imports', 'module_eod', 'module_direction', 'module_multistation', 'module_tanks', 'module_profit'] },
+    exploitation: { title: 'Exploitation station', keys: ['module_sales', 'module_stock', 'module_purchases', 'module_suppliers', 'module_shifts', 'module_employees', 'module_pumps', 'module_qr_delegate', 'module_receipts', 'module_reconcile', 'module_period_lock', 'module_price_history', 'module_imports', 'module_eod', 'module_direction', 'module_multistation', 'module_tanks', 'module_profit'] },
     clients_flottes: { title: 'Clients, flottes et trésorerie', keys: ['module_customers', 'module_fleet', 'module_loyalty', 'module_portal', 'module_treasury', 'module_mm_commission', 'module_mobile'] },
     rh_paie: { title: 'RH et paie', keys: ['can_access_hr', 'can_manage_hr', 'module_seller_commissions', 'payroll_amo', 'payroll_inps', 'payroll_its', 'payroll_charges', 'employee_portal_payslips', 'employee_portal_commissions'] },
     finance: { title: 'Finance et rapports', keys: ['can_access_finance', 'can_view_reports', 'can_export_reports', 'can_view_advanced_reports', 'can_use_billing'] },
@@ -270,6 +270,7 @@
       ['module_shifts', '② Quarts (ouverture / clôture)', 's', YN],
       ['module_employees', '② Employés (fiches RH de base)', 's', YN],
       ['module_pumps', '② Pompes / compteurs carburant', 's', YN],
+      ['module_qr_delegate', '② Vente au nom d’un employé par scan QR', 's', YN],
       ['module_receipts', '② Tickets / reçus (impression)', 's', YN],
       ['module_reconcile', '② Réconciliation des pompes', 's', YN],
       ['module_period_lock', '② Clôture de période (verrouillage)', 's', YN],
@@ -361,6 +362,7 @@
       module_shifts: mod('shifts'),
       module_employees: mod('employees'),
       module_pumps: mod('pumps'),
+      module_qr_delegate: mod('qr_delegate'),
       module_receipts: mod('receipts'),
       module_reconcile: mod('reconcile'),
       module_period_lock: mod('period_lock'),
@@ -473,6 +475,7 @@
         shifts: t('module_shifts'),
         employees: t('module_employees'),
         pumps: t('module_pumps'),
+        qr_delegate: t('module_qr_delegate'),
         receipts: t('module_receipts'),
         reconcile: t('module_reconcile'),
         period_lock: t('module_period_lock'),

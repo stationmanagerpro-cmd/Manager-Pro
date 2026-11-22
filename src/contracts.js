@@ -97,6 +97,7 @@ const DEFAULT_FEATURES = {
     imports: true,
     direction: true,
     eod: true,
+    qr_delegate: true,   // vente au nom de l'employé affecté par scan QR (permission sale.record_for_employee) ; le Super Admin peut la retirer à un client
     mm_commission: true,
     seller_commissions: true,
     multistation: true,

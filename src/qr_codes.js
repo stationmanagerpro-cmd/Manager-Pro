@@ -174,7 +174,7 @@ r.post('/sales/scan-pump', need('sale.create'), body(z.object({ code: z.string()
   const ctx = await D.loadContext(pool, { stationId: req.sid, userId: req.user.id, qr });
   // Vente au nom d'un employé : seulement si l'utilisateur a la permission ET n'est pas lui-même responsable de la pompe.
   // L'employé visé est alors le responsable unique affecté à la pompe sur le quart (jamais un choix du navigateur).
-  const target = L.delegateTarget(ctx, req.user.perms.has('sale.record_for_employee'));
+  const target = L.delegateTarget(ctx, require('./qr_delegate').canDelegate(req));
   let verdict;
   if (target && !target.ok) verdict = target;
   else {

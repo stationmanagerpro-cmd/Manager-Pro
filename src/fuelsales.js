@@ -98,7 +98,7 @@ r.post('/sales/fuel', need('sale.create'), body(schema), wrap(async (req, res) =
     // affectation, employé = compte connecté. L'employé est celui du scan, jamais celui envoyé par le navigateur.
     let scanRow = null;
     if (b.qr_scan_id) {
-      const { verdict, scan } = await QD.checkScanForSale(c, { stationId: req.sid, userId: req.user.id, scanId: b.qr_scan_id, body: { counter_id: b.counter_id, employee_id: b.employee_id }, canDelegate: req.user.perms.has('sale.record_for_employee') });
+      const { verdict, scan } = await QD.checkScanForSale(c, { stationId: req.sid, userId: req.user.id, scanId: b.qr_scan_id, body: { counter_id: b.counter_id, employee_id: b.employee_id }, canDelegate: require('./qr_delegate').canDelegate(req) });
       if (!verdict.ok) throw qrc.refusal(verdict);
       scanRow = scan;
       b.employee_id = scan.employee_id;
