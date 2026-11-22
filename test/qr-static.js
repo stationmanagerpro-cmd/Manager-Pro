@@ -69,4 +69,17 @@ t('Android : le lecteur natif remet un OBJET { code } à onScanned (un texte bru
   assert.ok(!/onText\(String\(/.test(ui), 'aucun appel onText avec un texte brut');
   assert.ok(/finish\(\{ code: text \}\)/.test(ui) && /finish\(\{ short_ref: v \}\)/.test(ui), 'chemin Web : objets { code } / { short_ref }');
 });
+t('Contrat client : module qr_delegate (défaut actif) déclaré dans le formulaire du Super Admin, groupe « Exploitation station »', () => {
+  assert.ok(/qr_delegate: true,/.test(R('src/contracts.js')), 'valeur par défaut true : les contrats existants gardent la fonction');
+  const ec = R('public/ext-contracts.js');
+  assert.ok(/exploitation: \{[^\n]*'module_pumps', 'module_qr_delegate'/.test(ec), 'groupe Exploitation station');
+  assert.ok(ec.includes("['module_qr_delegate', '② Vente au nom d’un employé par scan QR', 's', YN]") && ec.includes("module_qr_delegate: mod('qr_delegate')") && ec.includes("qr_delegate: t('module_qr_delegate')"), 'libellé, lecture et enregistrement du contrat');
+});
+t('Vente au nom d’un employé : la permission du rôle ET le module du contrat sont contrôlés côté serveur', () => {
+  const d = R('src/qr_delegate.js');
+  assert.ok(/perms\.has\('sale\.record_for_employee'\)\) && featureOn\(req\.contract, 'module:qr_delegate'\)/.test(d));
+  assert.ok(/delegateTarget\(ctx, require\('\.\/qr_delegate'\)\.canDelegate\(req\)\)/.test(R('src/qr_codes.js')));
+  assert.ok(/canDelegate: require\('\.\/qr_delegate'\)\.canDelegate\(req\)/.test(R('src/fuelsales.js')));
+  assert.ok(!/perms\.has\('sale\.record_for_employee'\)/.test(R('src/qr_codes.js') + R('src/fuelsales.js')), 'plus de contrôle direct sans le contrat');
+});
 console.log(`\n${ok}/${ok + ko} contrôles réussis.`); process.exit(ko ? 1 : 0);

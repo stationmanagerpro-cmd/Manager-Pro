@@ -2,6 +2,7 @@
 // Vente au nom d'un employé (scan QR) : l'employé concerné est alerté (message interne, et e-mail si SMTP est configuré).
 // Appelé APRÈS la transaction de vente : un échec d'alerte n'annule pas la vente, il est seulement journalisé.
 const { pool } = require('./core');
+const { featureOn } = require('./contracts');
 const { deliverSystemMessage } = require('./messaging');
 const { dispatchExternal, channelState } = require('./notify_channels');
 
@@ -32,4 +33,9 @@ async function notifyDelegatedSale(d) {
   }
 }
 
-module.exports = { notifyDelegatedSale };
+/** Droit de vendre au nom d'un employé : permission du rôle (sale.record_for_employee) ET module « qr_delegate » du contrat client. */
+function canDelegate(req) {
+  return !!(req.user && req.user.perms && req.user.perms.has('sale.record_for_employee')) && featureOn(req.contract, 'module:qr_delegate');
+}
+
+module.exports = { notifyDelegatedSale, canDelegate };

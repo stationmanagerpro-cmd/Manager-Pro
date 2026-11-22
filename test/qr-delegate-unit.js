@@ -40,12 +40,12 @@ t('Migration 125 : permission sale.record_for_employee, rôle ADMIN seul, colonn
 });
 t('Scan : la route passe par delegateTarget et journalise la délégation', () => {
   const q = read('src/qr_codes.js');
-  assert.ok(q.includes("L.delegateTarget(ctx, req.user.perms.has('sale.record_for_employee'))"));
+  assert.ok(q.includes("L.delegateTarget(ctx, require('./qr_delegate').canDelegate(req))"));
   assert.ok(!q.includes('DELEGATE_NO_ACCOUNT')); assert.ok(q.includes('delegated_by_user_id: ctx.delegatedBy'));
 });
 t('Vente : permission transmise à la vérification du scan, audit et alerte après validation', () => {
   const f = read('src/fuelsales.js');
-  assert.ok(f.includes("canDelegate: req.user.perms.has('sale.record_for_employee')"));
+  assert.ok(f.includes("canDelegate: require('./qr_delegate').canDelegate(req)"));
   assert.ok(f.includes('vendue_au_nom_de_employe_id')); assert.ok(f.includes("require('./qr_delegate').notifyDelegatedSale"));
 });
 t('Interface scan : affiche « vente au nom de cet employé » si délégué', () => assert.ok(read('public/ext-qr-scan.js').includes('vente au nom de cet employé')));
