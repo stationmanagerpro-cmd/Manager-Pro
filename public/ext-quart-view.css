@@ -5,7 +5,7 @@
 .qv-id{flex:0 0 250px;background:linear-gradient(135deg,#0c2d8f,#1d4fd7);color:#fff;display:flex;align-items:center;gap:14px;padding:16px 18px;flex-wrap:wrap}
 .qv-idico{width:54px;height:54px;border-radius:14px;background:rgba(255,255,255,.14);display:grid;place-items:center}
 .qv-idico svg{width:30px;height:30px}
-.qv-id h2{margin:0 0 4px;font-size:20px;font-weight:800;white-space:nowrap}
+.qv .qv-id h2{color:#fff !important;margin:0 0 4px;font-size:20px;font-weight:800;white-space:nowrap}
 .qv-open{display:inline-block;background:#fff;color:var(--qv-green);font-weight:800;font-size:12px;padding:3px 10px;border-radius:999px}
 .qv-open.past{background:#ffe9b8;color:#8a5a00;margin-left:4px}
 .qv-clock{display:flex;align-items:center;gap:6px;margin-top:8px;width:100%;font-weight:700;font-variant-numeric:tabular-nums;opacity:.95}

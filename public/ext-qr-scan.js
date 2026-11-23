@@ -120,7 +120,7 @@
     try {
       const r = await api('POST', '/sales/scan-pump', payload);
       if (!r || !r.can_record_sale) return say('Scan refusé.', 'error');
-      if (!document.getElementById('fs_pump')) return;   // formulaire fermé entre-temps
+      if (!formVisible()) return;   // formulaire fermé entre-temps
       if (lockForm(r)) { window.__qrScan = { scan_id: r.scan_id, expires_at: r.expires_at, counter_id: r.counter.id, pump_id: r.pump.id, employee: r.employee }; banner(r); say('Pompe identifiée : complétez la vente puis enregistrez.', 'success'); }
     } catch (e) { say(errText(e), 'error'); }
   }
@@ -149,11 +149,13 @@
   }
   /* Point d'entrée « Vente par scan » (Ventes, Quart, raccourci bas droite) : ouvre le formulaire carburant si besoin,
    * puis la caméra directement ; une fois la pompe lue, le formulaire est prérempli (pompe, compteur, employé). */
+  // Le formulaire reste dans le DOM après closeM() (simple display:none) : tester sa visibilité réelle.
+  function formVisible() { const m = document.getElementById('m'), e = document.getElementById('fs_pump'); return !!(e && m && m.style.display !== 'none' && e.offsetParent !== null); }
   window.openScanSale = async function () {
     if (typeof can === 'function' && !can('sale.create')) return say('Permission « Enregistrer une vente » requise.', 'error');
-    try { if (!document.getElementById('fs_pump') && typeof window.addFuel === 'function') await window.addFuel(); }
+    try { if (!formVisible() && typeof window.addFuel === 'function') await window.addFuel(); }
     catch (e) { return say(errText(e), 'error'); }
-    if (!document.getElementById('fs_pump')) return say('Ouvrez un quart pour enregistrer une vente.', 'error');
+    if (!formVisible()) return say('Ouvrez un quart pour enregistrer une vente.', 'error');
     openScanner(onScanned);
   };
   window.addEventListener('pagehide', stopCamera);
