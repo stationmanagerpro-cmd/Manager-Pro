@@ -82,4 +82,10 @@ t('Vente au nom d’un employé : la permission du rôle ET le module du contrat
   assert.ok(/canDelegate: require\('\.\/qr_delegate'\)\.canDelegate\(req\)/.test(R('src/fuelsales.js')));
   assert.ok(!/perms\.has\('sale\.record_for_employee'\)/.test(R('src/qr_codes.js') + R('src/fuelsales.js')), 'plus de contrôle direct sans le contrat');
 });
+t('Scan : le formulaire fermé (closeM = display:none) est rouvert avant la caméra ; libellé « Quart N° » en blanc', () => {
+  const q = R('public/ext-qr-scan.js');
+  assert.ok(/function formVisible\(\)[^\n]*style\.display !== 'none'[^\n]*offsetParent/.test(q), 'visibilité réelle du formulaire');
+  assert.ok(!/getElementById\('fs_pump'\)\) return/.test(q.replace(/const s = [^\n]*/g, '')), 'plus de test d’existence seul');
+  assert.ok(/\.qv \.qv-id h2\{color:#fff !important/.test(R('public/ext-quart-view.css')));
+});
 console.log(`\n${ok}/${ok + ko} contrôles réussis.`); process.exit(ko ? 1 : 0);
