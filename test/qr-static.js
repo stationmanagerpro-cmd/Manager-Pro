@@ -97,4 +97,10 @@ t('Chargement long : le squelette affiche, après 6 s, un message et un bouton R
   assert.ok(/class="sk-wait"[^']*location\.reload\(\)/.test(R('public/app.js')));
   assert.ok(/\.sk-wait \{[^}]*animation: sk-wait-in \.3s ease 6s forwards !important/.test(R('public/app.css')));
 });
+t('Icône d’actualisation : chargeur affiché tant que la page n’est pas reprise, chargé avant app.js', () => {
+  const h = R('public/index.html'), l = R('public/ext-loader.js');
+  assert.ok(h.indexOf('/ext-loader.js') !== -1 && h.indexOf('/ext-loader.js') < h.indexOf('/app.js"'));
+  assert.ok(/smp-tk/.test(l) && /Actualisation en cours/.test(l) && /el\.remove\(\)/.test(l) && /login-shell/.test(l));
+  assert.ok(/#smp-loader \.smp-ld-ico \{[^}]*smp-ld-spin/.test(R('public/app.css')));
+});
 console.log(`\n${ok}/${ok + ko} contrôles réussis.`); process.exit(ko ? 1 : 0);

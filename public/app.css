@@ -1495,3 +1495,11 @@ input[type=color]::-moz-color-swatch { border: 0; border-radius: 8px; }
 .sk-wait { margin: 14px 0; text-align: center; font-size: 14px; color: var(--m, #5b6b8c); opacity: 0; animation: sk-wait-in .3s ease 6s forwards !important; }
 .sk-wait .b2 { margin-left: 8px; }
 @keyframes sk-wait-in { to { opacity: 1; } }
+
+/* Icône d'actualisation (ext-loader.js) : au centre de l'écran tant que la page n'est pas affichée. */
+#smp-loader { position: fixed; left: 50%; top: 45%; transform: translate(-50%, -50%); z-index: 9999; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 22px 28px; border-radius: 16px; background: rgba(12, 22, 48, .88); color: #fff; box-shadow: 0 10px 30px rgba(0, 0, 0, .35); font-size: 15px; text-align: center; }
+#smp-loader .smp-ld-ico { font-size: 38px; line-height: 1; display: inline-block; animation: smp-ld-spin 1s linear infinite; }
+#smp-loader .smp-ld-btn { display: none; margin-top: 4px; padding: 8px 14px; border: 0; border-radius: 10px; background: #1d4fd7; color: #fff; font-weight: 700; cursor: pointer; }
+#smp-loader.slow .smp-ld-btn { display: inline-block; }
+@keyframes smp-ld-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { #smp-loader .smp-ld-ico { animation-duration: 3s; } }
