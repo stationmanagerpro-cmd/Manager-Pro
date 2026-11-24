@@ -10,3 +10,8 @@
 - Changement : `public/ext-loader.js` lit `/api/branding` (public, identité plateforme administrée par le Super Admin) et affiche `/api/branding/logo` ; à défaut, `/icons/icon-192.png`. Le logo est mémorisé (`smp-ld-logo`) pour s'afficher aussitôt au chargement suivant. Anneau qui tourne autour du logo (`public/app.css`). `sw.js` régénéré ; `test/qr-static.js` 26/26.
 - Vérifié : Chrome (simulation) : logo dans l'anneau. Non vérifié : logo réel en production (le serveur simulé ne renvoie pas d'image).
 - Branche : feat/logo-chargeur.
+
+## Mise à jour — un seul message d'attente (2026-11-24, 03:55)
+- Demande : ne garder qu'un message. `public/app.css` : `body:has(#smp-loader) .sk-wait { display: none; }` — la fenêtre d'actualisation prime ; le message du squelette reste pour les changements de page (sans fenêtre). `sw.js` régénéré ; `test/qr-static.js` 27/27.
+- Vérifié (Chrome) : message du squelette masqué avec la fenêtre, visible sans. Non vérifié : production.
+- Branche : fix/un-seul-message.

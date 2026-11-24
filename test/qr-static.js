@@ -109,4 +109,7 @@ t('Démarrage : lectures indépendantes lancées en parallèle (licence, apparen
   assert.ok(/prefetchBoot\(\['\/me\/license\/status-message', '\/appearance', '\/me\/preferences\/theme', '\/me\/preferences\/nav-colors', '\/me\/preferences\/motion'\]\)/.test(a));
   assert.ok(a.indexOf('prefetchBoot([') < a.indexOf('showExpiredSubscriptionScreen()'), 'lancées avant la vérification de licence');
 });
+t('Un seul message d’attente : le message du squelette est masqué quand la fenêtre d’actualisation est affichée', () => {
+  assert.ok(/body:has\(#smp-loader\) \.sk-wait \{ display: none; \}/.test(R('public/app.css')));
+});
 console.log(`\n${ok}/${ok + ko} contrôles réussis.`); process.exit(ko ? 1 : 0);

@@ -1505,3 +1505,6 @@ input[type=color]::-moz-color-swatch { border: 0; border-radius: 8px; }
 #smp-loader.slow .smp-ld-btn { display: inline-block; }
 @keyframes smp-ld-spin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { #smp-loader .smp-ld-ring::before { animation-duration: 3s; } }
+
+/* Un seul message d'attente : celui de la fenêtre d'actualisation (ext-loader.js) prime sur celui du squelette. */
+body:has(#smp-loader) .sk-wait { display: none; }
