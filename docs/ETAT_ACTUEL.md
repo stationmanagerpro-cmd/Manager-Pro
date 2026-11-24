@@ -54,7 +54,7 @@ Mise en place de la directive permanente d'économie de tokens (`docs/REFERENCE.
 - Anciens documents de `docs/` : pas de suppression pour l'instant. Une liste fichier par fichier sera proposée plus tard.
 
 ## 7. Prochaine tâche précise (mise à jour 2026-11-24)
-1. Décision du propriétaire sur la prochaine optimisation de code (section 9, point « Candidat suivant »). Rien n'est lancé avant ce choix.
+1. Décision du propriétaire sur la migration d'index proposée (section 9, « Index SQL »). Rien n'est ajouté au code ni à la base avant ce choix.
 2. Lever le blocage npm (paramètres réseau), puis `npm ci` et `npm test`, et consigner le résultat ici.
 3. Diagnostiquer `test/about-page-ui.test.js` (échec signalé le 2026-11-21, avec la console du navigateur).
 4. Vérifier sur appareil réel : bandeau unique, menu sans mouvement, bouton « Besoin d'aide », scan QR, vente au nom d'un employé.
@@ -94,5 +94,7 @@ repo-hygiene 7/7 ; sw-coherence 8/8 ; banner-static 15 contrôles OK ; migration
 
 **Performance : état et candidat suivant**
 - Fait : compression gzip ; Chart.js à la demande (P-02) ; icônes sans perte (P-03 partiel).
-- Non fait : en-têtes `Cache-Control` longs sur les fichiers versionnés. Constat de code : `src/server.js` ne fixe `Cache-Control` que pour `sw.js` et les `.apk`. Candidat suivant (gain sur les visites répétées, risque faible si limité aux URL portant `?v=`), à valider par le propriétaire avant tout code.
+- Cache HTTP long sur les URL `?v=` : **écarté le 2026-11-24, ne pas relancer sans nouvel élément.** Raisons vérifiées dans le code : les `?v=N` de `public/index.html` sont des numéros manuels (41 balises `src` concernées, valeurs 1 à 5, ex. `ext-core.js?v=3`) qui ne changent pas quand le fichier change ; un cache long servirait d'anciennes versions, y compris au pré-chargement du service worker. Gain faible : `public/sw.js` sert déjà les statiques depuis son cache (nom dérivé d'une empreinte du contenu, `scripts/build-sw.js`).
+- Brotli à la place de gzip : mesuré le 2026-11-24 sur les 126 JS/CSS de la coquille, gzip niveau 6 : 732 Ko ; brotli niveau 11 : 643 Ko (−12 %, soit environ −90 Ko, de l'ordre de 0,2 s en 4G simulée). Non retenu : gain faible, calcul coûteux au démarrage, hébergeur peut déjà recompresser (non vérifié).
+- **Index SQL** (audit sur PostgreSQL 16 jetable, 125 migrations, 176 tables, 0 échec ; rapport : `docs/audit/AUDIT_INDEX_SQL_2026-11-24.md`) : tables principales déjà bien indexées. Deux requêtes réelles sans index adapté, mesurées sur données générées : `reports (shift_id, kind)` 17,5 ms → 0,04 ms (200 000 lignes) ; `customer_ledger (station_id, kind, occurred_at)` 27 ms → 11 ms (500 000 lignes). **Proposition en attente d'accord** : migration 126 additive (deux `CREATE INDEX IF NOT EXISTS`). Un push sur `main` déclenche le déploiement Render, donc la migration s'appliquerait en production.
 - Arrêtés sur décision du propriétaire : P-01 (regroupement ou chargement différé des 101 scripts), P-06 (stabilité visuelle, après sécurité et finances), WebP (P-03, à décider).
