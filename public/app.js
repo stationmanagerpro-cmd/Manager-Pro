@@ -140,7 +140,7 @@ const ask = (m, cb) => {
 const skeleton = (type = 'page') => {
   if (type === 'cards') return `<div class="cards">${[1,2,3,4].map(() => '<div class="card skeleton sk-card"></div>').join('')}</div>`;
   if (type === 'table') return '<div class="tw skeleton sk-table"></div>';
-  return skeleton('cards') + skeleton('table');
+  return skeleton('cards') + skeleton('table') + '<p class="sk-wait" role="status">Chargement en cours… le serveur met du temps à répondre. <button type="button" class="b2" onclick="location.reload()">Recharger la page</button></p>';
 };
 
 try { if (typeof I18N !== 'undefined') { document.documentElement.lang = I18N.getLang() === 'en' ? 'en' : 'fr'; const lb = document.getElementById('lang-toggle'); if (lb) lb.textContent = I18N.getLang() === 'fr' ? 'EN' : 'FR'; } } catch (e) {}

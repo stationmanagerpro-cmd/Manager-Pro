@@ -1490,3 +1490,8 @@ input[type=color]::-moz-color-swatch { border: 0; border-radius: 8px; }
 /* Sélecteur de station de l'en-tête : le nom long reste dans sa case (tronqué avec …), y compris sur petit écran. */
 #stsel { max-width: min(260px, 44vw); min-width: 0; flex: 0 1 auto; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 720px) { #stsel { max-width: min(170px, 36vw); font-size: 13px; } }
+
+/* Chargement long : message affiché seulement si le squelette reste à l'écran plus de 6 s (sans JS ; disparaît avec le squelette). */
+.sk-wait { margin: 14px 0; text-align: center; font-size: 14px; color: var(--m, #5b6b8c); opacity: 0; animation: sk-wait-in .3s ease 6s forwards !important; }
+.sk-wait .b2 { margin-left: 8px; }
+@keyframes sk-wait-in { to { opacity: 1; } }
