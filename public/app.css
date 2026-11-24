@@ -1498,8 +1498,10 @@ input[type=color]::-moz-color-swatch { border: 0; border-radius: 8px; }
 
 /* Icône d'actualisation (ext-loader.js) : au centre de l'écran tant que la page n'est pas affichée. */
 #smp-loader { position: fixed; left: 50%; top: 45%; transform: translate(-50%, -50%); z-index: 9999; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 22px 28px; border-radius: 16px; background: rgba(12, 22, 48, .88); color: #fff; box-shadow: 0 10px 30px rgba(0, 0, 0, .35); font-size: 15px; text-align: center; }
-#smp-loader .smp-ld-ico { font-size: 38px; line-height: 1; display: inline-block; animation: smp-ld-spin 1s linear infinite; }
+#smp-loader .smp-ld-ring { position: relative; width: 72px; height: 72px; display: grid; place-items: center; }
+#smp-loader .smp-ld-ring::before { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 3px solid rgba(255, 255, 255, .22); border-top-color: #fff; animation: smp-ld-spin 1s linear infinite; }
+#smp-loader .smp-ld-logo { width: 50px; height: 50px; object-fit: contain; border-radius: 12px; background: #fff; padding: 3px; }
 #smp-loader .smp-ld-btn { display: none; margin-top: 4px; padding: 8px 14px; border: 0; border-radius: 10px; background: #1d4fd7; color: #fff; font-weight: 700; cursor: pointer; }
 #smp-loader.slow .smp-ld-btn { display: inline-block; }
 @keyframes smp-ld-spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { #smp-loader .smp-ld-ico { animation-duration: 3s; } }
+@media (prefers-reduced-motion: reduce) { #smp-loader .smp-ld-ring::before { animation-duration: 3s; } }
