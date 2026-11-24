@@ -112,4 +112,8 @@ t('Démarrage : lectures indépendantes lancées en parallèle (licence, apparen
 t('Un seul message d’attente : le message du squelette est masqué quand la fenêtre d’actualisation est affichée', () => {
   assert.ok(/body:has\(#smp-loader\) \.sk-wait \{ display: none; \}/.test(R('public/app.css')));
 });
+t('Diagnostic de lenteur : appels mesurés et affichés par la fenêtre d’actualisation après 8 s', () => {
+  assert.ok(/window\.__apiLog/.test(R('public/app.js')) && /lg\.t1 = performance\.now\(\)/.test(R('public/app.js')));
+  assert.ok(/function diag\(\)/.test(R('public/ext-loader.js')) && /smp-ld-diag/.test(R('public/app.css')));
+});
 console.log(`\n${ok}/${ok + ko} contrôles réussis.`); process.exit(ko ? 1 : 0);

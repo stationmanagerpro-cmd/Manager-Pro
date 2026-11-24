@@ -1508,3 +1508,5 @@ input[type=color]::-moz-color-swatch { border: 0; border-radius: 8px; }
 
 /* Un seul message d'attente : celui de la fenêtre d'actualisation (ext-loader.js) prime sur celui du squelette. */
 body:has(#smp-loader) .sk-wait { display: none; }
+#smp-loader .smp-ld-diag { display: none; max-width: 320px; font-size: 11px; opacity: .75; line-height: 1.4; }
+#smp-loader.slow .smp-ld-diag { display: block; }

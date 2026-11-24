@@ -196,6 +196,9 @@ async function api(m, p, b) {
   /* Compteur de requêtes (60 dernières secondes) : en cas de 429, le message dit combien de requêtes ont été envoyées et vers quelle route. */
   const nowT = Date.now(), M = (window.__apiMeter = window.__apiMeter || []);
   M.push([nowT, String(p).split('?')[0].replace(/\/\d+/g, '/:id')]); while (M.length && nowT - M[0][0] > 60000) M.shift();
+  // Mesure des appels (diagnostic de lenteur, affichée par la fenêtre d'actualisation après 8 s) : 40 derniers appels.
+  const LG = (window.__apiLog = window.__apiLog || []), lg = { p: String(p).split('?')[0], t0: performance.now(), t1: 0 };
+  LG.push(lg); if (LG.length > 40) LG.shift();
   const doFetch = () => fetch('/api' + p, { method, headers: { 'Content-Type': 'application/json', ...(TK && { Authorization: 'Bearer ' + TK }), ...(requestSid && { 'X-Station-Id': requestSid }) }, body: b ? JSON.stringify(b) : undefined });
   let r = await doFetch();
   /* 429 (trop de requêtes) : une nouvelle tentative automatique après la pause demandée (lectures et écritures idempotentes) */
@@ -205,6 +208,7 @@ async function api(m, p, b) {
     r = await doFetch();
   }
   const j = await r.json().catch(() => null);
+  lg.t1 = performance.now();
   // Les lectures en cours pour l'ancienne station ne doivent jamais alimenter la nouvelle vue.
   if (method === 'GET' && requestStationEpoch !== STATION_EPOCH) {
     throw Object.assign(new Error('Lecture obsolète après changement de station'), { code: 'STALE_STATION_RESPONSE', stale: true });
