@@ -93,4 +93,8 @@ t('Anti double-clic : le formulaire carburant et la vente rapide n’envoient qu
   assert.ok(/let fBusy = false;\s+async function sendF\(confirm\) \{\s+if \(fBusy\) return;/.test(a) && /okBtn\.disabled = true/.test(a) && /finally \{ fBusy = false;/.test(a));
   assert.ok(/focusBusy/.test(b) && /if \(focusBusy\) return;/.test(b));
 });
+t('Chargement long : le squelette affiche, après 6 s, un message et un bouton Recharger', () => {
+  assert.ok(/class="sk-wait"[^']*location\.reload\(\)/.test(R('public/app.js')));
+  assert.ok(/\.sk-wait \{[^}]*animation: sk-wait-in \.3s ease 6s forwards !important/.test(R('public/app.css')));
+});
 console.log(`\n${ok}/${ok + ko} contrôles réussis.`); process.exit(ko ? 1 : 0);
