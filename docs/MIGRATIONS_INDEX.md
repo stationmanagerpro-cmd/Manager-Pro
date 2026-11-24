@@ -39,3 +39,4 @@ Ne pas renommer les fichiers déjà appliqués en production. Pour clarifier un 
 
 - `079_comptabilite.sql` — Comptabilité OHADA : plan comptable, exercices, écritures manuelles, immobilisations, permissions `accounting.*` (non destructif, idempotent).
 - `124_qr_codes_scan_pompes.sql` — Scan QR des pompes : tables `qr_codes` (un QR actif par compteur, jeton opaque), `qr_scans` (session de scan, 15 min, usage unique), `qr_events` (journal en ajout seul), permission `qr.manage` (ADMIN, GERANT). Additive et rejouable ; retour arrière : voir `docs/SCAN_QR_POMPES_TECHNIQUE.md`.
+- `126_index_reports_ledger.sql` — Performance : index `reports (shift_id, kind)` et `customer_ledger (station_id, kind, occurred_at)` ; additif, idempotent, réversible par `DROP INDEX IF EXISTS` (audit `docs/audit/AUDIT_INDEX_SQL_2026-11-24.md`).
