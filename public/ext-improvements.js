@@ -127,7 +127,13 @@
     if (found) { e.value = found.value; e.disabled = true; if (note) note.textContent = 'Pompe affectée à ' + found.textContent + ' : la vente sera enregistrée à son nom.'; }
     else { e.disabled = false; if (note) note.textContent = 'Cette pompe n\u2019a pas de responsable sur le quart : choisissez le pompiste.'; }
   };
+  var focusBusy = false;
   window.submitFocusSale = async function () {
+    if (focusBusy) return;
+    focusBusy = true;
+    try { await submitFocusSale1(); } finally { focusBusy = false; }
+  };
+  async function submitFocusSale1() {
     var cEl = document.getElementById('fq-counter'), modeEl = document.getElementById('fq-mode'), valEl = document.getElementById('fq-val'), eEl = document.getElementById('fq-emp');
     var counterId = cEl ? +cEl.value : 0, mode = modeEl ? modeEl.value : 'litres', val = valEl ? parseFloat(valEl.value) : 0;
     if (!counterId) return toast('Choisissez un compteur', 'error');
@@ -145,7 +151,7 @@
     } catch (e) {
       toast(errMsg(e), 'error');
     }
-  };
+  }
 
   /* 5. Page Premiers pas */
   async function vOnboarding() {

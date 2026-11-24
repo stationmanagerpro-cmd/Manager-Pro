@@ -88,4 +88,9 @@ t('Scan : le formulaire fermé (closeM = display:none) est rouvert avant la cam�
   assert.ok(!/getElementById\('fs_pump'\)\) return/.test(q.replace(/const s = [^\n]*/g, '')), 'plus de test d’existence seul');
   assert.ok(/\.qv \.qv-id h2\{color:#fff !important/.test(R('public/ext-quart-view.css')));
 });
+t('Anti double-clic : le formulaire carburant et la vente rapide n’envoient qu’une requête à la fois', () => {
+  const a = R('public/ext-sale-shift.js'), b = R('public/ext-improvements.js');
+  assert.ok(/let fBusy = false;\s+async function sendF\(confirm\) \{\s+if \(fBusy\) return;/.test(a) && /okBtn\.disabled = true/.test(a) && /finally \{ fBusy = false;/.test(a));
+  assert.ok(/focusBusy/.test(b) && /if \(focusBusy\) return;/.test(b));
+});
 console.log(`\n${ok}/${ok + ko} contrôles réussis.`); process.exit(ko ? 1 : 0);

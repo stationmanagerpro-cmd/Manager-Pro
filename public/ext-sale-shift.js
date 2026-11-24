@@ -227,7 +227,17 @@
       }
     }
 
+    // Anti double-clic : un seul envoi à la fois (verrou jusqu'à la réponse, bouton désactivé).
+    let fBusy = false;
     async function sendF(confirm) {
+      if (fBusy) return;
+      fBusy = true;
+      const okBtn = document.getElementById('fok');
+      if (okBtn) okBtn.disabled = true;
+      try { await sendF1(confirm); }
+      finally { fBusy = false; const b = document.getElementById('fok'); if (b) b.disabled = false; }
+    }
+    async function sendF1(confirm) {
       const body = {
         counter_id: Number($('#fc').value),
         mode: window.FM === 'montant' ? 'montant' : window.FM,
