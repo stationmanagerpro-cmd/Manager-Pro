@@ -144,6 +144,4 @@ html[data-skin=pro] .b2.on, html[data-skin=pro] .bar .b2.on, html[data-skin=pro]
   font-weight: 700;
 }
 
-/* En-tête entier masqué tant que le bandeau n'est pas posé (évite deux en-têtes successifs de hauteurs différentes, sans espace vide).
-   Pas de repli temporisé : l'en-tête reste masqué tant que le bandeau n'est pas posé (décision du 19 novembre). */
-html[data-hero-pending] #app-header { display: none; }
+/* La règle « en-tête masqué tant que le bandeau n'est pas posé » (data-hero-pending) est dans ext-banner.css : elle ne dépend pas du thème Pro. */

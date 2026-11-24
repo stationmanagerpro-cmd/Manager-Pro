@@ -43,3 +43,8 @@ html body .bn-seg button.on { background: var(--p) !important; color: var(--on-p
 @media (max-width: 860px) { .hero.hero-top { margin: 0 -14px; } }
 @media (max-width: 700px) { .hero-in { gap: 12px; } .hero-logo { width: 54px; font-size: 22px; } }
 @media print { .hero-edit, .hero-warn, .hero-cta { display: none !important; } }
+
+/* En-tête entier masqué tant que le bandeau n'est pas posé (évite deux en-têtes successifs de hauteurs différentes, sans espace vide).
+   Pas de repli temporisé : l'en-tête reste masqué tant que le bandeau n'est pas posé (décision du 19 novembre).
+   Marqueur posé par index.html et ext-banner.js. Règle placée ici (et non dans ext-skin-pro.css) pour valoir aussi avec le design précédent. */
+html[data-hero-pending] #app-header { display: none; }
