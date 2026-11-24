@@ -189,6 +189,8 @@ async function api(m, p, b) {
   const requestSid = SID;
   const requestStationEpoch = STATION_EPOCH;
   const method = String(m || 'GET').toUpperCase();
+  // Démarrage : lectures lancées en parallèle par boot() (prefetchBoot), consommées une seule fois, dans l'ordre d'origine.
+  if (method === 'GET' && window.__pre && window.__pre[p]) { const pr = window.__pre[p]; delete window.__pre[p]; return pr; }
   // A8 — Mode démonstration : données d'exemple locales, écritures simulées (voir ext-aide-demo.js). Aucun appel réseau pour les données.
   if (window.SMP_DEMO && window.SMP_DEMO.state.active) return window.SMP_DEMO.handle(method, p, b);
   /* Compteur de requêtes (60 dernières secondes) : en cas de 429, le message dit combien de requêtes ont été envoyées et vers quelle route. */
@@ -1125,6 +1127,13 @@ async function boot() {
   // Toujours recharger le profil depuis le serveur — jamais réutiliser un ME en mémoire
   // d'une session précédente (corrige la confusion de rôles entre comptes successifs).
   ME = await G('/me');
+  // Lancer tout de suite, en parallèle, les lectures de démarrage indépendantes (avant : une par une, chacune attendait la précédente).
+  const prefetchBoot = paths => { window.__pre = window.__pre || {}; paths.forEach(p => { const pr = api('GET', p); pr.catch(() => {}); window.__pre[p] = pr; }); setTimeout(() => { window.__pre = null; }, 15000); };
+  if (!ME.is_global && ME.stations && ME.stations.length) {
+    // Même règle de choix de station que plus bas (SID d'un autre compte jamais conservé), appliquée plus tôt pour pouvoir lancer les lectures en parallèle.
+    if (!SID || !ME.stations.find(s => s.id == SID)) SID = ME.stations[0].id;
+    prefetchBoot(['/me/license/status-message', '/appearance', '/me/preferences/theme', '/me/preferences/nav-colors', '/me/preferences/motion']);
+  }
   if (!ME.is_global && typeof window.showExpiredSubscriptionScreen === 'function') {
     const blockedByExpiredLicense = await window.showExpiredSubscriptionScreen();
     if (blockedByExpiredLicense) return;
