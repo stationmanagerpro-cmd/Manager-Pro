@@ -16,6 +16,27 @@ D'autres agents peuvent commit ou pousser pendant une pause. Avant de se fier à
 - Demander une décision par choix fermé, avec une option recommandée en premier.
 - Réponses courtes ; pas de répétition de l'historique.
 
+## 0 ter. Directive permanente : économie de tokens (adaptée du guide validé le 2026-11-24)
+Principe : consommer le minimum nécessaire pour un résultat complet et vérifiable. La concision ne justifie jamais d'omettre un test, un contrôle de sécurité ou une étape importante.
+
+**Documents de reprise (pas de doublon à créer).** Ce projet n'utilise pas les quatre fichiers du guide : `docs/REFERENCE.md` remplace cahier des charges et architecture ; `docs/ETAT_ACTUEL.md` remplace état actuel et suivi d'exécution. `CLAUDE.md` (racine) renvoie vers eux.
+
+**Avant une tâche :**
+1. Lire `docs/ETAT_ACTUEL.md`, puis les sections utiles de ce document. Ne pas relire `docs/` ni `Dossier CHANGELOG/` en entier.
+2. Faire la synchronisation de la section 0. Un suivi n'est pas une preuve : vérifier le code avant de déclarer un travail terminé.
+3. Ne pas refaire un audit récent (`docs/audit/`, `docs/MESURE_PERFORMANCE_*`) si le périmètre n'a pas changé.
+4. Signaler une contradiction entre documents au lieu de choisir une version.
+
+**Pendant :** un périmètre à la fois ; lire seulement les fichiers nécessaires ; modifications ciblées plutôt que réécriture ; regrouper les corrections de même nature ; réutiliser les composants existants ; ne jamais inventer un résultat de test ni déclarer réussi ce qui n'a pas été vérifié ; s'arrêter et demander si un changement est destructif.
+
+**Commandes courtes :** `REPRENDRE` (lire l'état, reprendre au prochain travail non terminé) · `CONTINUER` (prochaine tâche prioritaire définie) · `CORRIGER` (anomalies indiquées, sans élargir) · `AUDITER <périmètre>` · `OPTIMISER <périmètre>` (sans changer les règles métier) · `VALIDER <périmètre>` (tests pertinents, résultats consignés) · `LIVRER` (voir livraison ci-dessous).
+
+**Compte rendu (court) :** intervention · statut (terminé et vérifié / partiel / bloqué) · réalisé · fichiers modifiés · tests réellement exécutés et résultat · points à surveiller · prochaine tâche · suivi mis à jour oui/non.
+
+**Fin d'intervention significative :** mettre à jour `docs/ETAT_ACTUEL.md` (dernière tâche, changements, tests, problèmes ouverts, prochaine tâche précise), sans recopier l'historique.
+
+**Livraison :** deux livrables à chaque changement (zip complet du projet avec `android/`, zip des seuls fichiers à mettre à jour avec la même arborescence), après `npm run build:sw`, tests ciblés, comparaison avec le dépôt, sans `.env`.
+
 ## 1. Objet
 Application de gestion de stations-service : ventes et carburant, quarts et caisse, stocks et produits, achats, RH et paie, comptabilité OHADA, fiscalité, flotte, contrats clients, messagerie, alertes et sauvegardes. Plusieurs stations par compte client ; un superadmin plateforme sans station (`SID` null).
 
@@ -59,7 +80,7 @@ Les documents datés (`RAPPORT_*`, `LIVRAISON_*`, `CORRECTIONS_*`, `VERIFICATION
 - Menu : `public/ext-shell.js`. Une règle de démarrage (`#nav-boot`, dans `index.html`) coupe les animations au premier rendu.
 - Aide : `public/ext-help.js` (bouton « Besoin d'aide ») et `src/help_guides.js`.
 - Android : `android/`, projet séparé, non compilé dans l'environnement de développement.
-- Dossiers : `src/` (116 modules serveur), `public/` (103 scripts), `migrations/`, `test/` (238 fichiers), `scripts/`, `docs/`, `Dossier CHANGELOG/`.
+- Dossiers : `src/` (122 fichiers JS, compté le 2026-11-24), `public/` (106 scripts), `migrations/`, `test/` (249 fichiers), `scripts/`, `docs/`, `Dossier CHANGELOG/`.
 
 ## 5. Moyens de test
 | Moyen | Commande | Statut ici |

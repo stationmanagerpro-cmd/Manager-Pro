@@ -1,13 +1,15 @@
 # État actuel et suivi — Station Manager Pro
 
-Mis à jour le 2026-11-20. Fusionne l'ancien état actuel et le suivi d'exécution. Référence technique : `docs/REFERENCE.md`.
+Mis à jour le 2026-11-24. Fusionne l'ancien état actuel et le suivi d'exécution. Référence technique : `docs/REFERENCE.md`.
+Les sections 2 à 8 datent du 2026-11-20 sauf mention contraire ; la section 9 les complète jusqu'au 2026-11-24.
 
 ## 0. Dernier commit vérifié
-- `origin/main` : `57cf79d` (P-02, au moment de la mise à jour). Branches distantes : seule `main` au 2026-11-20 (vérifié par `git branch -r`).
+- `origin/main` : `ea18655` (2026-11-23), vérifié par `git fetch` le 2026-11-24. Branches distantes : seule `main` (`git branch -r`).
+- 49 commits depuis l'ancien repère `57cf79d` ; liste et conséquences : section 9.
 - Procédure de mise à jour : voir `docs/REFERENCE.md`, section 0.
 
 ## 1. Dernière tâche effectuée
-P-01 : inventaire et mesures de démarrage (lecture seule), chantier arrêté sur décision de l'utilisateur. Précédent : P-02 (Chart.js à la demande).
+Mise en place de la directive permanente d'économie de tokens (`docs/REFERENCE.md`, section 0 ter) et de `CLAUDE.md`. Mise à jour de cet état. Aucune modification du code du site.
 
 ## 2. Terminé et vérifié
 | Date | Tâche | Commit | Preuve |
@@ -51,10 +53,11 @@ P-01 : inventaire et mesures de démarrage (lecture seule), chantier arrêté su
 - URL du dépôt distant local : mise à jour vers `stationmanagerpro-cmd/Manager-Pro` (fetch vérifié).
 - Anciens documents de `docs/` : pas de suppression pour l'instant. Une liste fichier par fichier sera proposée plus tard.
 
-## 7. Prochaine tâche précise (mise à jour 2026-11-20)
-1. Lever le blocage npm (paramètres réseau), puis `npm ci` et `npm test`, et consigner le résultat ici.
-2. Test d'API de la règle de comptoir une fois le serveur lançable.
-3. Vérifier sur appareil réel : bandeau unique, menu sans mouvement, bouton « Besoin d'aide » dans la bannière.
+## 7. Prochaine tâche précise (mise à jour 2026-11-24)
+1. Décision du propriétaire sur la prochaine optimisation de code (section 9, point « Candidat suivant »). Rien n'est lancé avant ce choix.
+2. Lever le blocage npm (paramètres réseau), puis `npm ci` et `npm test`, et consigner le résultat ici.
+3. Diagnostiquer `test/about-page-ui.test.js` (échec signalé le 2026-11-21, avec la console du navigateur).
+4. Vérifier sur appareil réel : bandeau unique, menu sans mouvement, bouton « Besoin d'aide », scan QR, vente au nom d'un employé.
 
 ## 8. Audit d'optimisation (2026-11-20, audit seul puis lot P-06)
 - Mesures initiales (Chromium local, sans throttling, API simulée, sans gzip) : 102 scripts JS (2,27 Mo), 21 CSS (262 Ko, 18 % utilisé), FCP 660 ms, LCP 1 060 ms (téléphone), CLS 0,445 (téléphone) et 0,261 (ordinateur).
@@ -68,3 +71,28 @@ P-01 : inventaire et mesures de démarrage (lecture seule), chantier arrêté su
 - P-03 (approuvé) : icônes optimisées sans perte (−26 Ko, pixels identiques), commit `408eaf5`. Le gain de 300 Ko n'est atteignable qu'en WebP (changement de format, à décider) ou avec perte visible (refusé).
 - P-02 (approuvé) : Chart.js (201 Ko) chargé seulement sur les vues qui dessinent un graphique (`whenChart` / `chartTask` dans `public/index.html`). Au chargement : 0 requête vers Chart.js (test navigateur). Détail : `Dossier CHANGELOG/CHARTJS_A_LA_DEMANDE_P02_2026-11-20.md`. Affichage réel à vérifier sur l'application.
 - P-01 (chargement différé des scripts) : inventaire et mesure faits, chantier arrêté (décision de l'utilisateur, 2026-11-20). Mesures (Chromium, sans bridage) : 101 scripts, 2,07 Mo ; session connectée simulée : 16 % du code exécuté au démarrage, 116 à 124 ms de temps de scripts ; 51 fichiers sans effet de bord (0,90 Mo) exécutés à 13 % seulement. Risques d'ordre : 16 fichiers redéfinissent des fonctions partagées (go, paint, initShell, api…), 22 écrivent dans la table des vues `V`, 27 ont des effets au chargement. Gain réel non mesuré avec compression. Rien modifié. Compression : Express ne compresse pas les statiques (pas de middleware `compression`) ; la compression éventuelle de l'hébergeur n'a pas pu être vérifiée (production inaccessible depuis la session). Mesure locale : scripts au démarrage 2,07 Mo bruts, 0,66 Mo en gzip -9 (−68 %) ; chart.js 205 Ko bruts, 69 Ko gzip.
+
+## 9. Compléments du 2026-11-24 (49 commits entre `57cf79d` et `ea18655`)
+Lu dans `git log` et `git diff` ; le détail est dans `Dossier CHANGELOG/` et `docs/audit/`, pas ici.
+
+**Changements depuis le 2026-11-20 (faits vérifiés dans l'historique, non rejoués ici) :**
+- Compression gzip des statiques texte : `src/static_gzip.js`, branché dans `src/server.js` (32e604e, 0695263). Gain mesuré en 4G simulée : 5,8 s → 3,9 s (`docs/MESURE_PERFORMANCE_2026-11-21.md`). Présence de `Content-Encoding` en production : non vérifiée.
+- Audit lectures seules (lots 1 à 4) et décisions d'accès A-01 à A-04 appliquées (`src/core.js` : `hasManagerView`, notifications sensibles) ; rapport : `docs/audit/RAPPORT_FINAL_AUDIT_2026-11-21.md`.
+- Accès par onglet du contrat client (721beda, 25eb53f, 75f82b8, f87380e, 34d08e4).
+- Scan QR des pompes, scan Android par caméra web, vente au nom d'un employé (module de contrat `qr_delegate`). Quart : boutons Vente, Dépense, Anomalie, Clôture ; une agrégation au lieu de deux dans `/shifts/current` (62737d2).
+- Bandeau : plus de décalage de l'en-tête (127c0a8, f139443). Le repli à 10 s décrit en `docs/REFERENCE.md` section 4 n'existe plus dans `public/index.html` (`data-hero-pending` ne subsiste que dans `public/ext-skin-pro.css`) : description de référence à relire avant toute tâche sur le bandeau.
+- Page « À propos » : retrait d'Ika Sô puis rétablissement (301dbeb, 6d8fbd5).
+
+**Contradictions et points périmés (à décider, non tranchés) :**
+- `test/about-page-ui.test.js` en échec depuis le 2026-11-17 (`SUIVI_VERIFICATION_2026-11-21.md`) ; non rediagnostiqué.
+- Chiffres de `docs/REFERENCE.md` section 4 (116 modules, 103 scripts, 238 tests) : corrigés le 2026-11-24 (122 fichiers `src/*.js`, 106 `public/*.js`, 249 fichiers `test/`).
+- `Dossier CHANGELOG/` : 336 fichiers ; aucun traitement validé (P-09).
+
+**Tests statiques exécutés le 2026-11-24 (sans serveur, sans base, `node test/<nom>.js`) :**
+repo-hygiene 7/7 ; sw-coherence 8/8 ; banner-static 15 contrôles OK ; migration-safety 7/7 ; tenant-isolation 11/11 ; auth-lockout 9/9 ; links-audit OK (984 appels, 837 routes) ; pump-fuel-rule 7/7 ; qr-static 22/22 ; qr-logic-unit 25/25 ; qr-decoder-unit 21/21. `test/performance-motion.js` : fichier absent (cité par un suivi, à vérifier).
+`npm test` et tout test avec serveur : non exécutés (npm injoignable, `node_modules` absent, pas de base).
+
+**Performance : état et candidat suivant**
+- Fait : compression gzip ; Chart.js à la demande (P-02) ; icônes sans perte (P-03 partiel).
+- Non fait : en-têtes `Cache-Control` longs sur les fichiers versionnés. Constat de code : `src/server.js` ne fixe `Cache-Control` que pour `sw.js` et les `.apk`. Candidat suivant (gain sur les visites répétées, risque faible si limité aux URL portant `?v=`), à valider par le propriétaire avant tout code.
+- Arrêtés sur décision du propriétaire : P-01 (regroupement ou chargement différé des 101 scripts), P-06 (stabilité visuelle, après sécurité et finances), WebP (P-03, à décider).
