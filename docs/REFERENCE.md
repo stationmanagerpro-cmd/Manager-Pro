@@ -76,7 +76,7 @@ Les documents datés (`RAPPORT_*`, `LIVRAISON_*`, `CORRECTIONS_*`, `VERIFICATION
 - Front : JavaScript sans framework. `public/app.js` (démarrage, navigation, `canView`), `public/ext-*.js` (extensions : bandeau, menu, aide…), `public/index.html`.
 - Service worker : `public/sw.js`, généré par `scripts/build-sw.js` (`npm run build:sw`). Ne jamais le modifier à la main.
 - Permissions : `needPrincipal` contrôle `req.user.is_global`. Le middleware de station (`src/core.js`, lignes 74–84) exige `X-Station-Id` sauf pour le superadmin.
-- Bandeau : `public/ext-banner.js` et `public/ext-banner.css`. Photo enregistrée (IndexedDB) posée directement ; sinon `public/banner-defaut.webp`. Au démarrage, `index.html` pose `data-hero-pending` (en-tête masqué ; repli à 10 s). Le bandeau attend `window.__viewSettled` (posé par `app.js` en fin de démarrage).
+- Bandeau : `public/ext-banner.js` et `public/ext-banner.css`. Photo enregistrée (IndexedDB) posée directement ; sinon `public/banner-defaut.webp`. Au démarrage, `index.html` pose `data-hero-pending` (en-tête masqué par `public/ext-skin-pro.css` jusqu'à la pose du bandeau, retiré par `ext-banner.js`). Pas de repli temporisé (décision du 19 novembre ; vérifié le 2026-11-24). Le bandeau attend `window.__viewSettled` (posé par `app.js` en fin de démarrage).
 - Menu : `public/ext-shell.js`. Une règle de démarrage (`#nav-boot`, dans `index.html`) coupe les animations au premier rendu.
 - Aide : `public/ext-help.js` (bouton « Besoin d'aide ») et `src/help_guides.js`.
 - Android : `android/`, projet séparé, non compilé dans l'environnement de développement.

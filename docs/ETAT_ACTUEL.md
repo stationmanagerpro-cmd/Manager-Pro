@@ -4,7 +4,7 @@ Mis à jour le 2026-11-24. Fusionne l'ancien état actuel et le suivi d'exécuti
 Les sections 2 à 8 datent du 2026-11-20 sauf mention contraire ; la section 9 les complète jusqu'au 2026-11-24.
 
 ## 0. Dernier commit vérifié
-- `origin/main` : `ea18655` (2026-11-23), vérifié par `git fetch` le 2026-11-24. Branches distantes : seule `main` (`git branch -r`).
+- `origin/main` : `0364208` (2026-11-24), vérifié par `git fetch` le 2026-11-24 ; la suite de tests ci-dessous a été rejouée sur ce commit. Branches distantes : seule `main` (`git branch -r`).
 - 49 commits depuis l'ancien repère `57cf79d` ; liste et conséquences : section 9.
 - Procédure de mise à jour : voir `docs/REFERENCE.md`, section 0.
 
@@ -79,7 +79,7 @@ Lu dans `git log` et `git diff` ; le détail est dans `Dossier CHANGELOG/` et `d
 - Audit lectures seules (lots 1 à 4) et décisions d'accès A-01 à A-04 appliquées (`src/core.js` : `hasManagerView`, notifications sensibles) ; rapport : `docs/audit/RAPPORT_FINAL_AUDIT_2026-11-21.md`.
 - Accès par onglet du contrat client (721beda, 25eb53f, 75f82b8, f87380e, 34d08e4).
 - Scan QR des pompes, scan Android par caméra web, vente au nom d'un employé (module de contrat `qr_delegate`). Quart : boutons Vente, Dépense, Anomalie, Clôture ; une agrégation au lieu de deux dans `/shifts/current` (62737d2).
-- Bandeau : plus de décalage de l'en-tête (127c0a8, f139443). Le repli à 10 s décrit en `docs/REFERENCE.md` section 4 n'existe plus dans `public/index.html` (`data-hero-pending` ne subsiste que dans `public/ext-skin-pro.css`) : description de référence à relire avant toute tâche sur le bandeau.
+- Bandeau : plus de décalage de l'en-tête (127c0a8, f139443). Vérifié dans le code le 2026-11-24 : `public/index.html` (ligne 5) et `public/ext-banner.js` posent `data-hero-pending` (forme `dataset.heroPending`) ; `ext-banner.js` le retire une fois le bandeau décidé ; la règle qui masque l'en-tête est dans `public/ext-skin-pro.css` (ligne 149). **Il n'y a plus de repli temporisé à 10 s** (commentaire du CSS : décision du 19 novembre) : `docs/REFERENCE.md` section 4 corrigée. Correction d'une note précédente de ce document, inexacte (elle disait que l'attribut ne subsistait que dans le CSS).
 - Page « À propos » : retrait d'Ika Sô puis rétablissement (301dbeb, 6d8fbd5).
 
 **Contradictions et points périmés (à décider, non tranchés) :**
@@ -97,3 +97,12 @@ repo-hygiene 7/7 ; sw-coherence 8/8 ; banner-static 15 contrôles OK ; migration
 - Brotli à la place de gzip : mesuré le 2026-11-24 sur les 126 JS/CSS de la coquille, gzip niveau 6 : 732 Ko ; brotli niveau 11 : 643 Ko (−12 %, soit environ −90 Ko, de l'ordre de 0,2 s en 4G simulée). Non retenu : gain faible, calcul coûteux au démarrage, hébergeur peut déjà recompresser (non vérifié).
 - **Index SQL** (audit sur PostgreSQL 16 jetable, 124 fichiers de migration, 176 tables, 0 échec ; rapport : `docs/audit/AUDIT_INDEX_SQL_2026-11-24.md`) : tables principales déjà bien indexées. Deux requêtes réelles sans index adapté, mesurées sur données générées : `reports (shift_id, kind)` 17,5 ms → 0,04 ms (200 000 lignes) ; `customer_ledger (station_id, kind, occurred_at)` 27 ms → 11 ms (500 000 lignes). **Appliquée au dépôt le 2026-11-24 (accord du propriétaire)** : `migrations/126_index_reports_ledger.sql`, additive et réversible ; vérifiée sur PostgreSQL jetable (0 échec, rejeu et retour arrière OK). Le push sur `main` déclenche le déploiement Render : application en production **non vérifiée**. Note : `docs/MIGRATIONS_INDEX.md` indique encore « Dernière : 093 » dans « Plage actuelle » (périmé, non corrigé).
 - Arrêtés sur décision du propriétaire : P-01 (regroupement ou chargement différé des 101 scripts), P-06 (stabilité visuelle, après sécurité et finances), WebP (P-03, à décider).
+
+**Commits du propriétaire entre mon dernier push (`7100b50`) et `0364208` (lus dans `git log`, non audités par moi) :** démarrage plus rapide (lectures de licence, apparence et thèmes en parallèle, `public/app.js`), écran d'actualisation avec logo, icône et message unique (`public/ext-loader.js`, nouveau), message et bouton « Recharger » après 6 s, anti double-clic sur « Enregistrer la vente » (`public/ext-sale-shift.js`), diagnostic des appels lents. Détail : `Dossier CHANGELOG/*_2026-11-24.md`.
+
+**État de référence de tous les tests, 2026-11-24 (247 fichiers de `test/` et `test/ui-shell/`, hors `all.js`, lancés un par un, délai 90 s, sans serveur ni base ; Playwright fourni par l'installation Python via `NODE_PATH`, hors dépôt) :**
+- **224 passent** (dont `about-page-ui` 74 ✔ et `ui-shell` 66 ✔).
+- **1 échec réel : `test/skin-pro-static.js`** (« règle hors thème Pro : `html[data-hero-pending] #app-header` »). Le test exige que toute règle de `public/ext-skin-pro.css` soit limitée au thème Pro (`data-skin`), pour permettre le retour au design précédent ; la règle de la ligne 149 ne l'est pas (ajoutée par f139443). **Contradiction non tranchée** : (A) limiter la règle au thème Pro modifierait l'affichage du skin classic (l'en-tête ne serait plus masqué pendant l'attente du bandeau, aucune autre règle ne le fait) ; (B) laisser la règle globale et faire accepter cette exception par le test ; (C) déplacer la règle dans `public/ext-banner.css` (hors thème). Décision d'apparence : au propriétaire.
+- 11 non exécutables ici, dépendance absente (npm bloqué), module vérifié dans chaque sortie : `zod` (`about-page-http`, `employee-access-unit`, `employee-actions-unit`, `report-ui-harness`, `shift-attribution-share-unit`, `shift-close-attribution-unit`, `shift-report-share-unit`, `stock-movement-validation-unit`) ; `jsdom` (`calculator-dom`, `ui`) ; `exceljs` (`hr-finance`).
+- 10 exigent un serveur et une base : `access-keys`, `branding-permissions`, `client-account`, `contracts`, `hr-payroll-security`, `hr-v2`, `licenses`, `security`, `smoke`, `superadmin`. S'y ajoute `tenant-isolation-integration` (variables ISO_TEST_*).
+- Délais dépassés : 0. Rejoué sur `0364208` après les 14 commits du propriétaire : mêmes résultats (224 passent, aucune régression). Résultat à rejouer dans un environnement complet (`npm ci` puis `npm test`).
