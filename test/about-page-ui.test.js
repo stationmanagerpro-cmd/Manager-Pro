@@ -73,7 +73,7 @@ const VIEWPORTS = [['mobile', 390, 844], ['tablette', 820, 1180], ['ordinateur',
     page.on('pageerror', e => { errs.push(vname + ' : ' + e.message); console.log('   [pageerror]', e.message); });
     await mock(page); await aboutRoutes(page);
     await page.goto(base); await page.waitForSelector('#lu');
-    await page.fill('#lu', 'admin'); await page.fill('#lp', 'good'); await page.click('.login-card button'); await page.waitForSelector('#app.ready'); await page.waitForTimeout(900);
+    await page.fill('#lu', 'admin'); await page.fill('#lp', 'good'); await page.click('.login-card button[onclick^="doLogin"]'); await page.waitForSelector('#app.ready'); await page.waitForTimeout(900);
     if (w > 860) {
       const links = page.locator('#nav .nav-scroll > .nav-link, #nav .nav-scroll > .nav-node');
       const last = links.last(); ok(((await last.textContent()) || '').includes('A propos de Manager PRO'), 'onglet « A propos de Manager PRO » = dernier du menu');
@@ -117,12 +117,12 @@ const VIEWPORTS = [['mobile', 390, 844], ['tablette', 820, 1180], ['ordinateur',
   page.on('pageerror', e => { errs.push('sa : ' + e.message); console.log('   [pageerror]', e.message); });
   await mock(page); await aboutRoutes(page); await resetRoute(page);
   await page.goto(base); await page.waitForSelector('#lu');
-  await page.fill('#lu', 'sa'); await page.fill('#lp', 'good'); await page.click('.login-card button'); await page.waitForSelector('#app.ready'); await page.waitForTimeout(600);
+  await page.fill('#lu', 'sa'); await page.fill('#lp', 'good'); await page.click('.login-card button[onclick^="doLogin"]'); await page.waitForSelector('#app.ready'); await page.waitForTimeout(600);
   const lastSa = (await page.locator('#nav .nav-scroll > *').last().textContent()) || '';
   ok(lastSa.includes('A propos de Manager PRO'), 'Super Admin : onglet en dernière position du menu');
   await page.locator('#nav .nav-link[data-go="apropos"]').click(); await page.waitForSelector('#ab-root .ab-hero');
-  ok(await page.locator('.ab-edit-btn').count() === 1, 'Super Admin : bouton « Modifier la page »');
-  await page.click('.ab-edit-btn'); await page.waitForSelector('.ab-editing');
+  ok(await page.locator('.ab-edit-btn:not(.b2)').count() === 1, 'Super Admin : bouton « Modifier la page »');
+  await page.click('.ab-edit-btn:not(.b2)'); await page.waitForSelector('.ab-editing');
   ok(await page.locator('.ab-sole').count() === 10 && await page.locator('.ab-com-ed').count() === 4, 'éditeur : 10 solutions et 4 engagements modifiables');
   await page.screenshot({ path: SHOTS + '/a-propos-editeur.png' });
   // lien http refusé côté interface (aucun envoi)
@@ -142,12 +142,12 @@ const VIEWPORTS = [['mobile', 390, 844], ['tablette', 820, 1180], ['ordinateur',
   ok(await page.locator('.ab-sol').count() === 11, 'la nouvelle solution apparaît sur la page');
   await page.screenshot({ path: SHOTS + '/a-propos-sa-telechargement.png', fullPage: false });
   // XSS : le texte saisi est affiché comme du texte
-  await page.click('.ab-edit-btn'); await page.waitForSelector('.ab-editing');
+  await page.click('.ab-edit-btn:not(.b2)'); await page.waitForSelector('.ab-editing');
   await page.fill('#ab_title', '<img src=x onerror="window.__xss=1">Titre'); await page.click('.ab-save button:has-text("Enregistrer")'); await page.waitForSelector('#ab-root .ab-hero');
   ok(await page.evaluate(() => !window.__xss) && await page.locator('#ab-root img[src="x"]').count() === 0, 'HTML saisi non interprété (aucune injection)');
   // retour au modèle d'origine (avec confirmation)
   ok(stored !== null, 'avant : contenu personnalisé enregistré');
-  await page.click('.ab-edit-btn'); await page.waitForSelector('.ab-editing'); await page.click('button:has-text("Rétablir le modèle d’origine")');
+  await page.click('.ab-edit-btn:not(.b2)'); await page.waitForSelector('.ab-editing'); await page.click('button:has-text("Rétablir le modèle d’origine")');
   await page.click('#yes'); await page.waitForFunction(() => document.querySelectorAll('.ab-sol').length === 10 && !document.querySelector('.ab-editing'));
   ok(stored === null && (await page.textContent('.ab-hero h2')).trim() === 'A propos de Manager PRO', 'modèle d’origine rétabli (10 solutions, titre d’origine)');
   ok(await page.locator('.ab-dl-card[data-os="android"] a.ab-dl-btn[href="/downloads/Manager_Pro-debug-2026-11-17.apk"]').count() === 1, 'après retour au modèle : lien Android par défaut (APK hébergé) rétabli');

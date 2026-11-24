@@ -56,8 +56,7 @@ Mise en place de la directive permanente d'économie de tokens (`docs/REFERENCE.
 ## 7. Prochaine tâche précise (mise à jour 2026-11-24)
 1. Après déploiement Render : vérifier que la migration 126 est enregistrée (`schema_migrations`) et que les deux index existent en production ; consigner le résultat ici.
 2. Lever le blocage npm (paramètres réseau), puis `npm ci` et `npm test`, et consigner le résultat ici.
-3. Diagnostiquer `test/about-page-ui.test.js` (échec signalé le 2026-11-21, avec la console du navigateur).
-4. Vérifier sur appareil réel : bandeau unique, menu sans mouvement, bouton « Besoin d'aide », scan QR, vente au nom d'un employé.
+3. Vérifier sur appareil réel : bandeau unique, menu sans mouvement, bouton « Besoin d'aide », scan QR, vente au nom d'un employé.
 
 ## 8. Audit d'optimisation (2026-11-20, audit seul puis lot P-06)
 - Mesures initiales (Chromium local, sans throttling, API simulée, sans gzip) : 102 scripts JS (2,27 Mo), 21 CSS (262 Ko, 18 % utilisé), FCP 660 ms, LCP 1 060 ms (téléphone), CLS 0,445 (téléphone) et 0,261 (ordinateur).
@@ -84,7 +83,7 @@ Lu dans `git log` et `git diff` ; le détail est dans `Dossier CHANGELOG/` et `d
 - Page « À propos » : retrait d'Ika Sô puis rétablissement (301dbeb, 6d8fbd5).
 
 **Contradictions et points périmés (à décider, non tranchés) :**
-- `test/about-page-ui.test.js` en échec depuis le 2026-11-17 (`SUIVI_VERIFICATION_2026-11-21.md`) ; non rediagnostiqué.
+- `test/about-page-ui.test.js` : **corrigé le 2026-11-24**. Cause : défauts du test, pas du site. (1) le bouton œil `#lpeye` (voir/masquer le mot de passe) précède « Se connecter » dans `.login-card` ; le test cliquait le premier `button` et n'envoyait jamais la connexion ; (2) la page affiche aussi un bouton « Versions et restauration » de classe `ab-edit-btn b2`, alors que le test attendait un seul `.ab-edit-btn`. Sélecteurs précisés (`.login-card button[onclick^="doLogin"]`, `.ab-edit-btn:not(.b2)`), aucune vérification retirée. Résultat réel : code 0, 74 contrôles ✔ (3 formats d'écran + Super Admin), 0 erreur JavaScript de page. Exécuté avec le Playwright de l'installation Python (hors dépôt, `NODE_PATH`), car `npm` est indisponible ; le suivi AP-015 (« 74 contrôles navigateur verts ») redevient exact pour ce test. `test/ui-shell/ui-shell.test.js` : passe sans modification (66 ✔).
 - Chiffres de `docs/REFERENCE.md` section 4 (116 modules, 103 scripts, 238 tests) : corrigés le 2026-11-24 (122 fichiers `src/*.js`, 106 `public/*.js`, 249 fichiers `test/`).
 - `Dossier CHANGELOG/` : 336 fichiers ; aucun traitement validé (P-09).
 
