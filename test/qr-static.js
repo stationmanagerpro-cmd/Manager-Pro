@@ -115,6 +115,11 @@ t('Un seul message d’attente : le message du squelette est masqué quand la fe
 t('Fenêtre d’actualisation : aucun détail technique affiché (mesure silencieuse conservée, bouton Recharger après 8 s)', () => {
   assert.ok(/window\.__apiLog/.test(R('public/app.js')) && /lg\.t1 = performance\.now\(\)/.test(R('public/app.js')));
   assert.ok(!/diag\(|smp-ld-diag/.test(R('public/ext-loader.js')) && !/smp-ld-diag/.test(R('public/app.css')));
-  assert.ok(/smp-ld-btn/.test(R('public/ext-loader.js')) && /Date\.now\(\) - t0 > 8000\) \{ el\.classList\.add\('slow'\)/.test(R('public/ext-loader.js')));
+  assert.ok(/smp-ld-btn/.test(R('public/ext-loader.js')) && /age > 8000\) el\.classList\.add\('slow'\)/.test(R('public/ext-loader.js')));
+});
+t('Fenêtre d’actualisation : réservée aux écrans vides (délai 1,2 s, retirée dès que la page est affichée, .sk-wait prend le relais)', () => {
+  const l = R('public/ext-loader.js');
+  assert.ok(/function shellShown\(\)/.test(l) && /age > 1200/.test(l) && /!document\.querySelector\('\.sk-wait'\)/.test(l));
+  assert.ok(!/DOMContentLoaded', function \(\) \{ build\(\)/.test(l), 'plus d’affichage immédiat à chaque actualisation');
 });
 console.log(`\n${ok}/${ok + ko} contrôles réussis.`); process.exit(ko ? 1 : 0);

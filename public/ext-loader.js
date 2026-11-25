@@ -1,5 +1,8 @@
-/* Icône d'actualisation : visible tant que l'écran n'est pas repris (réponse lente du serveur, redémarrage après déploiement).
- * Masquée dès que le contenu de la page est affiché, ou si l'écran de connexion apparaît. Après 8 s : bouton « Recharger ». */
+/* Icône d'actualisation : réservée aux écrans VIDES (réponse lente du serveur, redémarrage après déploiement).
+ * - Apparaît seulement si l'écran reste vide plus de 1,2 s (pas d'éclair à chaque actualisation rapide).
+ * - Disparaît dès que la page est affichée, même si ses cartes attendent encore leurs données : les cases de chargement
+ *   et le message « Chargement en cours… » (.sk-wait, après 6 s) prennent le relais.
+ * - Après 8 s sur un écran vide : bouton « Recharger ». */
 (function () {
   'use strict';
   var tk = null; try { tk = localStorage.getItem('smp-tk'); } catch (_) {}
@@ -31,11 +34,18 @@
     if (document.documentElement.dataset.heroPending) return false;
     return !!(pg && pg.children.length && !pg.querySelector('.skeleton'));
   }
-  function tick() {
-    build();
-    if (ready()) { if (el) el.remove(); clearInterval(timer); return; }
-    if (el && Date.now() - t0 > 8000) { el.classList.add('slow'); }
+  function shellShown() {   // page affichée (bandeau décidé, contenu ou cases de chargement présents)
+    var pg = document.getElementById('pg');
+    return !document.documentElement.dataset.heroPending && !!(pg && pg.children.length);
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { build(); loadLogo(); timer = setInterval(tick, 250); });
-  else { build(); loadLogo(); timer = setInterval(tick, 250); }
+  function tick() {
+    if (ready()) { if (el) el.remove(); clearInterval(timer); return; }
+    var age = Date.now() - t0, show;
+    if (shellShown()) show = age > 8000 && !document.querySelector('.sk-wait');   // données lentes : .sk-wait s'en charge
+    else show = age > 1200;                                                       // écran vide
+    if (show) { build(); if (el && age > 8000) el.classList.add('slow'); }
+    else if (el) { el.remove(); el = null; }
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { loadLogo(); timer = setInterval(tick, 250); });
+  else { loadLogo(); timer = setInterval(tick, 250); }
 })();
