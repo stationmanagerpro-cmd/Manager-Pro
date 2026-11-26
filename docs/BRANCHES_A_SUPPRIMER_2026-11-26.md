@@ -1,6 +1,8 @@
-# Branches supprimées le 2026-11-26
+# Branches à supprimer (liste du 2026-11-26) — NON supprimées
 
-Supprimées à la demande du propriétaire parce que leur contenu est **entièrement dans `main`** (comparaison GitHub : 0 commit en avance), sauf `fix/quarts-ouverts-etat-courant` dont le correctif a été repris dans `main` par cherry-pick (`5e737af`). Aucun travail n'est perdu.
+**Statut : aucune n'est supprimée.** La suppression depuis la session de travail a été refusée par GitHub (erreur 403) ; elle doit être faite par le propriétaire dans GitHub (page *Branches* du dépôt, icône corbeille de chaque ligne). À supprimer parce que leur contenu est **entièrement dans `main`** (comparaison GitHub : 0 commit en avance), sauf `fix/quarts-ouverts-etat-courant` dont le correctif a été repris dans `main` par cherry-pick (`5e737af`). Aucun travail n'est perdu.
+
+Une fois supprimées, la liste ci-dessous permet de les recréer.
 
 **Pour recréer une branche** (identifiant conservé ci-dessous) : `git push origin <identifiant>:refs/heads/<nom>`. GitHub conserve un temps les commits non rattachés ; la restauration est fiable tant que l'identifiant reste accessible.
 
