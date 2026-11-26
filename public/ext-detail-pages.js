@@ -227,6 +227,72 @@
   VM.four = async function () { return await oldFour(); };
 
 
+
+  // Bandeau par défaut du client (Super Admin) : l'image est recadrée au format 3:1, redimensionnée (1600 px max) et compressée en WebP
+  // (JPEG si le navigateur ne sait pas encoder le WebP) avant l'envoi, pour un chargement rapide chez le client. Le serveur refuse au-delà de 400 Ko.
+  const BN_W = 1600, BN_H = 533, BN_TARGET = 150 * 1024, BN_MAX = 400 * 1024;
+  const kb = n => Math.round(n / 1024) + ' Ko';
+  window.renderClientBannerEditor = async function (clientId) {
+    const cfg = await G('/admin/clients/' + clientId + '/default-banner').catch(() => null);
+    if (!cfg) return '<p class="warn">Impossible de charger le bandeau par défaut.</p>';
+    let src = '/banner-defaut.webp';
+    if (cfg.has_image) { try { const r = await fetch(cfg.url + '?t=' + Date.now(), { headers: { Authorization: 'Bearer ' + TK }, cache: 'no-store' }); if (r.ok) { if (window.__clientBannerUrl) URL.revokeObjectURL(window.__clientBannerUrl); window.__clientBannerUrl = URL.createObjectURL(await r.blob()); src = window.__clientBannerUrl; } } catch (_) {} }
+    return `<div class="card" style="text-align:left"><h3>Bandeau par défaut du client</h3>
+      <p class="detail-meta">Image affichée en haut des pages de ce client (toutes ses stations) tant qu’une station n’a pas choisi sa propre photo. Sans image personnalisée, le bandeau Manager PRO est utilisé. Ce réglage ne concerne que le client #${clientId}.</p>
+      <div style="aspect-ratio:3/1;max-width:640px;border-radius:12px;overflow:hidden;background:var(--bg)"><img id="cbn-cur" src="${escv(src)}" alt="Bandeau actuel" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+      <p class="detail-meta">${cfg.has_image ? 'Bandeau personnalisé · ' + kb(cfg.size || 0) : 'Bandeau Manager PRO (par défaut)'}</p>
+      <p class="detail-meta">L’image est automatiquement recadrée au format large 3:1 (centré), réduite à ${BN_W} × ${BN_H} px maximum et compressée (cible ${kb(BN_TARGET)}, maximum ${kb(BN_MAX)}) pour un chargement rapide. Le nom de la station s’affiche par-dessus : préférez une image plutôt sombre ou uniforme à gauche.</p>
+      <div class="detail-actions"><button onclick="clientBannerPick(${clientId})">${cfg.has_image ? 'Remplacer l’image' : 'Choisir une image'}</button>${cfg.has_image ? `<button class="b2" onclick="clientBannerRemove(${clientId})">Revenir au bandeau Manager PRO</button>` : ''}</div>
+      <input id="cbn-file" type="file" accept="image/png,image/jpeg,image/webp" hidden></div>`;
+  };
+  function bnLoad(file) {
+    return new Promise((ok, ko) => { const u = URL.createObjectURL(file), i = new Image(); i.onload = () => { URL.revokeObjectURL(u); ok(i); }; i.onerror = () => { URL.revokeObjectURL(u); ko(new Error('Image illisible')); }; i.src = u; });
+  }
+  function bnBlob(c, type, q) { return new Promise(r => c.toBlob(b => r(b), type, q)); }
+  async function bnEncode(img) {   // recadrage centré 3:1, puis compression jusqu'au poids visé
+    let w = BN_W, h = BN_H, best = null;
+    for (let step = 0; step < 6; step++) {
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, w, h);
+      const k = Math.max(w / img.naturalWidth, h / img.naturalHeight), dw = img.naturalWidth * k, dh = img.naturalHeight * k;
+      g.drawImage(img, (w - dw) / 2, (h - dh) / 2, dw, dh);
+      for (const q of [.82, .72, .62, .52, .42]) {
+        let b = await bnBlob(c, 'image/webp', q);
+        if (!b || b.type !== 'image/webp') b = await bnBlob(c, 'image/jpeg', q);
+        if (!b) throw new Error('Compression impossible');
+        best = b; if (b.size <= BN_TARGET) return best;
+      }
+      if (best.size <= BN_MAX && step >= 1) return best;   // acceptable : sous le maximum après une première réduction
+      w = Math.round(w * .85); h = Math.round(h * .85);
+    }
+    if (best.size > BN_MAX) throw new Error('Image trop complexe : choisissez une image plus simple ou plus petite');
+    return best;
+  }
+  const bnData = b => new Promise((ok, ko) => { const r = new FileReader(); r.onload = () => ok(r.result); r.onerror = ko; r.readAsDataURL(b); });
+  window.clientBannerPick = function (id) {
+    const input = document.getElementById('cbn-file'); if (!input) return;
+    input.onchange = async () => {
+      const f = input.files && input.files[0]; input.value = ''; if (!f) return;
+      if (!/^image\/(png|jpeg|webp)$/.test(f.type)) return toast('Formats autorisés : PNG, JPEG ou WebP', 'error');
+      if (f.size > 25 * 1024 * 1024) return toast('Fichier trop volumineux (25 Mo maximum avant compression)', 'error');
+      try {
+        const out = await bnEncode(await bnLoad(f)), data = await bnData(out), url = URL.createObjectURL(out);
+        modal(`<h3>Aperçu du bandeau</h3><div style="aspect-ratio:3/1;border-radius:12px;overflow:hidden;background:var(--bg)"><img src="${url}" alt="Aperçu" style="width:100%;height:100%;object-fit:cover;display:block"></div>
+          <p class="detail-meta">Poids final : <b>${kb(out.size)}</b> (${out.type === 'image/webp' ? 'WebP' : 'JPEG'}), contre ${kb(f.size)} pour l’original.</p>
+          <div class="r"><button class="b2" onclick="closeM()">Annuler</button><button id="cbn-save">Enregistrer pour ce client</button></div>`);
+        document.getElementById('cbn-save').onclick = async function () {
+          this.disabled = true;
+          try { await api('PUT', '/admin/clients/' + id + '/default-banner', { data_url: data }); URL.revokeObjectURL(url); closeM(); toast('Bandeau par défaut enregistré', 'success'); go('clientdetail', id); }
+          catch (e) { this.disabled = false; toast(errMsg(e), 'error'); }
+        };
+      } catch (e) { toast(errMsg(e), 'error'); }
+    };
+    input.click();
+  };
+  window.clientBannerRemove = id => ask('Supprimer le bandeau personnalisé de ce client et revenir au bandeau Manager PRO ?', async () => {
+    try { await api('DELETE', '/admin/clients/' + id + '/default-banner'); toast('Bandeau Manager PRO rétabli', 'success'); go('clientdetail', id); } catch (e) { toast(errMsg(e), 'error'); }
+  });
+
   window.renderClientAdEditor = async function (clientId) {
     const cfg = await G('/admin/clients/' + clientId + '/advertising').catch(() => null);
     if (!cfg) return '<p class="warn">Impossible de charger la configuration publicitaire.</p>';
@@ -399,8 +465,8 @@
     const dashResponse = await G('/admin/clients/' + id + '/dashboard-config').catch(() => null);
     const dashCfg = dashResponse?.config || {};
     const dashboardHtml = dashResponse ? `<div class="card" style="text-align:left"><h3>Configuration Dashboard · ${esc(c.name || 'Client')}</h3><p class="detail-meta">Ces réglages sont propres à ce client et partagés par ses stations. Modifier le client sélectionné ne modifie pas les autres comptes clients.</p><h4>Cartes KPI</h4>${clientDashChecks(id, 'cards', dashCfg.cards)}<h4>Graphiques</h4>${clientDashChecks(id, 'charts', dashCfg.charts)}<h4>Sections</h4>${clientDashChecks(id, 'sections', dashCfg.sections)}<h4>Raccourcis</h4><p class="detail-meta">Codes autorisés : ${CLIENT_DASH_SHORTCUTS.join(', ')}</p><input id="client_dash_${id}_shortcuts" class="q" style="width:100%" value="${escv((dashCfg.shortcuts || []).join(', '))}"><div class="detail-actions" style="margin-top:12px"><button onclick="saveClientDashboardConfig(${id})">Enregistrer la configuration</button><button class="b2" onclick="resetClientDashboardConfig(${id})">Réinitialiser</button></div></div>` : '<p class="warn">Impossible de charger la configuration Dashboard. Vérifiez la migration 055 et les droits Super Admin.</p>';
-    const tabsHtml = tabs('admin-client-detail', [['overview','Vue d’ensemble'],['contract','Contrat / abonnement'],['users','Utilisateurs'],['modules','Modules'],['usage','Utilisation'],['dashboard','Config Dashboard'],['history','Historique'],['maintenance','Sauvegardes / restauration'],['ads','Publicité personnalisée']], 'overview');
-    const html = `<div class="detail-page"><div class="detail-head"><div><h2>${esc(c.name || 'Client')}</h2><div class="detail-meta">Fiche administrative Super Admin · Client #${id} · ${tag}</div></div><div class="detail-actions"><button class="b2" onclick="go('caps')" title="Retirer une permission à toute une station">🔒 Plafonds de droits</button><button class="b2" onclick="go('clients')">← Liste des clients</button></div></div>${tabsHtml}${pane('admin-client-detail','overview',true,overview)}${pane('admin-client-detail','contract',false,contractHtml)}${pane('admin-client-detail','users',false,usersHtml)}${pane('admin-client-detail','modules',false,modsHtml)}${pane('admin-client-detail','usage',false,typeof renderClientUsagePane === 'function' ? await renderClientUsagePane(id) : '<p class="detail-empty">Utilisation indisponible.</p>')}${pane('admin-client-detail','dashboard',false,dashboardHtml)}${pane('admin-client-detail','history',false,historyHtml)}${pane('admin-client-detail','maintenance',false,maintenanceHtml)}${pane('admin-client-detail','ads',false,typeof renderClientAdEditor === 'function' ? await renderClientAdEditor(id) : '<p class="detail-empty">L’éditeur publicitaire individualisé sera activé dans la prochaine étape technique.</p>')}</div>`;
+    const tabsHtml = tabs('admin-client-detail', [['overview','Vue d’ensemble'],['contract','Contrat / abonnement'],['users','Utilisateurs'],['modules','Modules'],['usage','Utilisation'],['dashboard','Config Dashboard'],['history','Historique'],['maintenance','Sauvegardes / restauration'],['banner','Bandeau par défaut'],['ads','Publicité personnalisée']], 'overview');
+    const html = `<div class="detail-page"><div class="detail-head"><div><h2>${esc(c.name || 'Client')}</h2><div class="detail-meta">Fiche administrative Super Admin · Client #${id} · ${tag}</div></div><div class="detail-actions"><button class="b2" onclick="go('caps')" title="Retirer une permission à toute une station">🔒 Plafonds de droits</button><button class="b2" onclick="go('clients')">← Liste des clients</button></div></div>${tabsHtml}${pane('admin-client-detail','overview',true,overview)}${pane('admin-client-detail','contract',false,contractHtml)}${pane('admin-client-detail','users',false,usersHtml)}${pane('admin-client-detail','modules',false,modsHtml)}${pane('admin-client-detail','usage',false,typeof renderClientUsagePane === 'function' ? await renderClientUsagePane(id) : '<p class="detail-empty">Utilisation indisponible.</p>')}${pane('admin-client-detail','dashboard',false,dashboardHtml)}${pane('admin-client-detail','history',false,historyHtml)}${pane('admin-client-detail','maintenance',false,maintenanceHtml)}${pane('admin-client-detail','banner',false,typeof renderClientBannerEditor === 'function' ? await renderClientBannerEditor(id) : '')}${pane('admin-client-detail','ads',false,typeof renderClientAdEditor === 'function' ? await renderClientAdEditor(id) : '<p class="detail-empty">L’éditeur publicitaire individualisé sera activé dans la prochaine étape technique.</p>')}</div>`;
     setTimeout(() => { const root = document.getElementById('pg'); if (root) bindTabs(root); }, 0);
     return html;
   };

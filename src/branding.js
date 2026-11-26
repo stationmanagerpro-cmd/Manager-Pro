@@ -277,6 +277,55 @@ admin.get('/admin/clients/:id/advertising/images/:index', clientAdAdmin, wrap(as
   const cfg = await readClientAd(id); if (!cfg.images[index]) throw new HttpError(404, 'Image introuvable'); await sendStoredImage(cfg.images[index], res);
 }));
 
+// Bandeau par défaut personnalisé par client : photo posée par le Super Admin, affichée chez ce client (toutes ses stations)
+// tant qu'une station n'a pas sa propre photo. Clé et image strictement isolées par client ; poids limité (chargement rapide).
+const clientBannerKey = id => `client_default_banner_${Number(id)}`;
+const CLIENT_BANNER_MAX = 400 * 1024;
+const clientIdParam = req => { const id = Number(req.params.id); if (!Number.isSafeInteger(id) || id < 1) throw new HttpError(400, 'Identifiant client invalide'); return id; };
+async function readClientBanner(id) {
+  const { rows } = await pool.query('SELECT value FROM app_settings WHERE key=$1', [clientBannerKey(id)]);
+  let v = rows[0] && rows[0].value;
+  if (typeof v === 'string') { try { v = JSON.parse(v); } catch (_) { v = null; } }
+  return { path: v && typeof v.path === 'string' && v.path ? v.path : null, size: v && Number(v.size) > 0 ? Number(v.size) : null };
+}
+async function writeClientBanner(id, value, userId) {
+  await pool.query(`INSERT INTO app_settings(key,value,updated_by) VALUES($1,$2::jsonb,$3)
+    ON CONFLICT(key) DO UPDATE SET value=EXCLUDED.value,updated_at=now(),updated_by=EXCLUDED.updated_by`,
+    [clientBannerKey(id), JSON.stringify(value), userId || null]);
+}
+admin.get('/admin/clients/:id/default-banner', clientAdAdmin, wrap(async (req, res) => {
+  const id = clientIdParam(req); await ensureClientExists(id);
+  const cfg = await readClientBanner(id);
+  res.set('Cache-Control', 'no-store').json({ client_id: id, has_image: !!cfg.path, size: cfg.size, max_size: CLIENT_BANNER_MAX, url: cfg.path ? `/api/admin/clients/${id}/default-banner/image` : null });
+}));
+admin.get('/admin/clients/:id/default-banner/image', clientAdAdmin, wrap(async (req, res) => {
+  const id = clientIdParam(req); await ensureClientExists(id);
+  const cfg = await readClientBanner(id); if (!cfg.path) throw new HttpError(404, 'Aucun bandeau par défaut pour ce client');
+  await sendStoredImage(cfg.path, res);
+}));
+admin.put('/admin/clients/:id/default-banner', clientAdAdmin, body(z.object({ data_url: z.string().min(20).max(CLIENT_BANNER_MAX * 2) })), wrap(async (req, res) => {
+  const id = clientIdParam(req); await ensureClientExists(id);
+  const m = /^data:[\w/+.-]+;base64,(.+)$/s.exec(req.body.data_url);
+  const bytes = m ? Math.floor(m[1].replace(/\s/g, '').length * 3 / 4) : 0;
+  if (!bytes) throw new HttpError(400, 'Image invalide');
+  if (bytes > CLIENT_BANNER_MAX) throw new HttpError(413, `Image trop lourde pour un bandeau (${Math.round(CLIENT_BANNER_MAX / 1024)} Ko maximum). Utilisez un format large, par exemple 1600 × 533, au format WebP ou JPEG.`);
+  const old = await readClientBanner(id);
+  const rel = await files.save('client-banners', req.body.data_url);
+  try { await writeClientBanner(id, { path: rel, size: bytes }, req.user.id); }
+  catch (e) { await files.remove(rel); throw e; }
+  if (old.path && old.path !== rel) { try { await files.remove(old.path); } catch (_) {} }
+  await audit(pool, req, 'bandeau client', `Bandeau par défaut du client #${id} ${old.path ? 'remplacé' : 'défini'}`, 'clients', id, { has_image: !!old.path }, { has_image: true, size: bytes });
+  res.json({ ok: true, size: bytes });
+}));
+admin.delete('/admin/clients/:id/default-banner', clientAdAdmin, wrap(async (req, res) => {
+  const id = clientIdParam(req); await ensureClientExists(id);
+  const old = await readClientBanner(id);
+  await writeClientBanner(id, { path: null }, req.user.id);
+  if (old.path) { try { await files.remove(old.path); } catch (_) {} }
+  await audit(pool, req, 'bandeau client', `Bandeau par défaut du client #${id} supprimé (retour au bandeau Manager PRO)`, 'clients', id, { has_image: !!old.path }, { has_image: false });
+  res.json({ ok: true });
+}));
+
 async function currentClientId(req) {
   if (req.user && req.user.is_global) return null;
   if (req.sid) {
@@ -299,6 +348,12 @@ admin.get('/me/advertising', wrap(async (req, res) => {
     interval_sec: cfg.interval_sec || 60,
     images: visible ? cfg.images.map((_, i) => `/api/me/advertising/images/${i}`) : []
   });
+}));
+// Bandeau par défaut du client connecté (jamais celui d'un autre client) ; 404 = utiliser l'image Manager PRO.
+admin.get('/me/default-banner', wrap(async (req, res) => {
+  const id = await currentClientId(req); if (!id) throw new HttpError(404, 'Aucun bandeau par défaut');
+  const cfg = await readClientBanner(id); if (!cfg.path) throw new HttpError(404, 'Aucun bandeau par défaut');
+  await sendStoredImage(cfg.path, res);
 }));
 admin.get('/me/advertising/images/:index', wrap(async (req, res) => {
   const id = await currentClientId(req); if (!id) throw new HttpError(404, 'Image introuvable');
