@@ -30,6 +30,19 @@
   var cache = { url: null, key: null };
   /* Photo par défaut de Manager PRO : affichée pendant le téléchargement, ou si la station n'a pas de photo. */
   var DEFAULT_IMG = '/banner-defaut.webp';
+  /* Bandeau par défaut propre au client (posé par le Super Admin dans sa fiche) : remplace la photo Manager PRO ; repli sur elle si absent ou lent. */
+  var dflt = { key: null, p: null };
+  function defaultUrl() {
+    var key = String(typeof SID !== 'undefined' ? SID : '') + ':' + (window.__heroV || 0);
+    if (dflt.key === key && dflt.p) return dflt.p;
+    var ac = typeof AbortController === 'function' ? new AbortController() : null, t = ac ? setTimeout(function () { ac.abort(); }, 4000) : null;
+    var p = fetch('/api/me/default-banner', { headers: { Authorization: 'Bearer ' + TK, 'X-Station-Id': String(SID) }, signal: ac ? ac.signal : undefined })
+      .then(function (r) { return r.ok ? r.blob() : null; })
+      .then(function (b) { return b && b.size ? URL.createObjectURL(b) : DEFAULT_IMG; })
+      .catch(function () { return DEFAULT_IMG; })
+      .finally(function () { if (t) clearTimeout(t); });
+    dflt = { key: key, p: p }; return p;
+  }
   /* Charge (et décode) une image avant de l'afficher ; repli après 3 s. */
   function warm(src) { return new Promise(function (ok) { var i = new Image(), t = setTimeout(ok, 3000); function done() { clearTimeout(t); ok(); } i.src = src; if (i.decode) { i.decode().then(done, done); } else { i.onload = done; i.onerror = done; } }); }
   /* Photo du bandeau : gardée dans le navigateur (IndexedDB) entre deux chargements, pour un affichage instantané à l'actualisation. */
@@ -181,13 +194,13 @@
       // Photo déjà enregistrée dans le navigateur : elle est posée directement, sans passer par la photo par défaut.
       var saved = null; try { saved = await idbGet(String(SID)); } catch (_) {}
       if (my !== paintSeq) return;
-      if (!saved) { await warm(DEFAULT_IMG); if (my !== paintSeq) return; place(DEFAULT_IMG); }   // pas de photo enregistrée : photo par défaut en attendant
+      if (!saved) { var d0 = await defaultUrl(); await warm(d0); if (my !== paintSeq) return; place(d0); }   // pas de photo enregistrée : photo par défaut en attendant
       window.__heroFetching = true;
       try { url = await stationImageUrl(); } catch (_) { url = null; } finally { window.__heroFetching = false; }
       if (my !== paintSeq) return;   // un autre rendu a démarré pendant le chargement de l'image
       imgCache = { key: key, url: url };
     }
-    var shown = url || DEFAULT_IMG;   // sans photo propre de la station : photo par défaut
+    var shown = url || await defaultUrl();   // sans photo propre de la station : photo par défaut
     await warm(shown); if (my !== paintSeq) return;   // chargée avant d'être posée
     place(shown);
   }
@@ -202,8 +215,8 @@
     paint();
   }, 1000);
   /* Téléchargement anticipé de la photo : prête quand le bandeau se pose. */
-  function prefetch() { try { warm(DEFAULT_IMG); stationImageUrl().catch(function () {}); } catch (_) {} }
-  window.paintHeroBanner = function () { imgCache = { key: null, url: null }; var ex = document.getElementById('hero'); if (ex) ex.__sig = ''; return paint(); };
+  function prefetch() { try { if (typeof ME !== 'undefined' && ME && !ME.is_global && typeof SID !== 'undefined' && SID) defaultUrl().then(warm); else warm(DEFAULT_IMG); stationImageUrl().catch(function () {}); } catch (_) {} }
+  window.paintHeroBanner = function () { imgCache = { key: null, url: null }; dflt = { key: null, p: null }; var ex = document.getElementById('hero'); if (ex) ex.__sig = ''; return paint(); };
   ['applyAppearance', 'refreshTenantBrand', 'loadBrand'].forEach(function (n) { var t = setInterval(function () { if (typeof window[n] === 'function' && !window[n].__hero) { var o = window[n]; window[n] = function () { var r = o.apply(this, arguments); Promise.resolve(r).then(function () { watch(); schedule(); }); return r; }; window[n].__hero = true; clearInterval(t); } }, 300); setTimeout(function () { clearInterval(t); }, 8000); });
 
   /* ---------- fenêtre « Personnaliser le bandeau » ---------- */

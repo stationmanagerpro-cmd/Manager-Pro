@@ -21,6 +21,6 @@ check("pas de repli temporisé : l'en-tête reste masqué tant que le bandeau n'
 });
 check('versions de chargement incrémentées (cache navigateur)', () => {
   const html = read('index.html');
-  assert(html.includes('/ext-skin-pro.css?v=5') && html.includes('/ext-banner.js?v=4'));
+  assert(html.includes('/ext-skin-pro.css?v=5') && html.includes('/ext-banner.js?v=5'));
 });
 console.log(`\n${n}/5 contrôles réussis.`);
