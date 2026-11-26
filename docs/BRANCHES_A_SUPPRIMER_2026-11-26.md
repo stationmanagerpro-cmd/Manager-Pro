@@ -6,7 +6,7 @@ Une fois supprimées, la liste ci-dessous permet de les recréer.
 
 **Pour recréer une branche** (identifiant conservé ci-dessous) : `git push origin <identifiant>:refs/heads/<nom>`. GitHub conserve un temps les commits non rattachés ; la restauration est fiable tant que l'identifiant reste accessible.
 
-**Conservées volontairement :** `main` ; `fix/scanner-flottant-reduire` (demande de fusion #16 encore ouverte, contenu déjà dans `main` : `4d87688`) ; `feat/affichage-rapprochement-cloture`, `feat/rapprochement-cloture-alertes`, `fix/tests-perimes-2026-11-16`, `feat/regroupement-menu-client`, `release/apk-debug-2026-11-17` (commits en conflit avec `main`) ; `feat/rapport-whatsapp-signature-raccourci` (WIP non testé) ; `docs/modele-journal-deploiement`, `docs/changelog-regroupement-deploiement` (documentation non fusionnée).
+**Mise à jour (2026-11-26, demande « plus rien garder ») :** plus aucune branche ne porte de travail unique. Le contenu non intégré (4 commits) est archivé en fichiers texte dans `docs/archive-branches/` (voir son `README.md`), sans être activé dans le site ; le reste est déjà dans `main` (`fc6f2de`, `17a4667`, `d8ac8dc`, `4d87688`, APK identique). **Toutes les branches ci-dessous, y compris les 9 ajoutées en bas du tableau, peuvent être supprimées.** Supprimer `fix/scanner-flottant-reduire` ferme automatiquement la demande de fusion #16.
 
 | Branche | Identifiant du dernier commit |
 |---|---|
@@ -41,3 +41,12 @@ Une fois supprimées, la liste ci-dessous permet de les recréer.
 | `perf/bandeau-cache-navigateur` | `7a3edae3df6488b91cc111d79dffa69e3097bae7` |
 | `refactor/en-tete-unique` | `b30b373c0ee8df11684ce21d474ef8ccc76dcc9d` |
 | `release/apk-site-2026-11-17` | `6e48674480d423aacdc582381082f304eccd39f7` |
+| `docs/modele-journal-deploiement` | `a598d28` (repris en `fc6f2de`) |
+| `docs/changelog-regroupement-deploiement` | `d9b08a6` (repris en `17a4667`) |
+| `feat/regroupement-menu-client` | `7fb82f1` (= `d8ac8dc` dans `main`) |
+| `fix/scanner-flottant-reduire` | `11a902a` (= `4d87688` dans `main`) |
+| `release/apk-debug-2026-11-17` | `6ce9d6f` (APK identique dans `main`) |
+| `fix/tests-perimes-2026-11-16` | `c38f068` (archivé) |
+| `feat/rapprochement-cloture-alertes` | `8dc1832` (archivé) |
+| `feat/affichage-rapprochement-cloture` | `9e85609` (archivé) |
+| `feat/rapport-whatsapp-signature-raccourci` | `ad3468d` (archivé, WIP non testé) |

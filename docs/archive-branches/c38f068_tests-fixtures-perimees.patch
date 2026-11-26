@@ -1,0 +1,127 @@
+From c38f068b5b854b5feda1a14dc7191f0b035d1256 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Mon, 16 Nov 2026 19:49:12 +0000
+Subject: [PATCH] =?UTF-8?q?Tests=20:=20aligne=20les=20fixtures=20p=C3=A9ri?=
+ =?UTF-8?q?m=C3=A9es=20sur=20le=20comportement=20actuel?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- product-profile-unit / ui : stub core.canCost manquant ; droits cost.view
+  dans les cas nominaux (RG-03 masque le prix d'achat sans ce droit) ; fixture can_cost.
+- shift-close-attribution : mocks des requêtes ajoutées (ventes boutique,
+  pièces d'employés, contrôle des cuves).
+- pdf-logo-columns-static : assertion sur le catch(swallow) de lecture du logo.
+
+Aucun changement de code de production. Écarts non résolus, à trancher :
+écart de caisse résiduel (shift-close-attribution), refus d'envoi d'anciens
+rapports à plusieurs employés (shift-report-share, non modifié).
+
+Co-Authored-By: Claude Haiku 5.5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01ShTMNXbcrAduCuWW4us68g
+---
+ test/pdf-logo-columns-static.js      | 2 +-
+ test/product-profile-ui-unit.js      | 6 +++---
+ test/product-profile-unit.js         | 8 ++++----
+ test/shift-close-attribution-unit.js | 4 +++-
+ 4 files changed, 11 insertions(+), 9 deletions(-)
+
+diff --git a/test/pdf-logo-columns-static.js b/test/pdf-logo-columns-static.js
+index 1cfbe47..fc247b1 100644
+--- a/test/pdf-logo-columns-static.js
++++ b/test/pdf-logo-columns-static.js
+@@ -5,7 +5,7 @@ const docs = fs.readFileSync('src/docs.js', 'utf8');
+ const tests = [];
+ function check(name, fn) { try { fn(); tests.push({ name, ok: true }); } catch (e) { tests.push({ name, ok: false, error: e.message }); } }
+ check('PDF charge uniquement le logo de la station, sans repli sur le logo application', () => {
+-  assert.match(docs, /const stationLogo = st\?\.photo_path \? await files\.read\(st\.photo_path\) : null/);
++  assert.match(docs, /const stationLogo = st\?\.photo_path \? await files\.read\(st\.photo_path\)\.catch\(swallow\('docs:logo', null\)\) : null/);
+   assert.match(docs, /logo: stationLogo \|\| null/);
+   assert.doesNotMatch(docs, /files\.read\(app\.logo_path\)/);
+ });
+diff --git a/test/product-profile-ui-unit.js b/test/product-profile-ui-unit.js
+index e869170..3ba6484 100644
+--- a/test/product-profile-ui-unit.js
++++ b/test/product-profile-ui-unit.js
+@@ -16,12 +16,12 @@ const stats = (over = {}) => ({
+ const line = (id, status, o, r) => ({ detail_id: id, purchase_id: id, order_no: 'BC-' + id, status, ordered_at: '2026-10-20', supplier_id: 3, supplier: 'Total', qty_ordered: o, qty_received: r, qty_remaining: ['commande', 'partiel'].includes(status) && r < o ? o - r : 0, unit_cost: 1000, line_total: o * 1000, received_total: r * 1000, open: ['commande', 'partiel'].includes(status) && r < o, waiting_days: 7 });
+ let supplyLines = [line(1, 'commande', 20, 0), line(2, 'recu', 10, 10)];
+ const API = {
+-  '/products/12/prices': () => ({ product: { id: 12, name: 'Huile', unit: 'L', sell_price: 1500, buy_price: 1000, tax_rate: 0 }, margin_unit: 500, margin_pct: 33.3, can_edit: true, history: [
++  '/products/12/prices': () => ({ product: { id: 12, name: 'Huile', unit: 'L', sell_price: 1500, buy_price: 1000, tax_rate: 0 }, margin_unit: 500, margin_pct: 33.3, can_edit: true, can_cost: true, history: [
+     { id: 2, type: 'sell', price: 1500, old_price: 1200, delta: 300, delta_pct: 25, from: '2026-10-01', to: null, note: 'hausse <i>x</i>', by: 'mod' }, { id: 1, type: 'sell', price: 1200, old_price: null, delta: null, delta_pct: null, from: '2026-08-01', to: '2026-10-01', note: null, by: null }] }),
+   '/products/12/purchases': () => ({ lines: supplyLines, summary: { orders: 2, qty_ordered: 30, qty_received: 10, spent: 10000, avg_cost: 1000, min_cost: 1000, max_cost: 1000, open_count: supplyLines.filter(l => l.open).length, open_qty: 20, truncated: false } }),
+   '/products/12/stock-history': () => ({ product: { id: 12, name: 'Huile', unit: 'L', stock: 40, min_stock: 10 }, rows: [{ id: 9, kind: 'achat', quantity: 20, balance_after: 40, comment: 'Réception <script>', at: '2026-10-20', by: 'mod', ref: { type: 'purchase', label: 'BC-5-00009', id: 9 } }, { id: 8, kind: 'perte', quantity: -2, balance_after: 20, comment: null, at: '2026-10-19', by: null, ref: null }], by_kind: [{ kind: 'achat', n: 1, qty: 20, qty_in: 20, qty_out: 0 }, { kind: 'perte', n: 1, qty: -2, qty_in: 0, qty_out: 2 }, { kind: 'correction', n: 2, qty: 1, qty_in: 3, qty_out: 2 }], truncated: false })
+ };
+-const fetched = [], posts = [], toasts = [], panes = {}; let clickHandler = null; let perms = new Set(['price.edit', 'stock.adjust', 'report.view', 'purchase.manage', 'supplier.view']);
++const fetched = [], posts = [], toasts = [], panes = {}; let clickHandler = null; let perms = new Set(['price.edit', 'stock.adjust', 'report.view', 'purchase.manage', 'supplier.view', 'cost.view']);
+ const el = id => (panes[id] = panes[id] || { id, innerHTML: '', value: '', classList: { add() {}, remove() {} }, setAttribute() {}, scrollIntoView() {} });
+ const ctx = {
+   URLSearchParams, Number, Math, Intl, Date, JSON, Set,
+@@ -56,7 +56,7 @@ const open = async key => { clickHandler({ target: { closest: () => ({ dataset:
+     const html = await ctx.VM.prodf();
+     assert.ok(!html.includes('Historique dotation') && !html.includes('Historique des stocks') && html.includes('Gestion des prix'));
+     assert.ok(!html.includes('ppEdit') && !html.includes('ppMove'));
+-    perms = new Set(['price.edit', 'stock.adjust', 'report.view', 'purchase.manage', 'supplier.view']);
++    perms = new Set(['price.edit', 'stock.adjust', 'report.view', 'purchase.manage', 'supplier.view', 'cost.view']);
+   });
+   await check('Comportement : lecture rapide et graphiques', async () => {
+     await ctx.VM.prodf(); await open('behavior');
+diff --git a/test/product-profile-unit.js b/test/product-profile-unit.js
+index 31443d6..24bb7a8 100644
+--- a/test/product-profile-unit.js
++++ b/test/product-profile-unit.js
+@@ -13,7 +13,7 @@ const client = { query: async (sql, params) => { calls.push({ sql, params: param
+ const pool = client;
+ const routes = {}; const audits = [];
+ const chain = new Proxy(function () {}, { get: () => chain, apply: () => chain });
+-const coreStub = { pool, tx: async fn => fn(client), HttpError, wrap: f => f, body: () => ({ body: true }), need: (...perms) => ({ gate: perms }), audit: async (...a) => { audits.push(a); } };
++const coreStub = { pool, tx: async fn => fn(client), HttpError, wrap: f => f, body: () => ({ body: true }), need: (...perms) => ({ gate: perms }), audit: async (...a) => { audits.push(a); }, canCost: req => !!(req.user && req.user.perms && req.user.perms.has('cost.view')) };
+ const mkRouter = () => ({ get: (p, ...fns) => { routes['GET ' + p] = fns; }, post: (p, ...fns) => { routes['POST ' + p] = fns; } });
+ const origLoad = Module._load;
+ Module._load = function (request, parent) {
+@@ -41,7 +41,7 @@ const base = extra => (sql, params) => {
+   if (/AS from_date/.test(sql)) return [{ from_date: '2026-08-01', to_date: '2026-10-27' }];
+   return (extra && extra(sql, params)) || [];
+ };
+-const FULL = ['price.edit', 'report.view'];
++const FULL = ['price.edit', 'report.view', 'cost.view'];
+ 
+ (async () => {
+   await check('toutes les routes sont déclarées avec une garde de permission', () => {
+@@ -70,11 +70,11 @@ const FULL = ['price.edit', 'report.view'];
+     handler = base();
+     await assert.rejects(() => run('POST /products/:id/prices', req(['price.edit'], { body: {} })), e => e.status === 400);
+     handler = (sql) => (/FOR UPDATE/.test(sql) ? [PRODUCT] : []);
+-    await assert.rejects(() => run('POST /products/:id/prices', req(['price.edit'], { body: { sell_price: 1500, buy_price: 1000 } })), e => e.status === 400 && /identiques/.test(e.message));
++    await assert.rejects(() => run('POST /products/:id/prices', req(['price.edit', 'cost.view'], { body: { sell_price: 1500, buy_price: 1000 } })), e => e.status === 400 && /identiques/.test(e.message));
+   });
+   await check('POST prix : journalise vente ET achat, ne met à jour que les champs modifiés, audite', async () => {
+     handler = (sql) => (/FOR UPDATE/.test(sql) ? [PRODUCT] : /UPDATE products/.test(sql) ? [{ sell_price: 1800, buy_price: 1100 }] : []);
+-    const res = await run('POST /products/:id/prices', req(['price.edit'], { body: { sell_price: 1800, buy_price: 1100, note: 'Hausse fournisseur' } }));
++    const res = await run('POST /products/:id/prices', req(['price.edit', 'cost.view'], { body: { sell_price: 1800, buy_price: 1100, note: 'Hausse fournisseur' } }));
+     assert.strictEqual(res.code, 201);
+     const ins = calls.filter(c => /INSERT INTO price_history/.test(c.sql));
+     assert.deepStrictEqual(ins.map(c => c.params[2]), ['sell', 'buy']);
+diff --git a/test/shift-close-attribution-unit.js b/test/shift-close-attribution-unit.js
+index c796d42..f7a115d 100644
+--- a/test/shift-close-attribution-unit.js
++++ b/test/shift-close-attribution-unit.js
+@@ -25,7 +25,7 @@ function Router() {
+   return { stack, get: add('get'), post: add('post'), put: add('put'), patch: add('patch'), delete: add('delete'), use() {} };
+ }
+ const hooks = { afterClose: [] };
+-const stubs = { './employee_actions': { afterClose: async (req, shiftId, number) => { hooks.afterClose.push([shiftId, number]); }, track: async () => {} }, './core': core, './notification_rules': { fireNotificationRules: async () => {} }, './messaging': messaging, '../services/emailService': emailService, express: { Router } };
++const stubs = { './tanks': { tankCloseCheck: async () => ({ mode: 'off', blocking: [], products: [] }) }, './employee_actions': { afterClose: async (req, shiftId, number) => { hooks.afterClose.push([shiftId, number]); }, track: async () => {} }, './core': core, './notification_rules': { fireNotificationRules: async () => {} }, './messaging': messaging, '../services/emailService': emailService, express: { Router } };
+ const realLoad = Module._load;
+ Module._load = function (request, parent) {
+   if (parent && /src[\\/]shifts\.js$/.test(parent.filename) && Object.prototype.hasOwnProperty.call(stubs, request)) return stubs[request];
+@@ -78,6 +78,8 @@ pool.query = async (sql, params) => {
+   if (/^SELECT client_id FROM users/.test(q)) return { rows: [{ client_id: 7 }] };
+   if (/^SELECT id, user_id FROM employees WHERE id = ANY/.test(q)) return { rows: DB.team.map(t => ({ id: t.id, user_id: t.user_id })) };
+   if (/^SELECT name FROM stations/.test(q)) return { rows: [{ name: 'Station Test' }] };
++  if (/^SELECT pr.id AS product_id/.test(q)) return { rows: [] };
++  if (/^SELECT sa.kind, sa.description, sa.amount, sa.employee_id/.test(q)) return { rows: [] };
+   throw new Error('requête inattendue : ' + q.slice(0, 140));
+ };
+ const shifts = require(path.join(__dirname, '..', 'src', 'shifts.js'));
