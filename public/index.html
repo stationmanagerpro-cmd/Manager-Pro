@@ -85,16 +85,23 @@
     // whenChart(fn, onFail) : exécute fn une fois Chart disponible ; chartTask(fn, delay) = setTimeout + whenChart.
     (function () {
       var pending = null;
+      // Une seule tentative silencieuse laissait un cadre vide sur réseau mobile instable : 3 essais, 20 s maximum chacun.
+      function inject(n) {
+        return new Promise(function (ok, ko) {
+          var s = document.createElement('script'), done = false;
+          function end(good) { if (done) return; done = true; clearTimeout(t); if (good) ok(); else { s.onload = s.onerror = null; s.remove(); ko(); } }
+          var t = setTimeout(function () { end(false); }, 20000);
+          s.src = '/vendor/chart.umd.min.js' + (n ? '?r=' + n + '-' + Date.now() : '');
+          s.onload = function () { end(typeof Chart !== 'undefined'); };
+          s.onerror = function () { end(false); };
+          document.head.appendChild(s);
+        });
+      }
       function load() {
         if (typeof Chart !== 'undefined') return Promise.resolve();
         if (!pending) {
-          pending = new Promise(function (ok, ko) {
-            var s = document.createElement('script');
-            s.src = '/vendor/chart.umd.min.js';
-            s.onload = function () { ok(); };
-            s.onerror = function () { pending = null; s.remove(); ko(); };
-            document.head.appendChild(s);
-          });
+          pending = inject(0).catch(function () { return inject(1); }).catch(function () { return inject(2); })
+            .catch(function () { pending = null; throw new Error('chart'); });
         }
         return pending;
       }

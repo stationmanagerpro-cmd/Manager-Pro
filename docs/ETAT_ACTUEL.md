@@ -8,10 +8,9 @@ Les sections 2 à 8 datent du 2026-11-20 sauf mention contraire ; la section 9 l
 - 49 commits depuis l'ancien repère `57cf79d` ; liste et conséquences : section 9.
 - Procédure de mise à jour : voir `docs/REFERENCE.md`, section 0.
 
-## 1. Dernière tâche effectuée (2026-11-26)
-Bandeau par défaut personnalisable par client (Super Admin, fiche client → onglet « Bandeau par défaut »). Remplace l'image Manager PRO pour toutes les stations du client tant qu'une station n'a pas sa photo. Image recadrée 3:1, 1600 px max, WebP ≈150 Ko (serveur : refus > 400 Ko). Aucune migration (clé `client_default_banner_<id>` dans `app_settings`, comme la publicité client). Statut : RÉALISÉ, tests statiques OK ; routes non exécutées (pas de base PostgreSQL ici) ; rendu navigateur réel non vu. Précédente tâche : directive d'économie de tokens (`docs/REFERENCE.md`, section 0 ter).
-Fichiers : `src/branding.js`, `public/ext-banner.js` (v=5), `public/ext-detail-pages.js`, `public/index.html`, `public/sw.js` (régénéré), `test/client-default-banner-static.js`, `test/banner-static.js`, `test/banner-pending-static.js`, `package.json` (`test:banner`).
-Prochaine étape : essai réel sur le site (poser une image pour un client, vérifier chez ce client puis chez un autre).
+## 1. Dernière tâche effectuée (2026-11-28)
+Graphique « Évolution des ventes » vide sur téléphone : le chargement de Chart.js (à la demande, une seule tentative silencieuse) pouvait échouer sans rien afficher. Corrigé : 3 essais (20 s max chacun) dans `public/index.html`, message « Réessayer » dans `public/ext-design.js` si le chargement ou le dessin échoue. Cause exacte sur le téléphone de l'utilisateur NON confirmée (symptôme reproduit en bloquant le fichier ; dessin normal vérifié en navigateur mobile simulé). Test : `test/dashboard-chart-retry-static.js`. Statut : RÉALISÉ, à confirmer sur le site réel.
+Précédente tâche (2026-11-26) : bandeau par défaut par client (fusionné, PR #32).
 
 ## 2. Terminé et vérifié
 | Date | Tâche | Commit | Preuve |

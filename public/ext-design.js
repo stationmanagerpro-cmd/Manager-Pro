@@ -216,7 +216,17 @@
   function renderChart(daily) {
     const cv = document.getElementById('dv2-chart');
     if (!cv) return;
-    if (typeof Chart === 'undefined') return whenChart(() => renderChart(daily));
+    const fail = () => {
+      const box = cv.parentElement; if (!box) return;
+      box.innerHTML = '<div class="dv2-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;height:100%;text-align:center">Le graphique n’a pas pu s’afficher (connexion lente ?).<button type="button" class="b2" id="dv2-chart-retry">Réessayer</button></div>';
+      const b = document.getElementById('dv2-chart-retry');
+      if (b) b.onclick = () => { box.innerHTML = '<canvas id="dv2-chart" role="img" aria-label="Ventes et volume sur la période"></canvas>'; renderChart(daily); };
+    };
+    if (typeof Chart === 'undefined') return whenChart(() => renderChart(daily), fail);
+    try { renderChartNow(cv, daily); } catch (e) { console.error('[dashboard] graphique', e); fail(); }
+  }
+
+  function renderChartNow(cv, daily) {
     if (window.__dv2Chart) { try { window.__dv2Chart.destroy(); } catch (e) { /* déjà détruit */ } }
     const muted = cssVar('--m') || '#526178', grid = (document.documentElement.dataset.theme === 'dark') ? 'rgba(255,255,255,.08)' : 'rgba(15,23,42,.07)';
     const compact = v => new Intl.NumberFormat(LOC(), { notation: 'compact', maximumFractionDigits: 1 }).format(v);
